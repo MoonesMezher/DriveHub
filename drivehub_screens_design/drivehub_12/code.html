@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة الدورات التدريبية - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+            background-color: #faf8ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for data-heavy sections */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5c5d3;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#264191",
+                        "on-error-container": "#93000a",
+                        "surface": "#faf8ff",
+                        "secondary": "#855300",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#f39461",
+                        "outline": "#757682",
+                        "surface-dim": "#d2d9f4",
+                        "surface-container": "#eaedff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-surface": "#131b2e",
+                        "surface-tint": "#4059aa",
+                        "on-surface-variant": "#444651",
+                        "on-secondary-fixed": "#2a1700",
+                        "inverse-on-surface": "#eef0ff",
+                        "outline-variant": "#c5c5d3",
+                        "on-tertiary-fixed-variant": "#773205",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#283044",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#4b1c00",
+                        "tertiary-container": "#6e2c00",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "on-secondary-container": "#684000",
+                        "primary": "#00236f",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1e3a8a",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "surface-container-highest": "#dae2fd",
+                        "secondary-container": "#fea619",
+                        "on-tertiary-fixed": "#341100",
+                        "inverse-primary": "#b6c4ff",
+                        "on-background": "#131b2e",
+                        "surface-container-high": "#e2e7ff",
+                        "on-primary-container": "#90a8ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-primary-fixed": "#00164e",
+                        "tertiary-fixed": "#ffdbcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "1.5rem",
+                        "margin-desktop": "2.5rem",
+                        "margin-mobile": "1rem",
+                        "compact": "0.5rem",
+                        "loose": "2rem",
+                        "comfortable": "1rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["IBM Plex Sans Arabic"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "headline-sm": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Shell Structure: SideNavBar -->
+<aside class="fixed right-0 top-0 h-full flex flex-col z-40 w-64 bg-surface dark:bg-inverse-surface border-l border-outline-variant dark:border-outline shadow-sm transition-all duration-300">
+<div class="p-6 flex flex-col gap-1">
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-inverse-primary">DriveFlow Admin</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Institutional Control</span>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-2">
+<!-- Nav Item: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<!-- Nav Item: Courses (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-inverse-primary border-r-4 border-primary font-bold bg-surface-container-low dark:bg-surface-container-highest scale-[0.98] transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-label-md font-label-md">Courses</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="text-label-md font-label-md">Enrollment Requests</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="text-label-md font-label-md">Instructors</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-outline-variant">
+<button class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-lg font-label-md shadow-sm hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                New Training Cycle
+            </button>
+</div>
+</aside>
+<!-- Shell Structure: TopAppBar -->
+<header class="fixed top-0 left-0 right-64 z-30 flex justify-between items-center px-gutter h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm">
+<div class="flex items-center gap-8 flex-1">
+<h1 class="text-headline-md font-headline-md text-primary dark:text-inverse-primary font-bold">إدارة الدورات التدريبية</h1>
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-body-md transition-all" placeholder="بحث عن دورة أو متدرب..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-label-md">
+<span class="material-symbols-outlined text-sm" data-icon="help_outline">help_outline</span>
+<span>الدعم الفني</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Manager Avatar" class="h-full w-full object-cover" data-alt="A professional headshot of a Middle Eastern male manager in a clean white office setting, wearing a modern business-casual attire. The lighting is soft and corporate, aligning with a light-mode UI aesthetic. The background is a blurred high-end office environment with glass partitions and subtle blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXVimDsbgKAKbC2VLDTM9bTlXvXgVKg1pmu_xUHemE-7Zaj2BziZZk_03GssrzakV4IWswD2ZJU2r1HS8qUfQISVg_DHFFHVpS5WRTtepiknBk9WIcV2fEJ6qrlUjbaaK2ORGD153VahwIhj72xGV74cfsawjuTxK_ug26TyhzYxdbOpRGmaI2VtDotUSHkNT1eUKqL_RH7UxJlefYqgURp025yVG-s-QIapfpDgeItM2PdxC__VHWjTZLrR78-VQeYYAqeMpBczZn"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="mr-64 pt-16 min-h-screen p-gutter bg-surface">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Hero / Summary Header -->
+<div class="flex justify-between items-end gap-4">
+<div class="space-y-2">
+<p class="text-body-lg font-body-lg text-on-surface-variant">نظرة عامة على الدورات الحالية والقادمة في DriveHub</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 px-4 py-2 bg-error-container text-on-error-container rounded-lg border border-error/20">
+<span class="material-symbols-outlined" data-icon="lock_clock">lock_clock</span>
+<span class="text-label-md font-label-md">إطلاق القائمة القادمة بعد: 8 أيام</span>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-secondary text-on-secondary rounded-lg font-label-md shadow-md hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        إنشاء دورة تدريبية جديدة
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Stats Section -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<span class="p-2 bg-primary-container/20 text-primary rounded-lg">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">نشط حالياً</span>
+</div>
+<div class="text-headline-sm font-headline-sm">124 متدرباً</div>
+<div class="text-label-sm font-label-sm text-outline-variant">عبر 5 دورات نشطة</div>
+</div>
+<div class="col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<span class="p-2 bg-on-tertiary-container/20 text-tertiary-container rounded-lg">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">التسجيل المفتوح</span>
+</div>
+<div class="text-headline-sm font-headline-sm">3 دورات</div>
+<div class="text-label-sm font-label-sm text-outline-variant">بنسبة إشغال 68%</div>
+</div>
+<div class="col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<span class="p-2 bg-secondary-container/20 text-secondary rounded-lg">
+<span class="material-symbols-outlined" data-icon="hourglass_empty">hourglass_empty</span>
+</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">القيود الزمنية</span>
+</div>
+<div class="text-label-md font-label-md font-bold text-secondary">الانتظار: 15 يوماً</div>
+<div class="text-label-sm font-label-sm text-outline-variant">بين عمليات الإطلاق</div>
+</div>
+<div class="col-span-1 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-4">
+<span class="p-2 bg-surface-container-highest text-on-surface-variant rounded-lg">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">الإنجاز الشهري</span>
+</div>
+<div class="text-headline-sm font-headline-sm">12 دورة</div>
+<div class="text-label-sm font-label-sm text-outline-variant">منذ بداية الشهر الحالي</div>
+</div>
+</div>
+<!-- Cycles Grid Section -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-sm font-headline-sm font-bold text-on-surface">الدورات التدريبية النشطة والمعلقة</h2>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 bg-surface-container-high rounded-full text-label-sm font-label-sm border border-outline-variant">الكل</button>
+<button class="px-4 py-1.5 bg-white rounded-full text-label-sm font-label-sm border border-outline-variant hover:bg-surface-container-low">التسجيل المفتوح</button>
+<button class="px-4 py-1.5 bg-white rounded-full text-label-sm font-label-sm border border-outline-variant hover:bg-surface-container-low">النشطة</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card: Registration Open -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
+<div class="h-32 bg-primary relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #00236f 100%);">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-on-tertiary-container/90 text-white px-3 py-1 rounded-full text-label-sm font-label-sm backdrop-blur-sm">التسجيل مفتوح</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<div class="text-label-sm opacity-80">رمز الدورة</div>
+<div class="font-bold">DRV-2024-009</div>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<h3 class="text-body-lg font-bold">دورة القيادة المتقدمة - المجموعة الصيفية</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span class="text-label-sm">البداية: 15 يونيو</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="event">event</span>
+<span class="text-label-sm">النهاية: 30 يونيو</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md">
+<span>اكتمال التسجيل</span>
+<span class="font-bold">18/25 متدرباً</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 72%"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex gap-2">
+<button class="flex-1 py-2 rounded-lg bg-primary-container text-on-primary-container text-label-md font-bold hover:brightness-110 transition-all">إدارة المسجلين</button>
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card: Active (Locked for Upload) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
+<div class="h-32 bg-green-700 relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-label-sm font-label-sm backdrop-blur-sm">دورة نشطة</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<div class="text-label-sm opacity-80">رمز الدورة</div>
+<div class="font-bold">DRV-2024-008</div>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<h3 class="text-body-lg font-bold">تدريب المدربين - المستوى الثاني</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span class="text-label-sm">البداية: 1 يونيو</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="event">event</span>
+<span class="text-label-sm">النهاية: 14 يونيو</span>
+</div>
+</div>
+<div class="p-3 bg-error-container/10 border border-error/20 rounded-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-error" data-icon="lock_outline">lock_outline</span>
+<div class="space-y-1">
+<p class="text-label-sm font-bold text-error">إطلاق القائمة محظور</p>
+<p class="text-[11px] text-on-error-container">لا يمكن إطلاق دورة جديدة قبل مرور 15 يوماً من آخر إطلاق (متبقي 7 أيام).</p>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md">
+<span>اكتمال التسجيل</span>
+<span class="font-bold">30/30 متدرباً</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-green-600 h-full rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex gap-2">
+<button class="flex-1 py-2 rounded-lg bg-surface-container-low text-on-surface-variant border border-outline-variant text-label-md font-bold cursor-not-allowed" disabled="">إطلاق القائمة</button>
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card: Completed -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1 grayscale-[0.2]">
+<div class="h-32 bg-slate-600 relative overflow-hidden" style="background: linear-gradient(135deg, #475569 0%, #334155 100%);">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-slate-200 text-slate-800 px-3 py-1 rounded-full text-label-sm font-label-sm backdrop-blur-sm">مكتملة</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<div class="text-label-sm opacity-80">رمز الدورة</div>
+<div class="font-bold">DRV-2024-007</div>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<h3 class="text-body-lg font-bold">القيادة الوقائية للأساطيل التجارية</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span class="text-label-sm">انتهت في: 25 مايو</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md">
+<span>نسبة النجاح</span>
+<span class="font-bold">92%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-slate-500 h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex gap-2">
+<button class="flex-1 py-2 rounded-lg bg-surface-container-high text-on-surface-variant text-label-md font-bold hover:bg-surface-variant transition-all">تحميل التقارير</button>
+<button class="p-2 rounded-lg border border-outline-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="archive">archive</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Business Rule Context Panel (Asymmetric Design) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-12">
+<div class="lg:col-span-2 bg-primary-container text-on-primary-container p-8 rounded-2xl relative overflow-hidden group">
+<div class="absolute -right-16 -bottom-16 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700"></div>
+<div class="relative z-10 space-y-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-4xl" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h2 class="text-headline-sm font-bold">سياسة إطلاق الدورات</h2>
+</div>
+<p class="text-body-lg max-w-xl opacity-90">نحن نلتزم بأعلى معايير الجودة التنظيمية. يمكن فتح باب التسجيل لدورات جديدة في أي وقت، ولكن لضمان توازن العمليات الإدارية، يتم فرض فترة انتظار مدتها 15 يوماً بين كل عملية إطلاق (رفع أسماء) وأخرى.</p>
+<div class="flex gap-4 pt-4">
+<div class="flex flex-col">
+<span class="text-label-sm opacity-70">آخر إطلاق</span>
+<span class="text-body-md font-bold">07 يونيو 2024</span>
+</div>
+<div class="w-px bg-white/20"></div>
+<div class="flex flex-col">
+<span class="text-label-sm opacity-70">الإطلاق القادم المتاح</span>
+<span class="text-body-md font-bold">22 يونيو 2024</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-highest p-8 rounded-2xl flex flex-col justify-between border border-outline-variant">
+<div class="space-y-4">
+<h3 class="text-body-lg font-bold">جدولة سريعة</h3>
+<p class="text-label-md text-on-surface-variant">هل ترغب في حجز موعد إطلاق مسبق للدورات القادمة؟</p>
+</div>
+<button class="w-full py-3 bg-white border border-outline-variant rounded-xl text-primary font-bold shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+                        فتح التقويم التنظيمي
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Contextual) -->
+<button class="fixed bottom-8 left-8 p-4 bg-secondary text-on-secondary rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined text-3xl" data-icon="auto_awesome">auto_awesome</span>
+<span class="absolute right-full mr-4 bg-inverse-surface text-inverse-on-surface px-3 py-1 rounded text-label-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">توليد جدول ذكي</span>
+</button>
+<script>
+        // Simple micro-interaction for hover states on cards
+        const cards = document.querySelectorAll('.group');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential expansion logic
+            });
+        });
+
+        // Search highlight interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.02]');
+        });
+    </script>
+</body></html>

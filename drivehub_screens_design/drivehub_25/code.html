@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub - تسجيل الدخول</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #E2E8F0;
+        }
+        .login-tab-active {
+            border-bottom: 3px solid #00236f;
+            color: #00236f;
+        }
+        .bg-pattern {
+            background-color: #faf8ff;
+            background-image: radial-gradient(#dce1ff 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#264191",
+                      "tertiary": "#4b1c00",
+                      "tertiary-fixed-dim": "#ffb691",
+                      "surface-variant": "#dae2fd",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "primary": "#00236f",
+                      "on-primary-container": "#90a8ff",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f2f3ff",
+                      "inverse-surface": "#283044",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#dae2fd",
+                      "secondary": "#855300",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#faf8ff",
+                      "on-background": "#131b2e",
+                      "surface-tint": "#4059aa",
+                      "on-tertiary-fixed": "#341100",
+                      "on-surface": "#131b2e",
+                      "outline": "#757682",
+                      "on-surface-variant": "#444651",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#dce1ff",
+                      "on-error-container": "#93000a",
+                      "surface": "#faf8ff",
+                      "on-tertiary-fixed-variant": "#773205",
+                      "background": "#faf8ff",
+                      "tertiary-container": "#6e2c00",
+                      "secondary-container": "#fea619",
+                      "outline-variant": "#c5c5d3",
+                      "on-secondary-container": "#684000",
+                      "surface-dim": "#d2d9f4",
+                      "on-primary-fixed": "#00164e",
+                      "inverse-primary": "#b6c4ff",
+                      "on-tertiary-container": "#f39461",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "surface-container": "#eaedff",
+                      "secondary-fixed": "#ffddb8",
+                      "on-secondary-fixed": "#2a1700",
+                      "surface-container-high": "#e2e7ff",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#b6c4ff",
+                      "primary-container": "#1e3a8a",
+                      "tertiary-fixed": "#ffdbcb",
+                      "inverse-on-surface": "#eef0ff",
+                      "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "1rem",
+                      "gutter": "1.5rem",
+                      "margin-desktop": "2.5rem",
+                      "compact": "0.5rem",
+                      "loose": "2rem",
+                      "comfortable": "1rem"
+              },
+              "fontFamily": {
+                      "label-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "headline-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "label-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "body-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "display-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "headline-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "display-lg-mobile": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "body-lg": ["IBM Plex Sans Arabic", "sans-serif"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center bg-pattern p-margin-mobile">
+<!-- Background Decorative Element -->
+<div class="fixed inset-0 pointer-events-none opacity-20 overflow-hidden">
+
+</div>
+<!-- Main Content Container -->
+<main class="relative z-10 w-full max-w-[480px]">
+<!-- Brand Identity -->
+<div class="flex flex-col items-center mb-loose">
+<div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center shadow-lg mb-comfortable">
+<span class="material-symbols-outlined text-white text-[40px]" data-icon="directions_car">directions_car</span>
+</div>
+<h1 class="text-headline-md font-headline-md text-primary tracking-tight">DriveHub</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-2 text-center">تقدم آمن ومنهجي نحو مستقبلك في القيادة</p>
+</div>
+<!-- Login Card -->
+<div class="glass-card rounded-xl shadow-xl overflow-hidden border border-outline-variant">
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant">
+<button class="flex-1 py-comfortable text-label-md font-label-md transition-all login-tab-active" id="tab-student" onclick="switchTab('student')">
+                    دخول الطلاب
+                </button>
+<button class="flex-1 py-comfortable text-label-md font-label-md text-on-surface-variant hover:text-primary transition-all" id="tab-school" onclick="switchTab('school')">
+                    المدارس/المدربين
+                </button>
+<button class="flex-1 py-comfortable text-label-md font-label-md text-on-surface-variant hover:text-primary transition-all" id="tab-admin" onclick="switchTab('admin')">
+                    الإدارة
+                </button>
+</div>
+<div class="p-comfortable md:p-loose">
+<!-- Form Header -->
+<div class="mb-loose">
+<h2 class="text-headline-sm font-headline-sm text-on-surface" id="form-title">مرحباً بك مجدداً</h2>
+<p class="text-body-md font-body-md text-on-surface-variant" id="form-desc">قم بتسجيل الدخول للوصول إلى دروسك ومتابعة تقدمك.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-comfortable">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block text-label-md font-label-md text-on-surface" for="email">البريد الإلكتروني أو رقم المعرف</label>
+<div class="relative">
+<input class="w-full h-12 pr-12 pl-4 rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-body-md" id="email" placeholder="أدخل بياناتك هنا" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="alternate_email">alternate_email</span>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="block text-label-md font-label-md text-on-surface" for="password">كلمة المرور</label>
+<a class="text-label-sm font-label-sm text-primary hover:underline" href="#">نسيت كلمة المرور؟</a>
+</div>
+<div class="relative">
+<input class="w-full h-12 pr-12 pl-12 rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-body-md" id="password" placeholder="••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="lock">lock</span>
+<button class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="w-full h-12 bg-primary text-on-primary rounded-lg font-label-md text-label-md shadow-md hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
+                        تسجيل الدخول
+                        <span class="material-symbols-outlined text-[20px]" data-icon="login">login</span>
+</button>
+</form>
+<!-- Social Login (Student Only) -->
+<div class="mt-loose" id="social-login-container">
+<div class="relative flex items-center justify-center mb-loose">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<span class="relative bg-white px-4 text-label-sm font-label-sm text-on-surface-variant">أو سجل عبر</span>
+</div>
+<div class="grid grid-cols-2 gap-comfortable">
+<button class="flex items-center justify-center gap-2 h-11 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvIZjAev8gMNaJWWs_alAvExT74kYZVsy1_32cgmt_sSgRA_9hWE7lMnXx8iTp49ZmSQwIGCq-sTdBQBXkVagGRmAbwFQ_JGprl097bU6yoXiid9W5Zeo9yonCJV7DAJ2AmTVYpgL-_uJiOSEQx1hftP7YhS0lurNLWR8G32ZFb9Emo4yVixJISNfvWar3aT03OQklaO2Jaq9YbX9Ix4AsBcWVTh8QL5Q6eSPSk5fL1-gXWgVFWgGsXi_9_BItneJbQndGjZ38EAB1"/>
+<span class="text-label-md font-label-md">جوجل</span>
+</button>
+<button class="flex items-center justify-center gap-2 h-11 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-blue-600" data-icon="facebook" style="font-variation-settings: 'FILL' 1;">face_nod</span>
+<span class="text-label-md font-label-md">فيسبوك</span>
+</button>
+</div>
+</div>
+<!-- Registration Link -->
+<div class="mt-loose text-center">
+<p class="text-body-md font-body-md text-on-surface-variant">
+                        ليس لديك حساب؟ 
+                        <a class="text-primary font-bold hover:underline" href="#">سجل الآن كمشترك جديد</a>
+</p>
+</div>
+</div>
+</div>
+<!-- Footer Info -->
+<footer class="mt-loose text-center space-y-2">
+<p class="text-label-sm font-label-sm text-on-surface-variant">© 2024 DriveHub. جميع الحقوق محفوظة.</p>
+<div class="flex justify-center gap-comfortable text-label-sm font-label-sm text-on-surface-variant/70">
+<a class="hover:text-primary" href="#">شروط الخدمة</a>
+<span>•</span>
+<a class="hover:text-primary" href="#">سياسة الخصوصية</a>
+<span>•</span>
+<a class="hover:text-primary" href="#">الدعم الفني</a>
+</div>
+</footer>
+</main>
+<!-- UI Interaction Script -->
+<script>
+        function switchTab(role) {
+            const tabs = ['student', 'school', 'admin'];
+            const titles = {
+                'student': 'مرحباً بك مجدداً',
+                'school': 'بوابة المدربين والمدارس',
+                'admin': 'لوحة تحكم الإدارة'
+            };
+            const descs = {
+                'student': 'قم بتسجيل الدخول للوصول إلى دروسك ومتابعة تقدمك.',
+                'school': 'إدارة الجداول، الطلاب، والتقارير المالية في مكان واحد.',
+                'admin': 'النظام المركزي لإدارة العمليات والتحقق من التراخيص.'
+            };
+
+            tabs.forEach(t => {
+                const element = document.getElementById(`tab-${t}`);
+                if (t === role) {
+                    element.classList.add('login-tab-active');
+                    element.classList.remove('text-on-surface-variant');
+                } else {
+                    element.classList.remove('login-tab-active');
+                    element.classList.add('text-on-surface-variant');
+                }
+            });
+
+            document.getElementById('form-title').innerText = titles[role];
+            document.getElementById('form-desc').innerText = descs[role];
+            
+            const socialContainer = document.getElementById('social-login-container');
+            if (role === 'student') {
+                socialContainer.style.display = 'block';
+            } else {
+                socialContainer.style.display = 'none';
+            }
+        }
+    </script>
+</body></html>

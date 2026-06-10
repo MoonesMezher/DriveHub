@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إعدادات النظام العام - DriveHub Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#264191",
+                    "on-error-container": "#93000a",
+                    "surface": "#faf8ff",
+                    "secondary": "#855300",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#f39461",
+                    "outline": "#757682",
+                    "surface-dim": "#d2d9f4",
+                    "surface-container": "#eaedff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "on-surface": "#131b2e",
+                    "surface-variant": "#dae2fd",
+                    "on-secondary-container": "#684000",
+                    "primary": "#00236f",
+                    "tertiary": "#4b1c00",
+                    "tertiary-container": "#6e2c00",
+                    "surface-container-low": "#f2f3ff",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#1e3a8a",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#faf8ff",
+                    "secondary-container": "#fea619",
+                    "inverse-primary": "#b6c4ff",
+                    "on-background": "#131b2e",
+                    "surface-container-high": "#e2e7ff",
+                    "on-primary-container": "#90a8ff",
+                    "on-primary-fixed": "#00164e",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "loose": "2rem",
+                    "comfortable": "1rem",
+                    "compact": "0.5rem",
+                    "margin-mobile": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-sm": ["IBM Plex Sans"],
+                    "headline-md": ["IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #faf8ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .settings-tab-active {
+            border-right: 4px solid #00236f;
+            background-color: #eaedff;
+            color: #00236f;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c5d3;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="fixed right-0 top-0 h-full w-64 z-50 bg-surface-container border-l border-outline-variant flex flex-col py-loose overflow-hidden">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary leading-tight">DriveHub</h1>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">إدارة النظام</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-label-md text-label-md">Schools</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Pricing</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md">Verifications</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Active Settings Item -->
+<a class="flex items-center gap-compact bg-primary text-on-primary rounded-lg mx-2 px-3 py-2 border-r-4 border-secondary-container transition-all duration-200 ease-in-out shadow-lg shadow-primary/20" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-secondary-container text-on-secondary-container font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:brightness-95 transition-all active:scale-95">
+<span class="material-symbols-outlined">add_circle</span>
+                Register New School
+            </button>
+<div class="mt-6 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-compact text-error mx-2 px-3 py-2 hover:bg-error-container/20 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="mr-64 min-h-screen">
+<!-- Top Bar -->
+<header class="h-16 bg-surface border-b border-outline-variant flex items-center justify-between px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-comfortable flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-surface-container-low border-none rounded-full focus:ring-2 focus:ring-primary text-sm" placeholder="بحث في الإعدادات..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 left-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-3">
+<div class="text-left">
+<p class="text-xs font-bold text-on-surface">أحمد العتيبي</p>
+<p class="text-[10px] text-on-surface-variant">مدير عام النظام</p>
+</div>
+<img alt="Admin Profile Avatar" class="w-10 h-10 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnEH1z-tHo6cLHbJIzm_Ar0m3_LI0tlxa5zD0u8dlQUGmbtDLolMnKAZWn2RMGUXOXizWbId8-w9fEyFcBv0Y5VEfyP9upocC6hpf0dhgu8PKNOyMr3C4WsShlU3okPK9MzOWB5ArHis-YRM7i_1BYhgMrquFWf3RWlpYsMT8o4SSwRvYc_pprw8mVUIbLwtYEzXTTGjXc0MpVus8vczEp1YlixYIfiQIFluq0Vx2zyFdMPx6LV9iUPJz9yDu5oNhLHX3lpNwF_5R7"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-margin-desktop max-w-6xl mx-auto">
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-1">إعدادات النظام العامة</h2>
+<p class="text-on-surface-variant">إدارة الضوابط العالمية، التنبيهات، والربط التقني للمنصة.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2.5 rounded-lg border border-outline text-on-surface font-semibold hover:bg-surface-container-high transition-colors">إعادة تعيين</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-semibold hover:brightness-110 shadow-lg shadow-primary/20 transition-all active:scale-95">حفظ التغييرات</button>
+</div>
+</div>
+<div class="flex gap-8 items-start">
+<!-- Vertical Settings Tabs -->
+<div class="w-64 flex flex-col gap-1 bg-surface-container-lowest p-2 rounded-2xl border border-outline-variant shadow-sm sticky top-24">
+<button class="settings-tab-active flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>الضوابط العامة</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container text-on-surface-variant transition-all font-medium">
+<span class="material-symbols-outlined">notifications_active</span>
+<span>التنبيهات</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container text-on-surface-variant transition-all font-medium">
+<span class="material-symbols-outlined">language</span>
+<span>اللغة والمنطقة</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container text-on-surface-variant transition-all font-medium">
+<span class="material-symbols-outlined">security</span>
+<span>الأمن و API</span>
+</button>
+<button class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container text-on-surface-variant transition-all font-medium">
+<span class="material-symbols-outlined">build</span>
+<span>الصيانة التقنية</span>
+</button>
+</div>
+<!-- Settings Forms Scroll Area -->
+<div class="flex-1 space-y-8">
+<!-- Global Constraints Section -->
+<section class="bg-surface-container-lowest p-loose rounded-3xl border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none"></div>
+<h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface mb-6">
+<span class="material-symbols-outlined text-primary">gavel</span>
+                            الضوابط والقيود العالمية
+                        </h3>
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-4">
+<label class="block">
+<span class="text-sm font-bold text-on-surface-variant mb-2 block">قاعدة الـ 15 يوماً بين الدورات</span>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl border border-outline-variant">
+<span class="text-sm font-medium">تفعيل القيد الزمني</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+</label>
+<div class="relative">
+<span class="text-sm font-bold text-on-surface-variant mb-2 block">المدة الزمنية الفاصلة (بالأيام)</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary" type="number" value="15"/>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-sm font-bold text-on-surface-variant mb-2 block">سعة الطلاب لكل مدرسة</span>
+<div class="flex gap-3">
+<div class="flex-1">
+<span class="text-[10px] text-on-surface-variant mb-1 block">الحد الأدنى</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary" type="number" value="20"/>
+</div>
+<div class="flex-1">
+<span class="text-[10px] text-on-surface-variant mb-1 block">الحد الأقصى</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary" type="number" value="500"/>
+</div>
+</div>
+</div>
+<div>
+<span class="text-sm font-bold text-on-surface-variant mb-2 block">نافذة التسجيل الافتراضية (أيام)</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary" type="number" value="30"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Notification Settings -->
+<section class="bg-surface-container-lowest p-loose rounded-3xl border border-outline-variant shadow-sm">
+<h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface mb-6">
+<span class="material-symbols-outlined text-primary">mail</span>
+                            إعدادات التنبيهات العالمية
+                        </h3>
+<div class="space-y-4">
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-white border border-outline-variant rounded-2xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined p-2 bg-primary/10 text-primary rounded-lg">sms</span>
+<div>
+<p class="font-bold text-sm">رسائل SMS للمدفوعات</p>
+<p class="text-xs text-on-surface-variant">إرسال تنبيه آلي عند استلام الدفع</p>
+</div>
+</div>
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="p-4 bg-white border border-outline-variant rounded-2xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined p-2 bg-primary/10 text-primary rounded-lg">email</span>
+<div>
+<p class="font-bold text-sm">تأكيدات البريد الإلكتروني</p>
+<p class="text-xs text-on-surface-variant">للتسجيلات الجديدة والشهادات</p>
+</div>
+</div>
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Regional & Technical Grid -->
+<div class="grid grid-cols-2 gap-8">
+<!-- Regional -->
+<div class="bg-surface-container-lowest p-loose rounded-3xl border border-outline-variant shadow-sm">
+<h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface mb-6">
+<span class="material-symbols-outlined text-primary">public</span>
+                                اللغة والمنطقة
+                            </h3>
+<div class="space-y-4">
+<div>
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">اللغة الافتراضية للنظام</span>
+<select class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary">
+<option selected="">العربية (Arabic)</option>
+<option>English</option>
+</select>
+</div>
+<div>
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">المنطقة الزمنية</span>
+<select class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary">
+<option selected="">(GMT+03:00) الرياض</option>
+</select>
+</div>
+<div>
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">العملة</span>
+<select class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary">
+<option selected="">ريال سعودي (SAR)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Technical Maintenance -->
+<div class="bg-surface-container-lowest p-loose rounded-3xl border border-outline-variant shadow-sm flex flex-col">
+<h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface mb-6">
+<span class="material-symbols-outlined text-primary">health_metrics</span>
+                                الصيانة والحالة التقنية
+                            </h3>
+<div class="flex-1 space-y-6">
+<div class="p-4 bg-error-container/20 border border-error/20 rounded-2xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-sm font-bold text-error flex items-center gap-2">
+<span class="material-symbols-outlined">warning</span>
+                                            وضع الصيانة العام
+                                        </span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-error"></div>
+</div>
+</div>
+<p class="text-xs text-on-error-container">تفعيل هذا الخيار سيمنع جميع المستخدمين من الوصول للمنصة باستثناء مديري النظام.</p>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">حالة النظام:</span>
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">مستقر</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-green-500 h-full w-[98.9%]"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant text-right">آخر فحص تلقائي: منذ دقيقتين</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Security & API -->
+<section class="bg-surface-container-lowest p-loose rounded-3xl border border-outline-variant shadow-sm overflow-hidden relative">
+<div class="absolute -left-10 -bottom-10 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+<h3 class="flex items-center gap-2 font-headline-sm text-headline-sm text-on-surface mb-6">
+<span class="material-symbols-outlined text-primary">hub</span>
+                            تكامل هيئة المرور و الربط التقني
+                        </h3>
+<div class="grid grid-cols-3 gap-6">
+<div class="col-span-2 space-y-4">
+<div class="relative">
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">رابط واجهة برمجة التطبيقات (Traffic Authority API URL)</span>
+<div class="flex">
+<input class="flex-1 px-4 py-3 bg-surface-container border border-outline-variant rounded-r-xl font-mono text-sm" readonly="" type="text" value="https://api.traffic.gov.sa/v2/integration"/>
+<button class="px-4 bg-primary text-on-primary rounded-l-xl hover:brightness-110">تحديث</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">مدة الجلسة (دقائق)</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary" type="number" value="120"/>
+</div>
+<div>
+<span class="text-xs font-bold text-on-surface-variant mb-1 block">الاحتفاظ بالسجلات (أيام)</span>
+<input class="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary" type="number" value="365"/>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-2xl flex flex-col justify-between border border-outline-variant">
+<div>
+<p class="font-bold text-sm mb-1">حالة الاتصال بالبوابة</p>
+<div class="flex items-center gap-2 text-green-600">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+<span class="text-xs font-bold">متصل وفعال</span>
+</div>
+</div>
+<button class="w-full py-2 bg-white border border-outline text-xs font-bold rounded-lg hover:bg-surface-container-high transition-all">اختبار الربط</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Footer spacing -->
+<div class="h-16"></div>
+</main>
+<script>
+        // Simple micro-interaction for tabs
+        const tabs = document.querySelectorAll('button.transition-all');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // If it's a sidebar setting tab
+                if (tab.parentElement.classList.contains('bg-surface-container-lowest')) {
+                    tabs.forEach(t => t.classList.remove('settings-tab-active', 'bg-surface-container'));
+                    tabs.forEach(t => {
+                        if (t.parentElement.classList.contains('bg-surface-container-lowest')) {
+                            t.classList.add('text-on-surface-variant');
+                        }
+                    });
+                    tab.classList.add('settings-tab-active');
+                    tab.classList.remove('text-on-surface-variant');
+                }
+            });
+        });
+    </script>
+</body></html>

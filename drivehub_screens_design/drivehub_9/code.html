@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub - إدارة جدول المدرب</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#2a1700",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-dim": "#d2d9f4",
+                    "primary-fixed": "#dce1ff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary": "#00236f",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-surface-variant": "#444651",
+                    "outline": "#757682",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-surface": "#131b2e",
+                    "on-tertiary-container": "#f39461",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#855300",
+                    "tertiary": "#4b1c00",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-primary-container": "#90a8ff",
+                    "surface-tint": "#4059aa",
+                    "inverse-primary": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "surface-bright": "#faf8ff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "primary-container": "#1e3a8a",
+                    "tertiary-container": "#6e2c00",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#fea619",
+                    "on-secondary-container": "#684000",
+                    "surface-container-highest": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#dae2fd",
+                    "surface": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00164e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "loose": "2rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+            background-color: #faf8ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .slot-booked {
+            background-color: #eaedff;
+            border-right: 4px solid #00236f;
+        }
+        .slot-available {
+            background-color: #ffffff;
+            border: 1px dashed #c5c5d3;
+        }
+        .license-badge-a {
+            background-color: #ffdbcb;
+            color: #773205;
+        }
+        .license-badge-b {
+            background-color: #dce1ff;
+            color: #264191;
+        }
+    </style>
+</head>
+<body class="text-on-surface overflow-x-hidden">
+<!-- SideNavBar (Desktop Only, Absolute Right for RTL) -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed right-0 top-0 bg-surface-container border-l border-outline-variant shadow-md z-50 p-compact">
+<div class="mb-loose px-4">
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">DriveHub Admin</h1>
+<p class="text-label-md font-label-md text-on-surface-variant">بوابة الإدارة</p>
+</div>
+<nav class="flex-grow space-y-2">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-md font-label-md">لوحة القيادة</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg px-4 py-2 border-r-4 border-primary translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="text-label-md font-label-md">الجدول الزمني</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-label-md font-label-md">الطلاب</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-label-md font-label-md">المدفوعات</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-label-md font-label-md">التقارير</span>
+</a>
+</nav>
+<button class="bg-secondary text-on-secondary px-comfortable py-compact rounded-lg font-label-md mb-comfortable flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>إدخال جديد</span>
+</button>
+<div class="border-t border-outline-variant pt-compact space-y-2">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">الإعدادات</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="text-label-md font-label-md">المساعدة</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar (Mobile) / Main Content Container -->
+<main class="md:pr-64 min-h-screen">
+<!-- Header Section -->
+<header class="bg-surface border-b border-outline-variant px-margin-mobile md:px-margin-desktop h-16 flex justify-between items-center shadow-sm sticky top-0 z-40">
+<div class="flex items-center gap-comfortable">
+<span class="material-symbols-outlined md:hidden text-primary" data-icon="menu">menu</span>
+<h2 class="text-headline-sm font-headline-sm text-primary">جدول الحصص</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full pr-10 pl-4 py-1.5 text-label-md focus:ring-2 focus:ring-primary outline-none transition-all w-64" placeholder="ابحث عن طالب..." type="text"/>
+</div>
+<button class="relative">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-2">
+<div class="text-left hidden lg:block">
+<p class="text-label-md font-bold leading-none">أحمد المنصور</p>
+<p class="text-label-sm text-on-surface-variant">مدرب معتمد (A, B)</p>
+</div>
+<img alt="Profile" class="w-10 h-10 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwLw2nzWeKRUeCZ5cbW5vEdzUJwS5U_fm-JJIZAVAaTcrKYN_Pbxa1kSE5Yfyg3RoRrevRrQnnrQQgwplCGyUKegymmLnCsHS9HPgOzawy9bBxQWhATsRZWRUQGxX4kTQnQPfKRlN2NInN3BBXWDuH6mvqqiQcoQGISNC5sOxR4vhSXn_UyvyRxdCLebECFLW3nJ_0SGusut-2qBmDN8eABca0TNb9AeUfNQUzRUB-Gbx2Gl264sEmwnCT9m-qekpMbDgVjcYi580G"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<div class="p-margin-mobile md:p-margin-desktop flex flex-col lg:flex-row gap-gutter">
+<!-- Left: Calendar View (Takes more space) -->
+<section class="flex-grow">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<!-- Calendar Header -->
+<div class="p-comfortable border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-comfortable">
+<h3 class="text-headline-sm font-headline-sm text-primary">أكتوبر 2024</h3>
+<div class="flex bg-surface-container-low rounded-lg p-1">
+<button class="p-1 hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+<button class="p-1 hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-comfortable py-1.5 bg-surface-container-high rounded-lg text-label-md font-label-md text-primary">أسبوع</button>
+<button class="px-comfortable py-1.5 hover:bg-surface-container-low rounded-lg text-label-md font-label-md">شهر</button>
+</div>
+</div>
+<!-- Calendar Grid -->
+<div class="grid grid-cols-7 border-b border-outline-variant bg-surface-container-low">
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">السبت</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الأحد</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الاثنين</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الثلاثاء</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الأربعاء</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الخميس</div>
+<div class="p-comfortable text-center text-label-md font-bold text-on-surface-variant">الجمعة</div>
+</div>
+<div class="grid grid-cols-7 min-h-[500px]">
+<!-- Week 1 Example -->
+<!-- Day Cells -->
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px] bg-surface-dim/20">
+<span class="text-label-sm text-outline">28</span>
+</div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px] bg-surface-dim/20">
+<span class="text-label-sm text-outline">29</span>
+</div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px] bg-surface-dim/20">
+<span class="text-label-sm text-outline">30</span>
+</div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]">
+<span class="text-label-sm font-bold">1</span>
+<div class="mt-2 space-y-1">
+<div class="slot-booked px-2 py-1 text-[10px] rounded license-badge-b truncate">09:00 - خالد</div>
+<div class="slot-booked px-2 py-1 text-[10px] rounded license-badge-b truncate">11:00 - عمر</div>
+</div>
+</div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]">
+<span class="text-label-sm font-bold">2</span>
+<div class="mt-2 space-y-1">
+<div class="slot-booked px-2 py-1 text-[10px] rounded license-badge-a truncate">08:00 - فهد</div>
+</div>
+</div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px] bg-primary/5">
+<span class="text-label-sm font-bold text-primary">3 (اليوم)</span>
+<div class="mt-2 space-y-1">
+<div class="slot-booked px-2 py-1 text-[10px] rounded license-badge-b truncate">10:00 - سارة</div>
+<div class="slot-booked px-2 py-1 text-[10px] rounded license-badge-b truncate font-bold">13:30 - ناصر</div>
+<div class="slot-available px-2 py-1 text-[10px] rounded text-outline italic">متاح</div>
+</div>
+</div>
+<div class="border-b border-outline-variant p-2 min-h-[120px]">
+<span class="text-label-sm font-bold">4</span>
+</div>
+<!-- Row 2 -->
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">5</span></div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">6</span></div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">7</span></div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">8</span></div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">9</span></div>
+<div class="border-l border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">10</span></div>
+<div class="border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm font-bold">11</span></div>
+</div>
+</div>
+<!-- Stats Summary -->
+<div class="mt-gutter grid grid-cols-1 sm:grid-cols-3 gap-comfortable">
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider">الحصص المحجوزة</p>
+<p class="text-headline-sm font-headline-sm">24</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider">الخانات المتاحة</p>
+<p class="text-headline-sm font-headline-sm">12</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider">معدل الإكمال</p>
+<p class="text-headline-sm font-headline-sm">94%</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right: Daily Breakdown Panel -->
+<aside class="lg:w-80 flex-shrink-0">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-comfortable h-full">
+<div class="flex items-center justify-between mb-loose">
+<h4 class="text-headline-sm font-headline-sm text-primary">اليوم: الخميس</h4>
+<span class="bg-primary/10 text-primary px-2 py-1 rounded text-label-sm font-bold">3 أكتوبر</span>
+</div>
+<div class="space-y-comfortable relative">
+<!-- Vertical Timeline Line -->
+<div class="absolute right-4 top-2 bottom-2 w-0.5 bg-outline-variant"></div>
+<!-- Lesson Card 1 -->
+<div class="relative pr-10">
+<div class="absolute right-2.5 top-4 w-4 h-4 rounded-full border-2 border-primary bg-surface-container-lowest z-10"></div>
+<div class="bg-surface-container-low p-comfortable rounded-lg border border-outline-variant hover:border-primary transition-colors group cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-md font-bold text-primary">09:00 - 10:30</span>
+<span class="license-badge-b text-[10px] px-2 py-0.5 rounded-full font-bold">فئة B</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-on-surface-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-label-md font-bold">سارة الأحمد</p>
+<p class="text-[10px] text-on-surface-variant">الدرس الخامس: ركن السيارة</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Lesson Card 2 (Gap) -->
+<div class="relative pr-10">
+<div class="absolute right-2.5 top-4 w-4 h-4 rounded-full border-2 border-outline bg-surface-container-lowest z-10"></div>
+<div class="bg-white border border-dashed border-outline-variant p-comfortable rounded-lg flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<span class="text-label-sm text-outline italic">متاح للمدرب</span>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="add_circle">add_circle</span>
+</div>
+</div>
+<!-- Lesson Card 3 -->
+<div class="relative pr-10">
+<div class="absolute right-2.5 top-4 w-4 h-4 rounded-full border-2 border-primary bg-surface-container-lowest z-10"></div>
+<div class="bg-surface-container-low p-comfortable rounded-lg border border-outline-variant hover:border-primary transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-md font-bold text-primary">13:30 - 15:00</span>
+<span class="license-badge-b text-[10px] px-2 py-0.5 rounded-full font-bold">فئة B</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-on-surface-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-label-md font-bold">ناصر القحطاني</p>
+<p class="text-[10px] text-on-surface-variant">الدرس الأول: التعريف بالمركبة</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Lesson Card 4 (Motorcycle) -->
+<div class="relative pr-10">
+<div class="absolute right-2.5 top-4 w-4 h-4 rounded-full border-2 border-tertiary bg-surface-container-lowest z-10"></div>
+<div class="bg-surface-container-low p-comfortable rounded-lg border border-outline-variant border-r-4 border-r-tertiary hover:shadow-md transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-md font-bold text-tertiary">16:00 - 17:30</span>
+<span class="license-badge-a text-[10px] px-2 py-0.5 rounded-full font-bold">فئة A</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-on-surface-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="two_wheeler">two_wheeler</span>
+</div>
+<div>
+<p class="text-label-md font-bold">محمد الحربي</p>
+<p class="text-[10px] text-on-surface-variant">الدرس الثامن: التوازن</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-loose p-comfortable bg-secondary-container/10 rounded-xl border border-secondary/20">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+<div>
+<p class="text-label-md font-bold text-secondary-container">تذكير الإدارة</p>
+<p class="text-label-sm text-on-secondary-container">يرجى التأكد من استلام استمارات التقييم لطلاب اليوم قبل الساعة 6 مساءً.</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Footer -->
+<footer class="w-full py-loose bg-primary text-on-primary mt-loose border-t border-outline-variant">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="md:col-span-2">
+<h5 class="text-headline-sm font-headline-sm font-bold text-on-primary">DriveHub</h5>
+<p class="text-body-md font-body-md mt-2 opacity-80 max-w-sm">
+                        النظام الشامل لإدارة مدارس القيادة. نحن نضمن التقدم الآمن والمنظم لجميع الطلاب والمدربين.
+                    </p>
+<p class="text-label-sm font-label-sm mt-comfortable opacity-60">
+                        © 2024 DriveHub. Safe &amp; Systematic Progress.
+                    </p>
+</div>
+<div>
+<h6 class="text-label-md font-bold mb-comfortable">روابط سريعة</h6>
+<ul class="space-y-2">
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">عن المنصة</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">اتصل بنا</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a></li>
+</ul>
+</div>
+<div>
+<h6 class="text-label-md font-bold mb-comfortable">القانوني</h6>
+<ul class="space-y-2">
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">التحقق من التراخيص</a></li>
+</ul>
+</div>
+</div>
+</footer>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed bottom-6 left-6 md:left-margin-desktop w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+<script>
+        // Interactive highlight for calendar days
+        document.querySelectorAll('.grid-cols-7 > div').forEach(day => {
+            day.addEventListener('click', () => {
+                document.querySelectorAll('.grid-cols-7 > div').forEach(d => d.classList.remove('ring-2', 'ring-primary', 'bg-primary/5'));
+                if(!day.classList.contains('bg-surface-dim/20')) {
+                    day.classList.add('ring-2', 'ring-primary', 'bg-primary/5');
+                }
+            });
+        });
+
+        // Simple Mobile Menu Toggle Simulation (Visual Only)
+        document.querySelector('[data-icon="menu"]').addEventListener('click', () => {
+            alert('فتح القائمة الجانبية للجوال (في النسخة الكاملة)');
+        });
+    </script>
+</body></html>

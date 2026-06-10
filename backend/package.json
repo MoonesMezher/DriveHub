@@ -1,0 +1,44 @@
+{
+  "name": "drivehub-backend",
+  "version": "1.0.0",
+  "description": "DriveHub — Driving School Management API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed:admin": "node src/scripts/adminSeed.js",
+    "seed:licenses": "node src/scripts/licenseSeed.js",
+    "seed:dev": "node src/scripts/devSeed.js",
+    "seed:content": "node src/scripts/contentSeed.js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.3",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.2",
+    "node-cron": "^3.0.3",
+    "qrcode": "^1.5.4",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5",
+    "mongodb-memory-server": "^10.2.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.1.4"
+  }
+}

@@ -1,0 +1,112 @@
+/**
+ * رسائل أخطاء API الموحّدة — عربية
+ */
+const ERR = {
+    // عام
+    UNAUTHORIZED: 'غير مصرّح — يرجى تسجيل الدخول',
+    FORBIDDEN: 'ليس لديك صلاحية لتنفيذ هذا الإجراء',
+    NOT_FOUND: 'المورد المطلوب غير موجود',
+    VALIDATION_FAILED: 'بيانات غير صالحة',
+    INTERNAL: 'حدث خطأ في الخادم — حاول لاحقاً',
+    NOT_IMPLEMENTED: 'هذه الميزة قيد التطوير',
+    INVALID_ID: 'المعرّف غير صالح',
+
+    // Auth
+    INVALID_CREDENTIALS: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+    EMAIL_EXISTS: 'البريد الإلكتروني مسجّل مسبقاً',
+    ACCOUNT_SUSPENDED: 'الحساب موقوف — تواصل مع الدعم',
+    INVALID_TOKEN: 'رمز الدخول غير صالح',
+    INVALID_TOKEN_TYPE: 'نوع الرمز غير صالح',
+    INVALID_REFRESH_TOKEN: 'رمز التحديث غير صالح',
+    REFRESH_REVOKED: 'انتهت صلاحية الجلسة — سجّل الدخول مجدداً',
+    PORTAL_DENIED: 'هذا الحساب لا يمكنه الدخول عبر البوابة المختارة',
+    ROLE_NOT_ASSIGNED: 'لا تملك هذا الدور',
+    USER_NOT_FOUND: 'المستخدم غير موجود',
+
+    // RBAC
+    INSUFFICIENT_ROLE: 'دورك الحالي لا يسمح بهذا الإجراء',
+    INSUFFICIENT_PERMISSION: 'ليس لديك الصلاحيات الكافية',
+    SCHOOL_CONTEXT_REQUIRED: 'يجب اختيار سياق المدرسة أولاً',
+    ACTION_DENIED: 'لا يمكنك تنفيذ هذا الإجراء',
+
+    // School
+    SCHOOL_NOT_FOUND: 'المدرسة غير موجودة أو غير نشطة',
+    SCHOOL_APPLICATION_NOT_FOUND: 'طلب المدرسة غير موجود',
+
+    // License
+    LICENSE_NOT_FOUND: 'فئة الرخصة غير موجودة',
+    LICENSE_PARENT_NOT_FOUND: 'فئة الرخصة الأم غير موجودة',
+
+    // Course
+    COURSE_NOT_FOUND: 'الدورة غير موجودة',
+    COURSE_LAUNCH_TOO_EARLY: 'لا يمكن إطلاق الدورة قبل مرور 15 يوماً من الدورة السابقة',
+
+    // Enrollment
+    ENROLLMENT_NOT_FOUND: 'طلب الاشتراك غير موجود',
+    ENROLLMENT_PENDING_EXISTS: 'لديك طلب اشتراك معلّق بالفعل',
+    ENROLLMENT_NO_SPOTS: 'لا توجد أماكن متاحة في هذه الدورة',
+    ENROLLMENT_NOT_CANCELLABLE: 'لا يمكن إلغاء هذا الطلب في حالته الحالية',
+    ENROLLMENT_NOT_OWNER: 'هذا الطلب لا يخصك',
+
+    // Payment
+    PAYMENT_AMOUNT_MISMATCH: 'مبلغ الدفع لا يطابق المطلوب',
+    PAYMENT_NOT_FOUND: 'عملية الدفع غير موجودة',
+    PAYMENT_ALREADY_COMPLETED: 'تم الدفع مسبقاً',
+    PAYMENT_DEADLINE_EXPIRED: 'انتهت مهلة الدفع',
+    PRICING_NOT_FOUND: 'لم يُحدد سعر لهذه الفئة',
+
+    // Document
+    DOCUMENT_NOT_FOUND: 'المستند غير موجود',
+    NO_FILE: 'لم يتم إرفاق ملف',
+    INVALID_FILE_TYPE: 'نوع الملف غير مسموح',
+    FILE_TOO_LARGE: 'حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت)',
+    PASSWORD_WEAK: 'كلمة المرور ضعيفة: 8 أحرف على الأقل، حرف كبير وصغير، رقم، ورمز خاص',
+
+    // Notification
+    NOTIFICATION_NOT_FOUND: 'الإشعار غير موجود',
+
+    // Student / content / exam
+    ACTIVE_ENROLLMENT_REQUIRED: 'لا يوجد اشتراك نشط — أكمل التسجيل والدفع أولاً',
+    CONTENT_NOT_FOUND: 'المحتوى التعليمي غير موجود',
+    QUESTION_BANK_NOT_FOUND: 'بنك الأسئلة غير موجود',
+    QUESTION_NOT_FOUND: 'السؤال غير موجود',
+    NO_QUESTIONS_AVAILABLE: 'لا توجد أسئلة متاحة لهذه الفئة',
+    EDIT_REQUEST_NOT_FOUND: 'طلب التعديل غير موجود',
+    EDIT_ALREADY_REVIEWED: 'تمت مراجعة هذا الطلب مسبقاً',
+
+    // Instructor / lesson
+    INSTRUCTOR_NOT_FOUND: 'المدرب غير موجود',
+    INSTRUCTOR_EXISTS: 'هذا المستخدم مُعيَّن كمدرب في المدرسة مسبقاً',
+    LESSON_NOT_FOUND: 'الدرس غير موجود',
+    LESSON_CONFLICT: 'يوجد تعارض في الموعد مع درس آخر',
+    COACH_NOT_IN_SCHOOL: 'المدرب لا ينتمي لهذه المدرسة',
+
+    // Roster
+    ROSTER_NOT_FOUND: 'قائمة الطلاب غير موجودة',
+    ROSTER_EXISTS: 'قائمة طلاب موجودة لهذه الدورة مسبقاً',
+    ROSTER_NOT_SUBMITTED: 'القائمة لم تُرسَل بعد',
+    ROSTER_ALREADY_SUBMITTED: 'تم إرسال القائمة مسبقاً',
+
+    // Review
+    REVIEW_EXISTS: 'لديك تقييم لهذه المدرسة مسبقاً',
+    REVIEW_NOT_FOUND: 'التقييم غير موجود',
+
+    // Pre-registration / application
+    PRE_REGISTRATION_NOT_FOUND: 'التسجيل المسبق غير موجود',
+    PRE_REGISTRATION_EXISTS: 'لديك حجز مسبق نشط لهذه المدرسة',
+    PRE_REGISTRATION_DISABLED: 'التسجيل المسبق غير مفعّل في هذه المدرسة',
+    APPLICATION_NOT_FOUND: 'طلب المدرسة غير موجود',
+    APPLICATION_ALREADY_REVIEWED: 'تمت مراجعة هذا الطلب مسبقاً',
+    APPLICATION_PENDING_EXISTS: 'لديك طلب مدرسة قيد المراجعة',
+
+    // Traffic
+    SCHEDULE_NOT_FOUND: 'موعد الامتحان غير موجود',
+    SCHEDULE_CONFLICT: 'يوجد موعد امتحان آخر في نفس الوقت',
+    LICENSE_RECORD_EXISTS: 'سجل الرخصة موجود مسبقاً لهذا المستخدم',
+
+    // Mongoose
+    DUPLICATE_VALUE: (field) => `القيمة مكررة للحقل: ${field}`,
+    INVALID_FIELD: (field) => `قيمة غير صالحة للحقل: ${field}`,
+};
+
+module.exports = { ERR };

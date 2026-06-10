@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub - تقييم الدرس العملي</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#2a1700",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-dim": "#d2d9f4",
+                    "primary-fixed": "#dce1ff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary": "#00236f",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-surface-variant": "#444651",
+                    "outline": "#757682",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-surface": "#131b2e",
+                    "on-tertiary-container": "#f39461",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#855300",
+                    "tertiary": "#4b1c00",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-primary-container": "#90a8ff",
+                    "surface-tint": "#4059aa",
+                    "inverse-primary": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "surface-bright": "#faf8ff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "primary-container": "#1e3a8a",
+                    "tertiary-container": "#6e2c00",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#fea619",
+                    "on-secondary-container": "#684000",
+                    "surface-container-highest": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#dae2fd",
+                    "surface": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00164e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "loose": "2rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #faf8ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2);
+            border-color: #1e3a8a !important;
+        }
+        .rating-star:hover, .rating-star.active {
+            color: #fea619;
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-outline-variant shadow-sm fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16">
+<div class="flex items-center gap-4">
+<span class="text-headline-md font-headline-md font-bold text-primary">DriveHub</span>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Licenses</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Schools</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">FAQ</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed right-0 top-0 pt-16 bg-surface-container border-l border-outline-variant shadow-md z-40 p-compact">
+<div class="py-comfortable px-compact mb-comfortable">
+<h2 class="text-headline-sm font-headline-sm font-bold text-primary">إدارة DriveHub</h2>
+<p class="text-label-md font-label-md text-on-surface-variant">بوابة المدربين</p>
+</div>
+<nav class="flex flex-col gap-2 grow">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">لوحة التحكم</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg px-4 py-2 border-r-4 border-primary transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-label-md font-label-md">الجدول الزمني</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">الطلاب</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-label-md font-label-md">المدفوعات</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">التقارير</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-2 pt-comfortable border-t border-outline-variant">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">الإعدادات</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-label-md font-label-md">المساعدة</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 md:mr-64 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-4xl mx-auto">
+<!-- Header Section -->
+<div class="mb-8">
+<h1 class="text-headline-md font-headline-md text-primary mb-2">تقييم الحصة العملية</h1>
+<p class="text-body-md font-body-md text-on-surface-variant">يرجى ملء استمارة التقييم بدقة لضمان متابعة تقدم الطالب بشكل صحيح.</p>
+</div>
+<!-- Assessment Form Card -->
+<form class="bg-surface shadow-sm border border-outline-variant rounded-xl overflow-hidden mb-8">
+<div class="p-comfortable md:p-loose grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Basic Info Group -->
+<div class="space-y-6">
+<div class="group">
+<label class="block text-label-md font-label-md text-on-surface mb-2" for="student_name">اسم الطالب</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md cursor-not-allowed" id="student_name" readonly="" type="text" value="أحمد منصور الحسيني"/>
+<span class="absolute left-3 top-3 material-symbols-outlined text-outline">lock</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-label-md font-label-md text-on-surface mb-2" for="lesson_date">التاريخ</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md" id="lesson_date" type="date" value="2024-05-20"/>
+</div>
+<div>
+<label class="block text-label-md font-label-md text-on-surface mb-2" for="lesson_time">الوقت</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md" id="lesson_time" type="time" value="10:00"/>
+</div>
+</div>
+<div>
+<label class="block text-label-md font-label-md text-on-surface mb-2" for="lesson_type">نوع الدرس</label>
+<select class="w-full bg-white border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md appearance-none" id="lesson_type">
+<option value="traffic">القيادة في حركة المرور</option>
+<option selected="" value="parking">الاصطفاف (الباركنج)</option>
+<option value="highway">الطرق السريعة</option>
+<option value="night">القيادة الليلية</option>
+<option value="emergency">حالات الطوارئ</option>
+</select>
+</div>
+</div>
+<!-- Competencies Group -->
+<div class="space-y-8 bg-surface-container-low p-comfortable rounded-xl border border-outline-variant">
+<h3 class="text-label-md font-label-md font-bold text-primary uppercase tracking-wider">المهارات والقدرات</h3>
+<!-- Skill 1 -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md">التحكم في المركبة</span>
+<span class="text-label-sm font-label-sm px-2 py-1 bg-primary text-on-primary rounded" id="val_control">4/5</span>
+</div>
+<input class="w-full h-2 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="1" oninput="document.getElementById('val_control').innerText = this.value + '/5'" step="1" type="range" value="4"/>
+</div>
+<!-- Skill 2 -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md">الالتزام بقواعد المرور</span>
+<div class="flex gap-1 text-outline-variant">
+<span class="material-symbols-outlined rating-star active cursor-pointer" onclick="toggleStars(this, 1)">star</span>
+<span class="material-symbols-outlined rating-star active cursor-pointer" onclick="toggleStars(this, 2)">star</span>
+<span class="material-symbols-outlined rating-star active cursor-pointer" onclick="toggleStars(this, 3)">star</span>
+<span class="material-symbols-outlined rating-star cursor-pointer" onclick="toggleStars(this, 4)">star</span>
+<span class="material-symbols-outlined rating-star cursor-pointer" onclick="toggleStars(this, 5)">star</span>
+</div>
+</div>
+</div>
+<!-- Skill 3 -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md">الثقة بالنفس والهدوء</span>
+<span class="text-label-sm font-label-sm px-2 py-1 bg-secondary-container text-on-secondary-container rounded" id="val_confidence">3/5</span>
+</div>
+<input class="w-full h-2 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-secondary-container" max="5" min="1" oninput="document.getElementById('val_confidence').innerText = this.value + '/5'" step="1" type="range" value="3"/>
+</div>
+</div>
+<!-- Comments Section (Full Width) -->
+<div class="md:col-span-2 mt-4">
+<label class="block text-label-md font-label-md text-on-surface mb-2" for="comments">ملاحظات وتوصيات المدرب</label>
+<textarea class="w-full bg-white border border-outline-variant rounded-lg py-3 px-4 text-on-surface font-body-md" id="comments" placeholder="اكتب تفاصيل الأداء، نقاط القوة، والمجالات التي تحتاج إلى تحسين..." rows="5"></textarea>
+</div>
+</div>
+<!-- Footer Notice & Action -->
+<div class="bg-surface-container-high p-comfortable md:p-comfortable flex flex-col md:flex-row items-center justify-between gap-4 border-t border-outline-variant">
+<div class="flex items-start gap-3 text-on-surface-variant max-w-md">
+<span class="material-symbols-outlined text-secondary shrink-0">info</span>
+<p class="text-label-sm font-label-sm">هذا التقييم داخلي كجزء من إحصائيات الطالب التلقائية، ولن يتم إرساله إلى هيئة المرور. يُستخدم فقط لتحسين تجربة التعلم.</p>
+</div>
+<button class="w-full md:w-auto px-12 py-3 bg-primary text-on-primary font-label-md rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined">send</span>
+                        إرسال التقييم
+                    </button>
+</div>
+</form>
+<!-- Visual Context Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-white rounded-xl p-comfortable border border-outline-variant shadow-sm flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-primary">history</span>
+</div>
+<h4 class="text-label-md font-label-md font-bold mb-1">الدروس السابقة</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">تم إكمال 8 دروس عملية حتى الآن</p>
+</div>
+<div class="bg-white rounded-xl p-comfortable border border-outline-variant shadow-sm flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-secondary">trending_up</span>
+</div>
+<h4 class="text-label-md font-label-md font-bold mb-1">منحنى التقدم</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">تحسن بنسبة 15% في التحكم العام</p>
+</div>
+<div class="bg-white rounded-xl p-comfortable border border-outline-variant shadow-sm flex flex-col items-center text-center">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<h4 class="text-label-md font-label-md font-bold mb-1">تنبيهات</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">يجب التركيز على مرايا الجوانب</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="bg-primary text-on-primary py-loose w-full border-t border-outline-variant mt-12">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="md:col-span-2">
+<span class="text-headline-sm font-headline-sm font-bold text-on-primary block mb-4">DriveHub</span>
+<p class="text-body-md font-body-md text-on-primary/80 max-w-sm">تقدم آمن ومنظم. المنصة الرائدة لإدارة مدارس تعليم القيادة في المنطقة، تجمع بين التكنولوجيا والسلامة المرورية.</p>
+</div>
+<div>
+<h4 class="text-label-md font-label-md font-bold mb-4">روابط سريعة</h4>
+<ul class="flex flex-col gap-2">
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">حول المنصة</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">اتصل بنا</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-label-md font-label-md font-bold mb-4">قانوني</h4>
+<ul class="flex flex-col gap-2">
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a></li>
+<li><a class="text-label-sm font-label-sm text-on-primary/80 hover:text-secondary-container transition-colors" href="#">التحقق من الشهادات</a></li>
+</ul>
+</div>
+</div>
+<div class="px-margin-mobile md:px-margin-desktop mt-8 pt-8 border-t border-on-primary/10">
+<p class="text-label-sm font-label-sm text-on-primary/60 text-center">© 2024 DriveHub. Safe &amp; Systematic Progress.</p>
+</div>
+</footer>
+<!-- BottomNavBar for Mobile -->
+<div class="md:hidden fixed bottom-0 w-full bg-surface-container border-t border-outline-variant flex justify-around py-3 z-50">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-sm font-label-sm">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="text-label-sm font-label-sm">الجدول</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-sm font-label-sm">الطلاب</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-label-sm font-label-sm">حسابي</span>
+</a>
+</div>
+<script>
+        function toggleStars(el, count) {
+            const container = el.parentElement;
+            const stars = container.querySelectorAll('.rating-star');
+            stars.forEach((star, index) => {
+                if (index < count) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body></html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>قائمة الطلاب - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#2a1700",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-dim": "#d2d9f4",
+                    "primary-fixed": "#dce1ff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary": "#00236f",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-surface-variant": "#444651",
+                    "outline": "#757682",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-surface": "#131b2e",
+                    "on-tertiary-container": "#f39461",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#855300",
+                    "tertiary": "#4b1c00",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-primary-container": "#90a8ff",
+                    "surface-tint": "#4059aa",
+                    "inverse-primary": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "surface-bright": "#faf8ff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "primary-container": "#1e3a8a",
+                    "tertiary-container": "#6e2c00",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#fea619",
+                    "on-secondary-container": "#684000",
+                    "surface-container-highest": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#dae2fd",
+                    "surface": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00164e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "loose": "2rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- Sidebar Navigation (Mandatory Shared Component - SideNavBar) -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed right-0 top-0 bg-surface-container border-l border-outline-variant shadow-md z-50">
+<div class="p-comfortable">
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary mb-1">DriveHub Admin</h1>
+<p class="text-label-md font-label-md text-on-surface-variant mb-6">بوابة إدارة المدربين</p>
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg flex items-center justify-center gap-2 mb-8 hover:bg-secondary-container transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-md">New Entry</span>
+</button>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-body-md">Schedule</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg px-4 py-3 border-r-4 border-primary translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-body-md">Students</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-body-md">Payments</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-3 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-body-md">Reports</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-comfortable border-t border-outline-variant space-y-2">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-body-md">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:pr-64">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 bg-surface border-b border-outline-variant shadow-sm sticky top-0 z-40">
+<div class="flex items-center gap-gutter">
+<span class="md:hidden material-symbols-outlined text-primary">menu</span>
+<div class="relative">
+<span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="bg-surface-container-low border-none rounded-full pr-10 pl-4 py-2 text-label-md w-64 focus:ring-2 focus:ring-primary outline-none" placeholder="البحث عن طالب..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-comfortable">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 left-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-2">
+<div class="text-left hidden md:block">
+<p class="text-label-md font-bold text-on-surface leading-tight">كابتن سمير</p>
+<p class="text-[10px] text-outline">مدرب أول</p>
+</div>
+<img alt="Instructor Profile" class="w-10 h-10 rounded-full bg-surface-container-high border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAu_gYpbh_ipw3leWiRCJ_EfhwtGWsqef8OFTBncQVENiXOoj1fFSDO-xppz_yy0aUBbWHl4sHETDO1X1E4eKKJrUGaBPlVmbGBL7Qe5MIxnKq0cBe9g1bMiHjm8x70zeZbUfdt-sYcOcKPfT_QiIL4He7RtWYrNDL933vHQl1tB38rcheF026zYvbBuZV2RLex1yL_1fqtff9t8eQaj4igDFk8ofoR8acGuSoIRvkGvGTNXijXlP4BgBYxJKrKkMdF4VgCGtzHrjp"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-margin-mobile md:p-margin-desktop space-y-loose">
+<!-- Bento Stats Header -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="md:col-span-3 bg-primary-container p-comfortable rounded-xl text-on-primary-container flex justify-between items-center relative overflow-hidden group">
+<div class="relative z-10">
+<h2 class="text-headline-md font-headline-md mb-2">أهلاً بك، كابتن سمير</h2>
+<p class="text-body-md opacity-90 max-w-md">لديك اليوم 4 حصص تدريبية مقررة. 3 طلاب أتموا أكثر من 80% من المسار التدريبي وهم جاهزون للاختبار.</p>
+</div>
+<div class="hidden md:block relative z-10 p-comfortable bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
+<p class="text-label-sm uppercase tracking-wider mb-1">التقييم العام</p>
+<div class="flex items-center gap-1">
+<span class="text-headline-sm font-bold">4.9</span>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<!-- Abstract Background Pattern -->
+<div class="absolute inset-0 opacity-10 pointer-events-none transition-transform group-hover:scale-110 duration-1000">
+<svg class="w-full h-full" viewbox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 100 Q 100 0 200 100 T 400 100" fill="none" stroke="white" stroke-width="2"></path>
+<path d="M0 120 Q 100 20 200 120 T 400 120" fill="none" opacity="0.5" stroke="white" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="bg-surface-container-high p-comfortable rounded-xl flex flex-col justify-center border border-outline-variant">
+<p class="text-label-md text-on-surface-variant">الطلاب النشطون</p>
+<p class="text-headline-md font-bold text-primary">24</p>
+<div class="flex items-center gap-1 text-label-sm text-green-700 mt-2">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+3 هذا الأسبوع</span>
+</div>
+</div>
+</section>
+<!-- Filters and Student List Layout -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Table Section -->
+<div class="lg:col-span-8 space-y-comfortable">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-sm font-headline-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">list_alt</span>
+                            قائمة الطلاب
+                        </h3>
+<div class="flex gap-2">
+<button class="bg-surface-container-lowest border border-outline-variant px-4 py-2 rounded-lg text-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+                                تصفية
+                            </button>
+<button class="bg-surface-container-lowest border border-outline-variant px-4 py-2 rounded-lg text-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">download</span>
+                                تصدير
+                            </button>
+</div>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">الطالب</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">الفئة</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">التقدم</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant">الدرس القادم</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-primary/5 cursor-pointer transition-colors group active:scale-[0.99]" onclick="toggleDetailView()">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Ahmed Al-Saadani" class="w-10 h-10 rounded-full bg-surface-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdcrkL3DB2IwA1grVshQzQs9fA_HLDcSBumMP36pFGmljgY5dyG_7TZ6q80h9ubDWajtWUPddhnTSnOdGapiZKRnG9Eh_QGKBjmQZDxDFVNaMLIxkrVAbdECJDnq9zSgIGNGYM5P-dzW-ZQ9bcKkjWDRbSpaGiOtdJJofrs-cOk1IgS4EII5uCqAdWkbS_ozYRJLDVr3K6uRthSnyrzhTU7bZ3LeV37K9hDyTxxlNMA8DjUoBajmVQ6ezn3h9Xs_HWPLD_Q9cYa1xA"/>
+<div>
+<p class="font-bold text-on-surface">أحمد السعدني</p>
+<p class="text-label-sm text-outline">#STU-9821</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-label-sm text-on-surface-variant">B2 أوتوماتيك</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-32">
+<div class="flex justify-between text-[10px] mb-1">
+<span>85%</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-label-md text-on-surface">24 مايو - 04:00 م</td>
+<td class="px-6 py-4 text-left">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_left</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 cursor-pointer transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Sara Hassan" class="w-10 h-10 rounded-full bg-surface-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoAybqN14CimxAGJWXX7ZnwuxtaAhh9-XuEeOH_8hsoVONCaw2s2nUxUX1j8NSK5K3lZtP-yJ3ezhIgtrd2tgM95GBBiSuc_IHuE_KFzxZdQ2EhLj20HzSOWkHJmtI0WT8CT04sj3cbqS1vnrKYzgphu50i4-0ye6ecRp5goqXNmdwqEg6g1wjzznAMVD7fC8WXhYKeB2maEMja3qK4yM91IbEUBaZHyM-dy7W4f4iAA9o2FQMAWLHj0k1MYBFFdIhoQEbsQsTmTdr"/>
+<div>
+<p class="font-bold text-on-surface">سارة حسن</p>
+<p class="text-label-sm text-outline">#STU-7742</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-label-sm text-on-surface-variant">B2 مانيوال</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-32">
+<div class="flex justify-between text-[10px] mb-1">
+<span>42%</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 42%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-label-md text-on-surface">25 مايو - 10:30 ص</td>
+<td class="px-6 py-4 text-left">
+<span class="material-symbols-outlined text-outline">chevron_left</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 cursor-pointer transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="Omar Khalid" class="w-10 h-10 rounded-full bg-surface-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnOOQ61fYwKIEyhFqmmch_ubchT7vXmkoDe3cYBIgEjg208zreR4fo7NoScze02LsbaETA4-y1kNQrWdMAO-xqskSdIVptl3uckvEy-0bmb98tNWVMKWmBTUsIMprYv2uG96IgzHKcCsLfSzr4lkb-o4F0964RyWbrOJT03YBIlwX_ZLOgcF7pMicSQHq72Rcf0NLUd-PMByo9AM2CaG77oHnbJnJXPhmST-ASlD02nlSWWB2ml07EXpyxLeFQZl9aNMl1oxk88fD3"/>
+<div>
+<p class="font-bold text-on-surface">عمر خالد</p>
+<p class="text-label-sm text-outline">#STU-4512</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-label-sm text-on-surface-variant">B2 أوتوماتيك</span>
+</td>
+<td class="px-6 py-4">
+<div class="w-32">
+<div class="flex justify-between text-[10px] mb-1">
+<span>15%</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 15%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-label-md text-on-surface">جدولة مطلوبة</td>
+<td class="px-6 py-4 text-left">
+<span class="material-symbols-outlined text-outline">chevron_left</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container-low p-4 flex justify-center border-t border-outline-variant">
+<button class="text-primary font-label-md hover:underline">عرض جميع الطلاب (24)</button>
+</div>
+</div>
+</div>
+<!-- Detail View (Sidebar Transitioning Logic) -->
+<div class="lg:col-span-4 space-y-comfortable opacity-0 translate-x-4 transition-all duration-300 pointer-events-none hidden lg:block" id="studentDetailView">
+<!-- This will be shown via JS when a student is selected -->
+<div class="bg-white border border-outline-variant rounded-xl p-comfortable shadow-md relative overflow-hidden">
+<div class="absolute top-0 right-0 w-full h-1.5 bg-primary"></div>
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<img alt="Selected Student" class="w-16 h-16 rounded-full border-2 border-surface-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtmC6MGrB4vdx7tTf_YqbTlMd5hxKhTM7omyPBKOT8N7_Jdpu3OP9gcRJV_T0rklakDaRdEkN7j-752NL7nz6skrsN2s6cEkUzi8ra8JZMIUGEbw-W2AFgzagzt8fXsebzdGpiHyFOrWaAr2VWMcdyf2rRQ-OuxKCV_jeNsq5WCDXLcuKgbOcW35FBy0FOrOGtjY8FBFqZbC3nISaryjSSFVOe0sFfRziQlcW_dtb7WikdX88w5JtUeCb6GzT1gTgX2eEJWzVfWyg2"/>
+<div>
+<h4 class="text-headline-sm font-bold">أحمد السعدني</h4>
+<p class="text-label-md text-on-surface-variant">طالب منذ 3 أشهر</p>
+</div>
+</div>
+<button class="p-2 hover:bg-surface-variant rounded-full text-outline">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 gap-compact mb-8">
+<div class="bg-surface-container p-3 rounded-lg">
+<p class="text-[10px] text-outline uppercase font-bold">الحصص المكتملة</p>
+<p class="text-headline-sm font-bold text-primary">18 / 20</p>
+</div>
+<div class="bg-surface-container p-3 rounded-lg">
+<p class="text-[10px] text-outline uppercase font-bold">متوسط التقييم</p>
+<p class="text-headline-sm font-bold text-secondary">92%</p>
+</div>
+</div>
+<!-- Skill Evaluation Section -->
+<div class="space-y-comfortable mb-8">
+<h5 class="font-bold flex items-center gap-2 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-primary text-sm">psychology</span>
+                                التقييم الشخصي للمهارات
+                            </h5>
+<div class="space-y-3">
+<div class="space-y-1">
+<div class="flex justify-between text-label-md">
+<span>استخدام المكابح</span>
+<span class="text-primary font-bold">ممتاز</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-green-600 h-full w-[95%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-md">
+<span>استخدام الإشارات</span>
+<span class="text-secondary font-bold">جيد جداً</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full w-[75%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-md">
+<span>ركن السيارة (باركينج)</span>
+<span class="text-on-surface-variant font-bold">يحتاج تدريب</span>
+</div>
+<div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+<div class="bg-orange-500 h-full w-[50%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- History Section -->
+<div class="space-y-comfortable">
+<h5 class="font-bold flex items-center gap-2 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-primary text-sm">history</span>
+                                سجل الدروس الأخيرة
+                            </h5>
+<div class="space-y-4">
+<div class="border-r-2 border-primary-fixed pr-4 py-1 relative">
+<div class="absolute -right-[7px] top-2 w-3 h-3 bg-primary rounded-full"></div>
+<p class="text-label-sm text-outline">18 مايو 2024</p>
+<p class="text-label-md font-bold">الدرس 18: القيادة الليلية</p>
+<p class="text-body-md text-on-surface-variant mt-1 text-sm">"تحسن كبير في التعامل مع الأضواء العالية، الهدوء ممتاز."</p>
+</div>
+<div class="border-r-2 border-outline-variant pr-4 py-1 relative opacity-60">
+<div class="absolute -right-[7px] top-2 w-3 h-3 bg-outline-variant rounded-full"></div>
+<p class="text-label-sm text-outline">15 مايو 2024</p>
+<p class="text-label-md font-bold">الدرس 17: الدوار والتقاطعات</p>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg mt-8 flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined">edit_note</span>
+                            إضافة تقييم جديد
+                        </button>
+</div>
+</div>
+<!-- Empty State / Placeholder for Detail View -->
+<div class="lg:col-span-4 hidden lg:flex flex-col items-center justify-center bg-surface-container-low border border-dashed border-outline-variant rounded-xl p-comfortable text-center opacity-60" id="detailPlaceholder">
+<span class="material-symbols-outlined text-6xl text-outline mb-4">person_search</span>
+<h4 class="text-headline-sm font-headline-sm">اختر طالباً للمعاينة</h4>
+<p class="text-body-md">قم بالضغط على أي طالب في القائمة لعرض تفاصيل التقدم والتقييم والدروس السابقة.</p>
+</div>
+</section>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-loose bg-primary text-on-primary border-t border-outline-variant mt-20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="space-y-comfortable">
+<h2 class="text-headline-sm font-headline-sm font-bold">DriveHub</h2>
+<p class="text-body-md opacity-80">نظام إدارة مدارس القيادة الأذكى في الشرق الأوسط. أمان، دقة، وتطور.</p>
+</div>
+<div>
+<h4 class="font-bold mb-4">روابط سريعة</h4>
+<ul class="space-y-2 text-label-md opacity-80">
+<li><a class="hover:text-secondary-container transition-colors" href="#">عن المنصة</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">اتصل بنا</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-4">الدعم</h4>
+<ul class="space-y-2 text-label-md opacity-80">
+<li><a class="hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">التحقق من الرخص</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">الأسئلة الشائعة</a></li>
+</ul>
+</div>
+<div class="space-y-comfortable">
+<h4 class="font-bold mb-4">حمل التطبيق</h4>
+<div class="flex flex-col gap-2">
+<div class="bg-black/20 p-3 rounded-lg border border-white/10 flex items-center gap-3 cursor-pointer hover:bg-black/30 transition-all">
+<span class="material-symbols-outlined">phone_iphone</span>
+<span class="text-label-sm">متوفر على App Store</span>
+</div>
+<div class="bg-black/20 p-3 rounded-lg border border-white/10 flex items-center gap-3 cursor-pointer hover:bg-black/30 transition-all">
+<span class="material-symbols-outlined">play_arrow</span>
+<span class="text-label-sm">متوفر على Google Play</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center border-t border-white/10 pt-8 opacity-60 text-label-sm">
+                © 2024 DriveHub. Safe &amp; Systematic Progress.
+            </div>
+</footer>
+</main>
+<!-- Floating Action Button for Mobile -->
+<button class="md:hidden fixed bottom-6 left-6 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform z-50">
+<span class="material-symbols-outlined">add</span>
+</button>
+<script>
+        function toggleDetailView() {
+            const detailView = document.getElementById('studentDetailView');
+            const placeholder = document.getElementById('detailPlaceholder');
+            
+            if (detailView.classList.contains('opacity-0')) {
+                // Show Detail
+                placeholder.classList.add('hidden');
+                detailView.classList.remove('hidden', 'opacity-0', 'translate-x-4', 'pointer-events-none');
+                detailView.classList.add('opacity-100', 'translate-x-0');
+            } else {
+                // If already visible, maybe update content (omitted for brevity)
+                // For demo, just toggle back and forth
+                detailView.classList.add('opacity-0', 'translate-x-4', 'pointer-events-none');
+                detailView.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        // Simple animation logic for bento grid cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('tr, .bg-surface-container-high');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 50}ms`;
+                card.classList.add('animate-in', 'fade-in', 'slide-in-from-bottom-2');
+            });
+        });
+    </script>
+</body></html>

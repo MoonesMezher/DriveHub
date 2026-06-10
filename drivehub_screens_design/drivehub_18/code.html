@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة المدارس - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#f39461",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed": "#dce1ff",
+                    "secondary": "#855300",
+                    "on-surface": "#131b2e",
+                    "on-primary-fixed": "#00164e",
+                    "inverse-surface": "#283044",
+                    "primary": "#00236f",
+                    "on-surface-variant": "#444651",
+                    "surface-tint": "#4059aa",
+                    "on-tertiary-fixed": "#341100",
+                    "tertiary-container": "#6e2c00",
+                    "secondary-container": "#fea619",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#90a8ff",
+                    "primary-container": "#1e3a8a",
+                    "surface-container-high": "#e2e7ff",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "inverse-primary": "#b6c4ff",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-variant": "#dae2fd",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "secondary-fixed": "#ffddb8",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "inverse-on-surface": "#eef0ff",
+                    "tertiary": "#4b1c00",
+                    "surface-bright": "#faf8ff",
+                    "surface": "#faf8ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#684000",
+                    "on-background": "#131b2e",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "background": "#faf8ff",
+                    "outline": "#757682",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary-fixed-variant": "#264191",
+                    "surface-container": "#eaedff",
+                    "surface-dim": "#d2d9f4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "gutter": "1.5rem",
+                    "loose": "2rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "comfortable": "1rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["IBM Plex Sans"],
+                    "headline-md": ["IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans"],
+                    "display-lg-mobile": ["IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        /* Custom scrollbar for better UI */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="fixed right-0 top-0 h-full w-64 z-50 bg-surface-container border-l border-outline-variant flex flex-col py-loose hidden md:flex">
+<div class="px-6 mb-10">
+<h1 class="font-headline-sm text-headline-sm font-black text-primary mb-1">DriveHub</h1>
+<p class="text-label-md font-label-md text-on-surface-variant">System Administration</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Active State: Schools -->
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-compact bg-primary text-on-primary rounded-lg mx-2 px-3 py-2 border-r-4 border-secondary-container transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-md text-label-md">Schools</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Pricing</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md">Verifications</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary mx-2 px-3 py-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-secondary-container text-on-secondary-container font-label-md text-label-md py-3 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Register New School</span>
+</button>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-error mt-6 mx-2 px-3 py-2" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar (Authority: JSON) -->
+<header class="fixed top-0 right-0 md:right-64 left-0 h-16 z-40 bg-surface border-b border-outline-variant shadow-sm flex items-center justify-between px-margin-desktop">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-surface-container-low border-none rounded-full text-label-md focus:ring-2 focus:ring-primary/20 transition-all" placeholder="البحث عن مدرسة لتعليم القيادة..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">help</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden border border-outline-variant">
+<img alt="Admin Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoXmCHaEGFvbgPMDcYL1LUuoiq_6RVy9ZmrDXZkOatHIKDN7uWUF1iGpNJpKjfQX5H5Nrj885xIqv_r2q3WLYu-Dut4-Ch5eJGZAk_gxLCNXMVR03zR9BGsXW6p29SpmyCiCKV9rMFQjxSgWAYKgJ35kT6Qz19gT8ltNpYN3NR9FUtK-4EGMwIbGjNtndrGzxJ0vy21lNz68L0UqaEh-5wVId_gMkXtDeRHYrjSMCbP6eEnz_d7XJBAbCmOYfgaKmhCgbm6Vhws-Ie"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-6 md:pr-72 md:pl-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-2">إدارة المدارس</h2>
+<nav class="flex text-label-sm text-outline">
+<span>الرئيسية</span>
+<span class="mx-2">/</span>
+<span class="text-on-surface">المدارس المسجلة</span>
+</nav>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-high rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+<span>تصفية</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-high rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">download</span>
+<span>تصدير البيانات</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-10">
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">domain</span>
+</div>
+<div>
+<p class="text-label-sm text-outline">إجمالي المدارس</p>
+<p class="text-headline-sm font-bold">142</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl">verified</span>
+</div>
+<div>
+<p class="text-label-sm text-outline">مدارس مفعلة</p>
+<p class="text-headline-sm font-bold">128</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-3xl">pending_actions</span>
+</div>
+<div>
+<p class="text-label-sm text-outline">بانتظار التحقق</p>
+<p class="text-headline-sm font-bold">14</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-comfortable rounded-xl border border-outline-variant shadow-sm flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-on-tertiary-container/10 flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined text-3xl">group</span>
+</div>
+<div>
+<p class="text-label-sm text-outline">إجمالي الطلاب</p>
+<p class="text-headline-sm font-bold">12,450</p>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout for School Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- School Card 1 -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
+<div class="h-32 bg-slate-200 relative">
+<img alt="Driving School Location" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A modern driving school facility captured in the golden hour light, showing a clean architectural facade with large glass windows and professional branding. The setting is a well-paved urban area with clear traffic markings and a few modern training vehicles parked neatly in front. The color palette emphasizes clean blues and grays, reflecting a professional and safe institutional environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaz72PDD61AEdXpAsusxSPcMV5oP-of_siFj7FBhMr8_h4eEcdJVLELDYeHK2K1joD62mOwHOCsgPVaWETeAJ6gFXpMFPIkyVy5Np4MX-sSuY15zcojpYrAOwW_UwUL5ozkBr7pI9iEJ6BZRuRmLsIyf3X0g474fNe9PjOgGYPYnBYIzpDpbk0oF53EGzYzeLa9oZg55ixQnvCeGX7exrSiXzfmbQncpwwzo3D7XXijZVI6-mCuv4TIb5Syjkn8VBsUFZmbM_uEv-2"/>
+<div class="absolute top-4 left-4 bg-green-100 text-green-800 px-3 py-1 rounded-full text-label-sm font-bold flex items-center gap-1 border border-green-200">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>موثقة</span>
+</div>
+</div>
+<div class="p-comfortable">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-sm text-lg text-on-surface">مدرسة النخبة للقيادة</h3>
+<div class="flex items-center gap-1 text-outline mt-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-sm">الرياض، حي الملقا</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-label-sm text-outline block">المالك</span>
+<span class="text-label-md font-bold text-primary">أحمد الراجحي</span>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-label-sm text-outline mb-2">رخص القيادة المتاحة:</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">خصوصي</span>
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">عمومي</span>
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">دراجات نارية</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="px-3 py-2 bg-primary text-white rounded-lg text-label-sm font-bold hover:bg-primary-container transition-colors">عرض التفاصيل</button>
+<button class="px-3 py-2 border border-outline text-on-surface-variant rounded-lg text-label-sm font-bold hover:bg-surface-container-low transition-colors">إعدادات النظام</button>
+<button class="col-span-2 mt-1 px-3 py-2 text-error hover:bg-error-container/20 rounded-lg text-label-sm font-bold transition-colors">تعطيل المدرسة</button>
+</div>
+</div>
+</div>
+<!-- School Card 2 (Pending Verification) -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
+<div class="h-32 bg-slate-200 relative">
+<img alt="Driving Training Lot" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="An expansive driving school training lot with colorful traffic cones and painted road lane markers under a bright blue sky. Several late-model white sedans are parked in designated training bays. The scene is crisp and highly detailed, conveying a sense of organized education and safety protocols in a modern logistics setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv1Xcfl_JPpuqevJvpD_m8vrNFKi5wIfC54Dl8dQWIiIisCoFb5O0_Z19ulvB12YKex-fbkcpQ29766xQRWcUSRPMZny_il18VCBHT2iXhm1Y4Bh0jTD06I0dgpwrGan96ntlP2n184fov5Dt9ZuD0JRTAMdw8SGmhdu81a9ZPZlerGDeI2u3iJCpeh3hxZTeyTkRCpppl6OOLLqCv7XorG4nmVBmfz-242svOx395tX7Q1Z1exnogSrDByjG3uk8BNHwgcpPW20rB"/>
+<div class="absolute top-4 left-4 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-label-sm font-bold flex items-center gap-1 border border-amber-200">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>قيد المراجعة</span>
+</div>
+</div>
+<div class="p-comfortable">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-sm text-lg text-on-surface">مركز ريادة الدولي</h3>
+<div class="flex items-center gap-1 text-outline mt-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-sm">جدة، حي الشاطئ</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-label-sm text-outline block">المالك</span>
+<span class="text-label-md font-bold text-primary">سارة الغامدي</span>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-label-sm text-outline mb-2">رخص القيادة المتاحة:</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">خصوصي نسائي</span>
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">معدات ثقيلة</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg text-label-sm font-bold hover:bg-secondary transition-colors">توثيق الآن</button>
+<button class="px-3 py-2 border border-outline text-on-surface-variant rounded-lg text-label-sm font-bold hover:bg-surface-container-low transition-colors">مراجعة الملف</button>
+</div>
+</div>
+</div>
+<!-- School Card 3 -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group">
+<div class="h-32 bg-slate-200 relative">
+<img alt="Tech Driving School" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A sophisticated driver training simulator room with high-tech screens and steering wheel setups, showcasing the future of driving education. The lighting is cool and atmospheric with soft blue LEDs illuminating the dark tech-focused space. The aesthetic is clean and corporate, highlighting the integration of modern technology and safety in a driving school environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_NQn7rGcRijegzYNT5TF5OyNdMS5q1jxrEiyVNarXlGeFKdu9AyEEhwqTX64AUWItNcgi5JAnFqujRIsCnSISZFwN-fTGejJQeY51RcNMKF3s6J9Lrq_toNQe9wqjvB7Qi27s6JvDpBw6XejY-Rc8t3Nke1R0Y0yhUY_2BolKVZ9L_uqoC6Te_DWp66Yo1Y726pC0fSsyDsdaElKHuAQ-zGzJDPBpbDoE4lT0ooH1uTVx2RLRvOFHvbqCb7ydmh5Dm1e3Icl0WVHP"/>
+<div class="absolute top-4 left-4 bg-green-100 text-green-800 px-3 py-1 rounded-full text-label-sm font-bold flex items-center gap-1 border border-green-200">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>موثقة</span>
+</div>
+</div>
+<div class="p-comfortable">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-sm text-lg text-on-surface">مدرسة الشرق لتعليم القيادة</h3>
+<div class="flex items-center gap-1 text-outline mt-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-sm">الدمام، حي الفيصلية</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-label-sm text-outline block">المالك</span>
+<span class="text-label-md font-bold text-primary">فهد الشمري</span>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-label-sm text-outline mb-2">رخص القيادة المتاحة:</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">خصوصي</span>
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">نقل متوسط</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="px-3 py-2 bg-primary text-white rounded-lg text-label-sm font-bold hover:bg-primary-container transition-colors">عرض التفاصيل</button>
+<button class="px-3 py-2 border border-outline text-on-surface-variant rounded-lg text-label-sm font-bold hover:bg-surface-container-low transition-colors">إعدادات النظام</button>
+<button class="col-span-2 mt-1 px-3 py-2 text-error hover:bg-error-container/20 rounded-lg text-label-sm font-bold transition-colors">تعطيل المدرسة</button>
+</div>
+</div>
+</div>
+<!-- School Card 4 (Deactivated) -->
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group opacity-60 hover:opacity-100">
+<div class="h-32 bg-slate-200 relative grayscale">
+<img alt="Disabled School" class="w-full h-full object-cover" data-alt="A portrait of a professional woman looking contemplative in a high-end corporate office setting. The background is blurred with hints of glass partitions and warm office lighting, suggesting a leadership role. The lighting is soft and flattering, creating a polished, executive atmosphere that balances authority with approachable modern professionalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOqMZWBZub4bI5G3Ju3wbJI999SdcFxmW43YNAfq1Vo2W_NeJED54OXe-7E6qFkiM_jSk75Hul46MdM6ujnr92W-6bdc0b80SuYhEtV9lwBjzbW1U4_b8BjuOrWeIVCnwhDb9qi4akmdNCj8euEvIfWzZrh1j19e1_NzCIs25cajIx0sEaPbJ_aEABLip-Ta1wBTKodyJHmWNdk-sWHVXiyPhggJnwcj-xLcF-pzSxrg2qT7I20eylOuC4ZAS5jedGTNZYJRMO85ui"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="text-white font-bold bg-error/80 px-4 py-1 rounded-full text-label-md">معطلة مؤقتاً</span>
+</div>
+</div>
+<div class="p-comfortable">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline-sm text-lg text-on-surface">مدرسة المستقبل</h3>
+<div class="flex items-center gap-1 text-outline mt-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-sm">أبها، حي المنسك</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-label-sm text-outline block">المالك</span>
+<span class="text-label-md font-bold text-primary">نورة الشهري</span>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-label-sm text-outline mb-2">رخص القيادة المتاحة:</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-md text-[10px] font-bold">خصوصي</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<button class="col-span-2 px-3 py-2 bg-on-tertiary-container text-white rounded-lg text-label-sm font-bold hover:bg-tertiary-container transition-colors">إعادة التفعيل</button>
+</div>
+</div>
+</div>
+<!-- New School Action Card -->
+<button class="bg-surface-container-low border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center p-comfortable hover:bg-surface-container-high transition-all group min-h-[400px]">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl">add_business</span>
+</div>
+<h3 class="font-headline-sm text-lg text-on-surface mb-2">تسجيل مدرسة جديدة</h3>
+<p class="text-label-md text-outline text-center max-w-[200px]">قم بإضافة مدرسة تعليم قيادة جديدة إلى المنظومة للبدء في عمليات التحقق</p>
+</button>
+</div>
+<!-- Pagination (Simulated) -->
+<div class="mt-12 flex items-center justify-between border-t border-outline-variant pt-6">
+<span class="text-label-md text-outline">عرض 4 من أصل 142 مدرسة</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+</div>
+</div>
+</main>
+<!-- FAB for Mobile (Semantic check: "Book a walk" - not applicable here, suppressed) -->
+<script>
+        // Micro-interactions and subtle effects
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+
+        // Search highlight interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+    </script>
+</body></html>

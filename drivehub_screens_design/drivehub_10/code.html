@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub - لوحة تحكم المدرب</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#2a1700",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "surface-dim": "#d2d9f4",
+                    "primary-fixed": "#dce1ff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary": "#00236f",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "surface-container-high": "#e2e7ff",
+                    "secondary-fixed": "#ffddb8",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-surface-variant": "#444651",
+                    "outline": "#757682",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-tertiary-fixed": "#341100",
+                    "on-surface": "#131b2e",
+                    "on-tertiary-container": "#f39461",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#855300",
+                    "tertiary": "#4b1c00",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-primary-container": "#90a8ff",
+                    "surface-tint": "#4059aa",
+                    "inverse-primary": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "surface-bright": "#faf8ff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "primary-container": "#1e3a8a",
+                    "tertiary-container": "#6e2c00",
+                    "surface-container": "#eaedff",
+                    "on-background": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#fea619",
+                    "on-secondary-container": "#684000",
+                    "surface-container-highest": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#dae2fd",
+                    "surface": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#00164e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "loose": "2rem",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "sans": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+                    "headline-md": ["IBM Plex Sans Arabic"],
+                    "headline-sm": ["IBM Plex Sans Arabic"],
+                    "display-lg": ["IBM Plex Sans Arabic"],
+                    "label-sm": ["IBM Plex Sans Arabic"],
+                    "label-md": ["IBM Plex Sans Arabic"],
+                    "body-md": ["IBM Plex Sans Arabic"],
+                    "body-lg": ["IBM Plex Sans Arabic"]
+            },
+            "fontSize": {
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #faf8ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .rtl-flip {
+            transform: scaleX(-1);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Layout Wrapper -->
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar (JSON Derived) -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed right-0 top-0 bg-surface-container border-l border-outline-variant shadow-md z-50">
+<!-- Brand Section -->
+<div class="p-comfortable flex flex-col gap-1 border-b border-outline-variant mb-4">
+<span class="text-headline-sm font-headline-sm font-bold text-primary">DriveHub Admin</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Management Portal</span>
+</div>
+<!-- Profile Header -->
+<div class="px-comfortable mb-comfortable">
+<div class="flex items-center gap-3 p-compact bg-surface-bright rounded-xl border border-outline-variant">
+<img alt="User Profile" class="w-10 h-10 rounded-full bg-primary-container object-cover" data-alt="A professional headshot of a Middle Eastern male driving instructor in his 40s, wearing a clean navy blue polo shirt. He is smiling warmly in a bright, modern office environment with soft natural lighting and a minimalist, technological atmosphere, matching a professional corporate UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCayipWBMgPd8EfXRcIBK9CUpi1gK2cnW37x-1F6m_rEqrUNxRbYUxtioKRsyzI--bSrQr7UKB4moxOGrpjmWk110OKSOvXXD1lKn6BOLS4LxCH3dMHV1mqEdBjBIgNN2QCV001PTDPydryzHuMKl6d5QYDWirpwY3JE7caG_ySoDgD6AkCXPvGSGYn57uG3D5DUgMt5AztPwFtd-Wzl9w8fXTYSR9kL_WQmlZQS5WH7kOafdZJbn7S_Fns-C2wlZjiREtmU3pBLSdf"/>
+<div class="flex flex-col">
+<span class="text-label-md font-bold">عمر خالد</span>
+<span class="text-label-sm text-on-surface-variant">مدرب معتمد</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-compact space-y-2 overflow-y-auto">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-lg px-4 py-2 border-r-4 border-primary translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-label-md font-label-md">Schedule</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Students</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-label-md font-label-md">Payments</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+</nav>
+<!-- CTA -->
+<div class="px-comfortable mb-comfortable">
+<button class="w-full bg-secondary-container text-on-secondary-container font-label-md py-3 rounded-lg shadow-sm hover:brightness-90 transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                    New Entry
+                </button>
+</div>
+<!-- Footer Navigation -->
+<div class="p-compact border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-variant rounded-lg px-4 py-2" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-label-md font-label-md">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:pr-64 overflow-y-auto bg-background">
+<!-- Top Bar -->
+<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-md flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-headline-sm font-headline-sm text-primary">لوحة التحكم</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="absolute right-3 top-2.5 material-symbols-outlined text-outline">search</span>
+<input class="pr-10 pl-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none text-label-md w-64" placeholder="بحث عن طالب..." type="text"/>
+</div>
+<button class="p-2 relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+</div>
+</header>
+<div class="p-margin-mobile md:p-margin-desktop space-y-gutter">
+<!-- Welcome Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-comfortable">
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-1">أهلاً بك، عمر خالد 👋</h2>
+<p class="text-body-md text-on-surface-variant">لديك 6 حصص تدريبية مقررة لهذا اليوم.</p>
+</div>
+<div class="flex gap-compact">
+<button class="px-comfortable py-2.5 bg-primary text-on-primary rounded-lg font-label-md flex items-center gap-2 hover:bg-opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">calendar_add_on</span>
+                            إضافة موعد
+                        </button>
+<button class="px-comfortable py-2.5 border border-outline-variant text-primary rounded-lg font-label-md hover:bg-surface-container-low transition-all">
+                            تصدير التقرير
+                        </button>
+</div>
+</div>
+<!-- Metrics Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Total Students -->
+<div class="bg-surface-bright p-loose rounded-xl border border-outline-variant shadow-sm hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">group</span>
+</div>
+<span class="text-label-sm bg-surface-container-high px-2 py-1 rounded-full text-primary">+12%</span>
+</div>
+<p class="text-on-surface-variant text-label-md mb-1">إجمالي الطلاب (هذه الدورة)</p>
+<p class="text-headline-md font-bold text-primary">28 طالب</p>
+</div>
+<!-- Lessons Completed -->
+<div class="bg-surface-bright p-loose rounded-xl border border-outline-variant shadow-sm hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">check_circle</span>
+</div>
+<span class="text-label-sm bg-surface-container-high px-2 py-1 rounded-full text-secondary">اليوم</span>
+</div>
+<p class="text-on-surface-variant text-label-md mb-1">حصص مكتملة اليوم</p>
+<p class="text-headline-md font-bold text-primary">4 / 6</p>
+</div>
+<!-- Average Rating -->
+<div class="bg-surface-bright p-loose rounded-xl border border-outline-variant shadow-sm hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">star</span>
+</div>
+<div class="flex gap-0.5">
+<span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-label-md mb-1">متوسط تقييم الطلاب</p>
+<p class="text-headline-md font-bold text-primary">4.9</p>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Daily Schedule (Timeline View) -->
+<section class="lg:col-span-8 space-y-comfortable">
+<div class="flex items-center justify-between">
+<h3 class="text-headline-sm font-headline-sm">جدول الحصص اليومي</h3>
+<span class="text-label-md text-on-surface-variant">الاثنين، 24 يونيو 2024</span>
+</div>
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-comfortable py-4 text-label-md font-bold text-on-surface">اسم الطالب</th>
+<th class="px-comfortable py-4 text-label-md font-bold text-on-surface">نوع الحصة</th>
+<th class="px-comfortable py-4 text-label-md font-bold text-on-surface">الوقت</th>
+<th class="px-comfortable py-4 text-label-md font-bold text-on-surface">الحالة</th>
+<th class="px-comfortable py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-comfortable py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold">أ</div>
+<span class="text-body-md font-medium">أحمد العتيبي</span>
+</div>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md">قيادة في المدينة</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md text-on-surface-variant">08:00 ص - 09:00 ص</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="bg-green-100 text-green-800 text-[12px] font-bold px-3 py-1 rounded-full border border-green-200">مكتمل</span>
+</td>
+<td class="px-comfortable py-4 text-left">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-comfortable py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold">س</div>
+<span class="text-body-md font-medium">سارة القحطاني</span>
+</div>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md">ركن السيارة (باركينج)</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md text-on-surface-variant">09:30 ص - 10:30 ص</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="bg-green-100 text-green-800 text-[12px] font-bold px-3 py-1 rounded-full border border-green-200">مكتمل</span>
+</td>
+<td class="px-comfortable py-4 text-left">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 (Upcoming) -->
+<tr class="bg-primary-fixed/20 hover:bg-primary-fixed/30 transition-colors group">
+<td class="px-comfortable py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold">ف</div>
+<span class="text-body-md font-bold">فيصل الحربي</span>
+</div>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md">القيادة السريعة</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md text-primary font-bold">11:00 ص - 12:00 م</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="bg-amber-100 text-amber-800 text-[12px] font-bold px-3 py-1 rounded-full border border-amber-200">قادم (الآن)</span>
+</td>
+<td class="px-comfortable py-4 text-left">
+<button class="bg-primary text-on-primary text-label-sm px-4 py-1.5 rounded-lg hover:brightness-110">بدء الحصة</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-comfortable py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary font-bold">ن</div>
+<span class="text-body-md font-medium">نورة السبيعي</span>
+</div>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md">اختبار تجريبي</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="text-body-md text-on-surface-variant">01:00 م - 02:00 م</span>
+</td>
+<td class="px-comfortable py-4">
+<span class="bg-surface-container-high text-on-surface-variant text-[12px] font-bold px-3 py-1 rounded-full border border-outline-variant">مجدول</span>
+</td>
+<td class="px-comfortable py-4 text-left">
+<button class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Sidebar Content -->
+<aside class="lg:col-span-4 space-y-gutter">
+<!-- Student Assessment Quick Action -->
+<section class="bg-surface-container-highest p-comfortable rounded-xl border border-primary shadow-md">
+<div class="flex items-center gap-3 mb-comfortable">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">rate_review</span>
+</div>
+<h3 class="text-label-md font-bold text-primary">تقييم سريع للطالب</h3>
+</div>
+<div class="space-y-4">
+<p class="text-body-md">قيّم أداء <span class="font-bold">سارة القحطاني</span> في حصة "ركن السيارة" الأخيرة:</p>
+<div class="flex justify-between gap-1 mb-2">
+<button class="flex-1 py-3 rounded-lg border border-outline-variant bg-white hover:bg-primary hover:text-white transition-all text-label-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined">sentiment_very_dissatisfied</span>
+                                        ضعيف
+                                    </button>
+<button class="flex-1 py-3 rounded-lg border border-outline-variant bg-white hover:bg-primary hover:text-white transition-all text-label-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined">sentiment_neutral</span>
+                                        مقبول
+                                    </button>
+<button class="flex-1 py-3 rounded-lg border border-outline-variant bg-white hover:bg-primary hover:text-white transition-all text-label-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined">sentiment_very_satisfied</span>
+                                        ممتاز
+                                    </button>
+</div>
+<textarea class="w-full p-3 rounded-lg border border-outline-variant bg-white text-body-md focus:ring-2 focus:ring-primary outline-none h-24 resize-none" placeholder="ملاحظات إضافية (اختياري)..."></textarea>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-md shadow-sm active:scale-95 transition-all">إرسال التقييم</button>
+</div>
+</section>
+<!-- Map Placeholder / Fleet Tracking -->
+<section class="bg-surface-bright rounded-xl border border-outline-variant overflow-hidden">
+<div class="p-comfortable border-b border-outline-variant flex justify-between items-center">
+<h3 class="text-label-md font-bold">موقع المركبة المباشر</h3>
+<span class="flex items-center gap-1 text-[12px] text-green-600 font-bold">
+<span class="w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
+                                    مباشر
+                                </span>
+</div>
+<div class="h-48 bg-slate-200 relative">
+<div class="absolute inset-0 grayscale opacity-40 bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i14!2i9622!3i6374!2m3!1e0!2sm!3i420120488!3m8!2sar!3sSA!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!5f2')] bg-center bg-cover" data-location="Riyadh, Saudi Arabia" style=""></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="relative">
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full shadow-md text-label-sm border border-outline-variant whitespace-nowrap">هيونداي إلنترا - 4522 ح ص</div>
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div class="w-10 h-10 bg-primary/20 rounded-full absolute top-0 left-0 animate-ping"></div>
+</div>
+</div>
+<button class="absolute bottom-3 left-3 bg-white p-2 rounded-lg shadow-md border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant">fullscreen</span>
+</button>
+</div>
+<div class="p-comfortable">
+<div class="flex items-center justify-between text-label-sm">
+<span class="text-on-surface-variant">السرعة الحالية:</span>
+<span class="font-bold">45 كم/س</span>
+</div>
+</div>
+</section>
+</aside>
+</div>
+</div>
+<!-- Footer (JSON Derived) -->
+<footer class="w-full py-loose border-t border-outline-variant bg-primary text-on-primary">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="md:col-span-1">
+<span class="text-headline-sm font-headline-sm font-bold text-on-primary">DriveHub</span>
+<p class="text-label-sm mt-2 opacity-80">Safe &amp; Systematic Progress.</p>
+<p class="text-body-md mt-4">© 2024 DriveHub. جميع الحقوق محفوظة.</p>
+</div>
+<div class="space-y-2">
+<h4 class="font-bold mb-4">روابط سريعة</h4>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">عن المنصة</a>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">تواصل معنا</a>
+</div>
+<div class="space-y-2">
+<h4 class="font-bold mb-4">القانونية</h4>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a>
+</div>
+<div class="space-y-2">
+<h4 class="font-bold mb-4">الدعم</h4>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">التحقق من الرخص</a>
+<a class="block text-on-primary/80 hover:text-secondary-container transition-colors" href="#">الأسئلة الشائعة</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+<!-- Mobile Bottom NavBar (JSON Derived Logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant h-16 flex items-center justify-around z-50 shadow-lg px-compact">
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px]">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="text-[10px] font-bold">الجدول</span>
+</a>
+<div class="relative -top-6">
+<button class="w-12 h-12 bg-secondary-container text-on-secondary-container rounded-full shadow-lg flex items-center justify-center">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px]">الطلاب</span>
+</a>
+<a class="flex flex-col items-center gap-0.5 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px]">الملف</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for row highlights
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Potential action for row click
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-105');
+            searchInput.parentElement.classList.add('duration-200');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-105');
+        });
+    </script>
+</body></html>

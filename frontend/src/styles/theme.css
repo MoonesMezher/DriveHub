@@ -1,0 +1,124 @@
+/**
+ * DriveHub Design Tokens — من drivehub/DESIGN.md
+ * Material 3 inspired palette + IBM Plex Sans Arabic
+ */
+@theme {
+  /* ── Brand / Primary ── */
+  --color-primary: #00236f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1e3a8a;
+  --color-on-primary-container: #90a8ff;
+  --color-inverse-primary: #b6c4ff;
+  --color-primary-fixed: #dce1ff;
+  --color-primary-fixed-dim: #b6c4ff;
+  --color-on-primary-fixed: #00164e;
+  --color-on-primary-fixed-variant: #264191;
+
+  /* ── Secondary (Amber / CTA) ── */
+  --color-secondary: #855300;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fea619;
+  --color-on-secondary-container: #684000;
+  --color-secondary-fixed: #ffddb8;
+  --color-secondary-fixed-dim: #ffb95f;
+  --color-on-secondary-fixed: #2a1700;
+  --color-on-secondary-fixed-variant: #653e00;
+
+  /* ── Tertiary ── */
+  --color-tertiary: #4b1c00;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #6e2c00;
+  --color-on-tertiary-container: #f39461;
+  --color-tertiary-fixed: #ffdbcb;
+  --color-tertiary-fixed-dim: #ffb691;
+  --color-on-tertiary-fixed: #341100;
+  --color-on-tertiary-fixed-variant: #773205;
+
+  /* ── Error / Success semantic ── */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-success: #047857;
+  --color-on-success: #ffffff;
+  --color-success-container: #d1fae5;
+  --color-on-success-container: #065f46;
+  --color-warning: #b45309;
+  --color-warning-container: #fef3c7;
+  --color-on-warning-container: #78350f;
+
+  /* ── Surfaces ── */
+  --color-background: #faf8ff;
+  --color-on-background: #131b2e;
+  --color-surface: #faf8ff;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #444651;
+  --color-surface-dim: #d2d9f4;
+  --color-surface-bright: #faf8ff;
+  --color-surface-variant: #dae2fd;
+  --color-surface-tint: #4059aa;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-inverse-surface: #283044;
+  --color-inverse-on-surface: #eef0ff;
+  --color-outline: #757682;
+  --color-outline-variant: #c5c5d3;
+
+  /* ── Ultra variant (admin screens 31+) ── */
+  --color-ultra-secondary: #2170e4;
+  --color-ultra-on-secondary: #ffffff;
+
+  /* ── Typography ── */
+  --font-sans: 'IBM Plex Sans Arabic', 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  --font-display: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 3.5rem;
+  --text-display-lg-mobile: 2.25rem;
+  --text-display-lg-mobile--line-height: 2.75rem;
+  --text-headline-md: 2rem;
+  --text-headline-md--line-height: 2.5rem;
+  --text-headline-sm: 1.5rem;
+  --text-headline-sm--line-height: 2rem;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5rem;
+  --text-label-md: 0.875rem;
+  --text-label-md--line-height: 1.25rem;
+  --text-label-sm: 0.75rem;
+  --text-label-sm--line-height: 1rem;
+
+  /* ── Spacing (design system) ── */
+  --spacing-compact: 0.5rem;
+  --spacing-comfortable: 1rem;
+  --spacing-loose: 2rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-margin-mobile: 1rem;
+  --spacing-margin-desktop: 2.5rem;
+  --spacing-stack-sm: 0.25rem;
+  --spacing-stack-md: 0.75rem;
+  --spacing-stack-lg: 1.5rem;
+
+  /* ── Radius ── */
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ── Shadows (elevation) ── */
+  --shadow-card: 0 2px 4px rgb(15 23 42 / 0.05);
+  --shadow-card-hover: 0 10px 25px -5px rgb(0 35 111 / 0.1);
+  --shadow-elevated: 0 8px 16px rgb(15 23 42 / 0.1);
+  --shadow-glass: 0 4px 20px rgb(15 23 42 / 0.05);
+
+  /* ── Layout ── */
+  --width-sidebar: 16rem;
+  --height-header: 4rem;
+  --max-width-content: 90rem;
+}

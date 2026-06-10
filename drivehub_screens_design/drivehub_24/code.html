@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>سجل العمليات والتدقيق - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#ffb95f",
+                    "tertiary-fixed": "#ffdbcb",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary-fixed-variant": "#264191",
+                    "outline-variant": "#c5c5d3",
+                    "on-background": "#131b2e",
+                    "primary-fixed": "#dce1ff",
+                    "outline": "#757682",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#00164e",
+                    "on-tertiary-fixed": "#341100",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-surface-variant": "#444651",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f2f3ff",
+                    "error-container": "#ffdad6",
+                    "secondary": "#855300",
+                    "surface-dim": "#d2d9f4",
+                    "surface-tint": "#4059aa",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "background": "#faf8ff",
+                    "surface-container": "#eaedff",
+                    "surface": "#faf8ff",
+                    "primary": "#00236f",
+                    "on-primary-container": "#90a8ff",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#ffddb8",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "primary-container": "#1e3a8a",
+                    "tertiary": "#4b1c00",
+                    "surface-bright": "#faf8ff",
+                    "surface-container-high": "#e2e7ff",
+                    "surface-variant": "#dae2fd",
+                    "surface-container-highest": "#dae2fd",
+                    "on-surface": "#131b2e",
+                    "tertiary-container": "#6e2c00",
+                    "inverse-primary": "#b6c4ff",
+                    "on-secondary-container": "#684000",
+                    "on-tertiary-container": "#f39461",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#fea619",
+                    "inverse-surface": "#283044",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#773205"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "margin-desktop": "2.5rem",
+                    "gutter": "1.5rem",
+                    "comfortable": "1rem",
+                    "margin-mobile": "1rem",
+                    "loose": "2rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "display-lg-mobile": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-nav-border { border-right: 4px solid #fea619; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c5c5d3; border-radius: 10px; }
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed right-0 top-0 h-full w-64 z-50 bg-surface-container border-l border-outline-variant flex flex-col py-loose overflow-y-auto">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-black text-primary leading-tight">DriveHub</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">System Administration</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary hover:bg-surface-container-high mx-2 px-3 py-2 font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary hover:bg-surface-container-high mx-2 px-3 py-2 font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span>Schools</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary hover:bg-surface-container-high mx-2 px-3 py-2 font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Pricing</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary hover:bg-surface-container-high mx-2 px-3 py-2 font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>Verifications</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-primary hover:bg-surface-container-high mx-2 px-3 py-2 font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>Analytics</span>
+</a>
+<!-- Active Tab: Audit Log -->
+<a class="flex items-center gap-compact bg-primary text-on-primary rounded-lg mx-2 px-3 py-2 font-label-md text-label-md active-nav-border shadow-sm transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span>Audit Log</span>
+</a>
+</nav>
+<div class="px-4 mb-6">
+<button class="w-full bg-secondary-container text-on-secondary-container py-2.5 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:brightness-95 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+<span>Register New School</span>
+</button>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-error mx-2 px-3 py-2 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="mr-64 min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-64 h-16 bg-surface z-40 border-b border-outline-variant px-margin-desktop flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-gutter w-1/2">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-2 pl-4 pr-10 focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-label-md text-label-md transition-all" placeholder="بحث عن مدرسة، مستخدم، أو عملية..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 border-l border-outline-variant pl-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="help">help</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-left">
+<p class="font-label-md text-label-md text-on-surface font-bold">أحمد الإدريسي</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Super Admin</p>
+</div>
+<img alt="Admin Profile Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" data-alt="Close-up professional portrait of a tech administrator with a friendly expression, set against a clean, modern office background with soft lighting, matching the professional blue and white theme of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALU5TFhulfelYtE9sdYsqO1b-bu12XgOE0KQlTgqQxxdVbrGKsZwUoUEoGDGOTpfxOGl_VYdfZS7s_lMGxTJ4lkNwsuC1pC1LiNnaaDIAOJYteadA8KykwlUJMyTp8sEeboHCcVknOtHsF42B3c-DYmqF5aM8PdIjW53lDlXc_absZrIH5vPUyRmelgoB_WZUSy0-rYw4N-KkuOuaZ4NbmHy4iDmVAkndRZxNvpuasoGx7myvEWp0F2Ct8vOJyOTRxpbyh0g2ijGX4"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<section class="mt-16 p-margin-desktop space-y-8">
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-2">سجل العمليات والتدقيق</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">تتبع ومراقبة كافة الأنشطة والعمليات التي تتم عبر المنصة لضمان المساءلة والأمان، مع تفاصيل دقيقة لكل إجراء فني أو إداري.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-all font-label-md">
+<span class="material-symbols-outlined text-lg">download</span>
+<span>تصدير PDF</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-all font-label-md">
+<span class="material-symbols-outlined text-lg">description</span>
+<span>تصدير CSV</span>
+</button>
+</div>
+</div>
+<!-- Summary Cards (Action Summary) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface border border-outline-variant p-comfortable rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">analytics</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">إجمالي العمليات اليوم</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">1,452</h3>
+<p class="text-xs text-green-600 flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>12% مقارنة بالأمس</span>
+</p>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-comfortable rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+<div class="w-12 h-12 bg-error-container/10 rounded-lg flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">عمليات حساسة (Critical)</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">24</h3>
+<p class="text-xs text-error flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-sm">warning</span>
+<span>تتطلب مراجعة فورية</span>
+</p>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-comfortable rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+<div class="w-12 h-12 bg-secondary-container/10 rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl">settings_applications</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">تغييرات الإعدادات</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">186</h3>
+<p class="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-sm">history</span>
+<span>آخر تحديث: منذ 5 دقائق</span>
+</p>
+</div>
+</div>
+</div>
+<!-- Filter Section -->
+<div class="bg-surface-container-lowest border border-outline-variant p-comfortable rounded-xl">
+<div class="flex flex-wrap items-center gap-4">
+<div class="flex-grow min-w-[200px]">
+<label class="block font-label-sm text-label-sm mb-1.5 mr-1 text-on-surface-variant">بحث سريع</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg py-2.5 pr-10 pl-4 focus:ring-1 focus:ring-primary outline-none font-label-md" placeholder="اسم المستخدم أو المدرسة..." type="text"/>
+</div>
+</div>
+<div class="w-56">
+<label class="block font-label-sm text-label-sm mb-1.5 mr-1 text-on-surface-variant">نوع الإجراء</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg py-2.5 px-3 focus:ring-1 focus:ring-primary outline-none font-label-md appearance-none">
+<option>الكل</option>
+<option>تعديل الأسعار</option>
+<option>إنشاء مستخدم</option>
+<option>توثيق مدرسة</option>
+<option>تسجيل دخول</option>
+<option>خرق أمني</option>
+</select>
+</div>
+<div class="w-64">
+<label class="block font-label-sm text-label-sm mb-1.5 mr-1 text-on-surface-variant">الفترة الزمنية</label>
+<div class="flex items-center bg-surface border border-outline-variant rounded-lg px-3 py-2.5 gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">calendar_today</span>
+<input class="w-full bg-transparent outline-none font-label-md text-on-surface" type="text" value="2023/10/01 - 2023/10/30"/>
+</div>
+</div>
+<div class="mt-auto pb-0.5">
+<button class="bg-primary text-on-primary px-8 py-2.5 rounded-lg font-label-md hover:brightness-110 active:scale-95 transition-all">تطبيق الفلاتر</button>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-surface-container-high border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">الوقت والتاريخ</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">المستخدم / الفاعل</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">الدور</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">نوع العملية</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">الجهة المستهدفة</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">الحالة</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-body-md text-label-md">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">2023-10-24</span>
+<span class="text-xs text-on-surface-variant">14:32:05</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Close-up professional portrait of a senior system admin with glasses, showcasing a calm and focused demeanor in a professional workspace, adhering to the systematic and safe theme of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqe4al85YuBgIqzVu9656qaKlWR2CW8MczIlC-gRwg1i4451bZIApuqB3XdKq374an4-9SX8XqpBpMQ0UwsBZtninoKKQcuQbwoTlJHpOSolfiyUpiah4tV0PY3B4AGWgQNI_7-k30IxmWBmw8SsPa5YB_nYJ1LlhkAhsup7r4UlWkfb1fdYgqzadlFaxGFNk3U8txK8YC_spHeKGt6wxq1yDoCF9CYUMa8nzpEUri8L8fzn1icK-TtNFlg4j50_-2zHU_1Lv57gem"/>
+<span class="font-label-md text-on-surface">سالم العامودي</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-container-highest rounded text-[11px] font-bold text-on-surface-variant">School Admin</span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-primary">تعديل باقة الأسعار</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">مدرسة السلام لتعليم القيادة</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold flex items-center w-fit gap-1">
+<span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                        ناجح
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-body-md text-label-md">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">2023-10-24</span>
+<span class="text-xs text-on-surface-variant">12:15:44</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Professional headshot of a female support lead with a modern corporate look, soft lighting, and a clean professional atmosphere that aligns with DriveHub's accessibility and control narrative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrFON6wNiJNQiRevW0aWczzrOeGSb0GVxSEh3kOTkl3pm7Oj1FO6mbIS-sZ-pxQXo6MyL-sZOyVzUHNzlvTIEHVMdLQrnQ2x1gAUGL80tZun6sIrB1294xir4MGycKG0LLy4Oi2jFE-xHa9s-qEa4-s2C2d0oioabHA0yILtiSySDVGxYuuA2IloASk98mUju4mpkg9M6KNUossrLAx--bDQ_zVrIx_YU5U1HI1b8lAwJ8rAgnF8gilzBba8WFPrOeZUTna1pfkXwJ"/>
+<span class="font-label-md text-on-surface">ليلى القحطاني</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-secondary-container/10 rounded text-[11px] font-bold text-secondary">Super Admin</span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-error">حذف حساب مدرسة</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">مدرسة التميز (جدة)</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold flex items-center w-fit gap-1">
+<span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                        ناجح
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 (Alert) -->
+<tr class="bg-error-container/5 hover:bg-error-container/10 transition-colors group">
+<td class="px-6 py-4 font-body-md text-label-md">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">2023-10-24</span>
+<span class="text-xs text-on-surface-variant">10:02:11</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold text-xs">IP</div>
+<span class="font-label-md text-on-surface">92.168.1.45</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-error-container/20 rounded text-[11px] font-bold text-error">مجهول (نظام)</span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-error font-bold italic">محاولة دخول غير مصرحة</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">لوحة تحكم المشرفين</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold flex items-center w-fit gap-1">
+<span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
+                                        مرفوض
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<button class="text-error hover:bg-error/10 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-lg">gavel</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-body-md text-label-md">
+<div class="flex flex-col">
+<span class="text-on-surface font-medium">2023-10-24</span>
+<span class="text-xs text-on-surface-variant">09:45:12</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Portrait of a male account manager with a professional and friendly look, high-contrast white lighting against a subtle blue-tinged background, representing the reliable and systematic progress of DriveHub." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCufKvdyNSESXu8pN767Wg99_lVuz8ccDxovFt9Jmx2LALFV03sTf5HA4CDe6pRmytQ4zXMgPEWGyqzXPQ4i_pWF1HWKdP_P1idkTHZz7mkQKqf6_-ERkZRefD22t3PN72UN4y_7pPM6Oz1bLYZNiB_yBHwY2A13v--kpwawrNq86XUAkHq1WxDg0xvnXsqbLNfM5Xq4VmJlxHB51IgTmU2kWyWBfjcORy0B1_KHjGLiQ_YbGN5Szgy4ZvwwTrnxqQ8Zn_SYCtv7PFv"/>
+<span class="font-label-md text-on-surface">فيصل الحربي</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-surface-container-highest rounded text-[11px] font-bold text-on-surface-variant">System Auditor</span>
+</td>
+<td class="px-6 py-4">
+<span class="font-label-md text-primary">توثيق مستندات المدرسة</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-md">مدرسة الطريق السهل</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold flex items-center w-fit gap-1">
+<span class="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                                        قيد المعالجة
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-surface-container-lowest px-6 py-4 flex items-center justify-between border-t border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-label-sm text-on-surface-variant">عرض 10 من أصل 1,452 عملية</span>
+<div class="flex items-center gap-2">
+<label class="font-label-sm text-on-surface-variant">الصفوف:</label>
+<select class="bg-surface border border-outline-variant rounded px-2 py-1 text-xs outline-none">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-label-md">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface font-label-md transition-all">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface font-label-md transition-all">3</button>
+<span class="px-2">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface font-label-md transition-all">145</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Additional Insights / Footer Action -->
+<div class="bento-grid">
+<div class="col-span-12 md:col-span-8 bg-surface-container/30 border border-dashed border-outline-variant p-comfortable rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface font-bold">تذكير بالأمان</p>
+<p class="text-xs text-on-surface-variant">يتم الاحتفاظ بسجلات التدقيق لمدة 365 يوماً وفقاً لسياسة الامتثال الوطنية.</p>
+</div>
+</div>
+<a class="text-primary font-label-md hover:underline" href="#">عرض سياسة الأرشفة</a>
+</div>
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary p-comfortable rounded-xl relative overflow-hidden group">
+<div class="relative z-10">
+<h4 class="font-headline-sm text-lg mb-1">طلب تقرير مخصص</h4>
+<p class="text-xs text-on-primary-container mb-4">قم بإنشاء تقارير مفصلة تعتمد على معاييرك الخاصة.</p>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-label-md text-sm hover:brightness-110 active:scale-95 transition-all">ابدأ الآن</button>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -left-4 text-7xl opacity-10 group-hover:rotate-12 transition-transform duration-500">description</span>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="mt-auto py-6 px-margin-desktop border-t border-outline-variant flex items-center justify-between text-on-surface-variant">
+<p class="font-label-sm text-label-sm">© 2023 DriveHub Admin System. جميع الحقوق محفوظة.</p>
+<div class="flex gap-gutter font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors" href="#">الدعم الفني</a>
+<a class="hover:text-primary transition-colors" href="#">سياسة الخصوصية</a>
+<a class="hover:text-primary transition-colors" href="#">شروط الاستخدام</a>
+</div>
+</footer>
+</main>
+<script>
+        // Simple interactivity for demonstration
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if(el.getAttribute('href') === '#') e.preventDefault();
+            });
+        });
+    </script>
+</body></html>

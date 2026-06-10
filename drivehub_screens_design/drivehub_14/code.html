@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة المدربين - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background-color: #faf8ff;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#264191",
+                        "on-error-container": "#93000a",
+                        "surface": "#faf8ff",
+                        "secondary": "#855300",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#f39461",
+                        "outline": "#757682",
+                        "surface-dim": "#d2d9f4",
+                        "surface-container": "#eaedff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-surface": "#131b2e",
+                        "surface-tint": "#4059aa",
+                        "on-surface-variant": "#444651",
+                        "on-secondary-fixed": "#2a1700",
+                        "inverse-on-surface": "#eef0ff",
+                        "outline-variant": "#c5c5d3",
+                        "on-tertiary-fixed-variant": "#773205",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#283044",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#4b1c00",
+                        "tertiary-container": "#6e2c00",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "on-secondary-container": "#684000",
+                        "primary": "#00236f",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1e3a8a",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "surface-container-highest": "#dae2fd",
+                        "secondary-container": "#fea619",
+                        "on-tertiary-fixed": "#341100",
+                        "inverse-primary": "#b6c4ff",
+                        "on-background": "#131b2e",
+                        "surface-container-high": "#e2e7ff",
+                        "on-primary-container": "#90a8ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-primary-fixed": "#00164e",
+                        "tertiary-fixed": "#ffdbcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "1.5rem",
+                        "margin-desktop": "2.5rem",
+                        "margin-mobile": "1rem",
+                        "compact": "0.5rem",
+                        "loose": "2rem",
+                        "comfortable": "1rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["IBM Plex Sans"],
+                        "body-lg": ["IBM Plex Sans"],
+                        "headline-sm": ["IBM Plex Sans"],
+                        "display-lg": ["IBM Plex Sans"],
+                        "body-md": ["IBM Plex Sans"],
+                        "label-sm": ["IBM Plex Sans"],
+                        "headline-md": ["IBM Plex Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="fixed right-0 top-0 h-full flex flex-col z-40 bg-surface border-l border-outline-variant shadow-sm w-64">
+<div class="px-6 py-8">
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">DriveFlow Admin</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Institutional Control</p>
+</div>
+<nav class="flex-1 flex flex-col mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-label-md font-label-md">Courses</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person_add</span>
+<span class="text-label-md font-label-md">Enrollment Requests</span>
+</a>
+<!-- Active State: Instructors -->
+<a class="flex items-center gap-3 px-4 py-3 text-primary border-r-4 border-primary font-bold bg-surface-container-low transition-all duration-150 scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="text-label-md font-label-md">Instructors</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                New Training Cycle
+            </button>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-64 left-0 z-30 flex justify-between items-center px-gutter h-16 bg-surface border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-96 max-w-full">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-surface-container border border-outline-variant rounded-lg text-label-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="البحث عن مدرب..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-left">
+<p class="text-label-md font-bold text-on-surface">أحمد المدير</p>
+<p class="text-label-sm text-on-surface-variant">مسؤول النظام</p>
+</div>
+<img alt="Manager Avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a middle-aged man with a confident expression, set against a clean, blurred office background. He is wearing a sharp charcoal suit and white shirt, reflecting a modern corporate leadership aesthetic. The lighting is soft and even, highlighting clear features and a professional demeanor suitable for a management dashboard interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU_KrgQc6gGrzq23irQm31CXRexJ0tv1vqv7-ftLfGTBwKV3oq7TO45_TCNFmV74WeHDD0ikH0BAaWIuJT4ZpMaTAKPepyrS8qDtTBPBlYMjmpYjAEj5jtQDCCwm-Xzpiz3silfeDgC9YK3daXhNKsRkgXZ2loWXSI_tDb17ZDSAZnypTgQqgiW9Rpwoc68FXlJPupHg9zMYLO0l10ZJrzDG7owVp2wwD0LQYsvWHc4Az-yRAXSJuZK_JvkI-6rmNJDsdzRIvjgRR_"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="mr-64 pt-24 px-gutter pb-12">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface">إدارة المدربين - DriveHub</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">متابعة وتخصيص المدربين والحصص التدريبية.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold flex items-center gap-2 shadow-lg hover:translate-y-[-2px] transition-all active:scale-95" onclick="toggleModal(true)">
+<span class="material-symbols-outlined">person_add</span>
+                إضافة مدرب جديد
+            </button>
+</div>
+<!-- Instructor Stats Cards (Asymmetric Bento Style) -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<div class="col-span-12 md:col-span-4 bg-primary-container p-6 rounded-xl text-on-primary shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-4xl opacity-50">groups</span>
+<span class="bg-white/20 px-2 py-1 rounded text-label-sm">+12% هذا الشهر</span>
+</div>
+<p class="text-label-md">إجمالي المدربين</p>
+<h3 class="text-display-lg font-display-lg mt-1">42</h3>
+</div>
+<div class="col-span-12 md:col-span-5 bg-white p-6 rounded-xl border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-label-md text-on-surface-variant mb-2">توزيع الفئات</p>
+<div class="space-y-3">
+<div class="flex items-center gap-4">
+<span class="w-16 text-label-sm">خصوصي</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%]"></div>
+</div>
+<span class="text-label-sm font-bold">75%</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-16 text-label-sm">نقل ثقيل</span>
+<div class="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[40%]"></div>
+</div>
+<span class="text-label-sm font-bold">40%</span>
+</div>
+</div>
+</div>
+<div class="absolute -bottom-4 -left-4 opacity-5">
+<span class="material-symbols-outlined text-[120px]">leaderboard</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-3 bg-tertiary-container p-6 rounded-xl text-on-tertiary-container shadow-sm">
+<p class="text-label-md">متوسط ضغط العمل</p>
+<h3 class="text-headline-md font-headline-md mt-2">8.5 <span class="text-label-md font-normal">طالب/مدرب</span></h3>
+<div class="mt-4 flex -space-x-2 space-x-reverse">
+<img class="w-8 h-8 rounded-full border-2 border-tertiary-container" data-alt="Avatar of a male instructor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtNRA20lpDy0iQV4jNvln7jgCe1g9JOi2zfSfY0IRGfDs1idTinqWvazmAjIgk6djKSJv8TB3VpiuXjpdwq-MDC3DKI6f2_Ege3Kzmv3MbvMoM23zGgtL2RjTwB4rWhj5wJTOSbQIHILVzvfz6C3SZC84513wG52rQ2g7C6xOazUXf6Z8-gVhZHSmHp4gDEzAaRAEQG3A55JVddhgd3FGywtA-VDaYIvgK2RIdSbSCxYrnP1M1nCg7SCOMcVMt8H66zYhRN-py-pRR"/>
+<img class="w-8 h-8 rounded-full border-2 border-tertiary-container" data-alt="Avatar of a female instructor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlGqisOVKvYrXhbK2vCamlV5pFYGIKkPjGHUt38b3BC4Pm-TqkhfjsJjVQJlsFTcHji9iA5qsMqBtUDvd6DFKBwHcW3HdDA71b9WcEagCNme8fT0ZP4sYDJzcwvoOWb6He2QN4gVm9Pm2cDT1QpDeQpKHZMmEdIGyIwzNNpaYQ5akBL-y94buuKgXrQ-cHU3WDonxPAAG3dPX4zw2lJ1LCXO3wXG2BHB3NF7LMl_K2xVW_MlWMzzi2DvRXoqK-qXSGUeCwr8PUsvgs"/>
+<img class="w-8 h-8 rounded-full border-2 border-tertiary-container" data-alt="Avatar of another male instructor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOF-GP3G0INr-glrq5OfakdJHzkoxqgonOyWHdZxyhu7SBh4zo0zcazlpyD-D-NDr6JYNhKK_HKszhzHIiMzmFRmDlb7sawkP-nDcKytI_cH_d9R2qss1XoDh8JE5ndRTdvmzehWh2V1qhV1QanPMMD_LWx6bBquhKA2piMD8SWLnr4T_WZjzbwv8VJWQEFx5EnvqBt32AN3NzKkuqgRYhqo4Rmu0diRbYFuijsiuHI7yS8qNwlg3Y23V_jT08NYGSlihxgXSvN80V"/>
+<div class="w-8 h-8 rounded-full border-2 border-tertiary-container bg-on-tertiary-container text-tertiary-container flex items-center justify-center text-[10px] font-bold">+15</div>
+</div>
+</div>
+</div>
+<!-- Instructor List Table -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="text-headline-sm font-headline-sm text-primary">قائمة المدربين</h3>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 border border-outline-variant rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md">المدرب</th>
+<th class="px-6 py-4 font-label-md text-label-md">الجنس</th>
+<th class="px-6 py-4 font-label-md text-label-md">التخصص (الفئات)</th>
+<th class="px-6 py-4 font-label-md text-label-md">ضغط العمل الحالي</th>
+<th class="px-6 py-4 font-label-md text-label-md">الحالة</th>
+<th class="px-6 py-4 font-label-md text-label-md">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">ي</div>
+<div>
+<p class="font-bold text-on-surface">ياسر القحطاني</p>
+<p class="text-label-sm text-on-surface-variant">ID: #4592</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md">ذكر</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[10px] font-bold">ب (خصوصي)</span>
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[10px] font-bold">د (دراجة)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-primary">12 طالب</span>
+<div class="w-16 h-1.5 bg-surface-container rounded-full">
+<div class="h-full bg-primary w-[80%] rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-label-sm font-bold">نشط</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-primary hover:bg-primary-container rounded transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold">س</div>
+<div>
+<p class="font-bold text-on-surface">سارة العتيبي</p>
+<p class="text-label-sm text-on-surface-variant">ID: #4510</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md">أنثى</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[10px] font-bold">ب (خصوصي)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-primary">5 طلاب</span>
+<div class="w-16 h-1.5 bg-surface-container rounded-full">
+<div class="h-full bg-primary w-[30%] rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-label-sm font-bold">نشط</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-primary hover:bg-primary-container rounded transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">م</div>
+<div>
+<p class="font-bold text-on-surface">محمد الشمري</p>
+<p class="text-label-sm text-on-surface-variant">ID: #4601</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md">ذكر</td>
+<td class="px-6 py-4">
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[10px] font-bold">ج (نقل ثقيل)</span>
+<span class="px-2 py-1 bg-surface-variant text-on-surface-variant rounded text-[10px] font-bold">ح (حافلة)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-secondary">18 طالب</span>
+<div class="w-16 h-1.5 bg-surface-container rounded-full">
+<div class="h-full bg-secondary w-[95%] rounded-full"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-label-sm font-bold">في إجازة</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-primary hover:bg-primary-container rounded transition-colors"><span class="material-symbols-outlined">edit</span></button>
+<button class="p-2 text-error hover:bg-error-container rounded transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant flex items-center justify-between">
+<p class="text-label-sm text-on-surface-variant">عرض 1-10 من أصل 42 مدرب</p>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline-variant rounded-lg text-label-sm hover:bg-surface-container transition-colors">السابق</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-sm">1</button>
+<button class="px-4 py-2 border border-outline-variant rounded-lg text-label-sm hover:bg-surface-container transition-colors">2</button>
+<button class="px-4 py-2 border border-outline-variant rounded-lg text-label-sm hover:bg-surface-container transition-colors">التالي</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none" id="modalBackdrop">
+<!-- Modal Content -->
+<div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden transform translate-y-8 transition-transform duration-300" id="modalContent">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="text-headline-sm font-headline-sm text-primary">إضافة مدرب جديد</h3>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors" onclick="toggleModal(false)">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form class="p-8 space-y-6">
+<div class="grid grid-cols-2 gap-6">
+<div class="col-span-2 md:col-span-1">
+<label class="block text-label-md font-bold mb-2">اسم المدرب الكامل</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none" placeholder="مثال: صالح الأحمد" type="text"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-label-md font-bold mb-2">الجنس</label>
+<select class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+<option value="male">ذكر</option>
+<option value="female">أنثى</option>
+</select>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-label-md font-bold mb-2">رقم الهوية</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none" placeholder="1XXXXXXXXX" type="text"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-label-md font-bold mb-2">رقم الجوال</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-right" dir="ltr" placeholder="05XXXXXXXX" type="tel"/>
+</div>
+</div>
+<div>
+<label class="block text-label-md font-bold mb-3">فئات التدريب المعتمدة</label>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
+<span class="text-label-md">خصوصي (ب)</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
+<span class="text-label-md">دراجة (د)</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
+<span class="text-label-md">نقل ثقيل (ج)</span>
+</label>
+<label class="flex items-center gap-2 p-3 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
+<input class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
+<span class="text-label-md">حافلة (ح)</span>
+</label>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant flex justify-end gap-4">
+<button class="px-6 py-3 border border-outline-variant rounded-lg font-bold text-on-surface-variant hover:bg-surface-container transition-colors" onclick="toggleModal(false)" type="button">إلغاء</button>
+<button class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold shadow-lg hover:opacity-90 active:scale-95 transition-all" type="submit">حفظ البيانات</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+        function toggleModal(show) {
+            const backdrop = document.getElementById('modalBackdrop');
+            const content = document.getElementById('modalContent');
+            
+            if (show) {
+                backdrop.classList.remove('pointer-events-none', 'opacity-0');
+                backdrop.classList.add('opacity-100');
+                content.classList.remove('translate-y-8');
+                content.classList.add('translate-y-0');
+            } else {
+                backdrop.classList.add('opacity-0');
+                content.classList.add('translate-y-8');
+                content.classList.remove('translate-y-0');
+                setTimeout(() => {
+                    backdrop.classList.add('pointer-events-none');
+                }, 300);
+            }
+        }
+
+        // Close modal when clicking backdrop
+        document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+            if (e.target.id === 'modalBackdrop') toggleModal(false);
+        });
+    </script>
+</body></html>

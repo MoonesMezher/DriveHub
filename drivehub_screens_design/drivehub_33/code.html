@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub Admin - إدارة المستخدمين والصلاحيات</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+        }
+        .font-arabic {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f8f9ff",
+                    "on-surface": "#0b1c30",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "tertiary-fixed": "#e0e3e5",
+                    "on-secondary-fixed": "#001a42",
+                    "surface-dim": "#cbdbf5",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#131b2e",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface-variant": "#d3e4fe",
+                    "tertiary": "#000000",
+                    "on-tertiary-fixed": "#191c1e",
+                    "on-secondary-container": "#fefcff",
+                    "surface-container-highest": "#d3e4fe",
+                    "tertiary-container": "#191c1e",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-container": "#2170e4",
+                    "on-background": "#0b1c30",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-surface-variant": "#45464d",
+                    "surface-container-low": "#eff4ff",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#dae2fd",
+                    "error-container": "#ffdad6",
+                    "primary": "#000000",
+                    "secondary": "#0058be",
+                    "inverse-surface": "#213145",
+                    "inverse-primary": "#bec6e0",
+                    "on-primary-container": "#7c839b",
+                    "on-error": "#ffffff",
+                    "surface": "#f8f9ff",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "background": "#f8f9ff",
+                    "on-primary-fixed": "#131b2e",
+                    "surface-tint": "#565e74",
+                    "outline": "#76777d",
+                    "surface-container": "#e5eeff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c6c6cd",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#dce9ff",
+                    "on-tertiary-container": "#818486",
+                    "primary-fixed-dim": "#bec6e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "section-gap": "64px",
+                    "stack-sm": "4px",
+                    "gutter": "24px",
+                    "container-margin": "40px",
+                    "stack-md": "12px",
+                    "stack-lg": "24px"
+            },
+            "fontFamily": {
+                    "title-md": ["Inter", "IBM Plex Sans Arabic"],
+                    "headline-lg": ["IBM Plex Sans", "IBM Plex Sans Arabic"],
+                    "body-sm": ["Inter", "IBM Plex Sans Arabic"],
+                    "headline-lg-mobile": ["IBM Plex Sans", "IBM Plex Sans Arabic"],
+                    "display-lg": ["IBM Plex Sans", "IBM Plex Sans Arabic"],
+                    "body-lg": ["Inter", "IBM Plex Sans Arabic"],
+                    "label-caps": ["Inter", "IBM Plex Sans Arabic"]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-40 bg-surface border-b border-outline-variant px-container-margin h-16 flex items-center justify-between">
+<div class="flex items-center gap-stack-lg">
+<span class="text-title-md font-bold text-primary mr-64 md:mr-0">DriveHub Admin</span>
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="pr-10 pl-4 py-2 bg-surface-container-low rounded-lg border border-outline-variant focus:border-secondary focus:ring-1 focus:ring-secondary text-body-sm w-80 transition-all" placeholder="بحث سريع عن المستخدمين..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-stack-lg">
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border border-white"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border border-outline-variant cursor-pointer hover:ring-2 hover:ring-secondary transition-all">
+<img alt="Admin Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeGnp_VTvSslYUUOG_3UxZVf-s6wUpB8AiY4YpQe560PQQdVgL116B-1dNhfUQH0Q1aWMcdV_LCaJjaYMbyNSy5jToFIpkof8FXzpzQUHlhSvBh6UXl7g40L74Yhew6X5_hzZpvaOT-RQKmxaTURsS1C6nMafnA3hVOEcmg7JkuMmcKZjDtOz1zmpYSK-usk4gAHxHtj235BGln563gfpbnxbZGmEdC1_rt6_MUoS9zOd8NTGfzZWLbKL4z20IK6vaxtJ6KaRmVLmj"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed right-0 top-0 h-full w-64 z-50 bg-surface-container border-l border-outline-variant flex flex-col pt-6">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+<div>
+<span class="block text-title-md font-bold text-primary">DriveHub</span>
+<span class="block text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold opacity-60">Control Center</span>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary hover:bg-white px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-body-sm font-medium font-arabic">لوحة القيادة</span>
+</a>
+<a class="flex items-center gap-3 bg-secondary text-white px-4 py-3 rounded-xl shadow-md transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-body-sm font-semibold font-arabic">المستخدمين</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary hover:bg-white px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="text-body-sm font-medium font-arabic">المدارس</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary hover:bg-white px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-body-sm font-medium font-arabic">التسعير</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary hover:bg-white px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="text-body-sm font-medium font-arabic">التحققات</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-secondary hover:bg-white px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-body-sm font-medium font-arabic">التحليلات</span>
+</a>
+</nav>
+<div class="p-4 mt-auto mb-6">
+<button class="w-full bg-on-surface text-surface py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-primary transition-colors shadow-sm mb-4">
+<span class="material-symbols-outlined text-[18px]">add_business</span>
+<span class="text-body-sm font-semibold font-arabic">مدرسة جديدة</span>
+</button>
+<a class="flex items-center gap-3 text-error hover:bg-error-container/20 px-4 py-3 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-body-sm font-medium font-arabic">تسجيل الخروج</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="mr-64 pt-24 p-10 min-h-screen">
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-gutter mb-10">
+<div>
+<h1 class="text-headline-lg font-bold text-primary font-arabic mb-2">إدارة المستخدمين والصلاحيات</h1>
+<p class="text-body-lg text-on-surface-variant font-arabic opacity-80">تحكم في وصول المستخدمين، الأدوار، والأذونات عبر نظام DriveHub.</p>
+</div>
+<button class="bg-secondary text-on-secondary px-8 py-3.5 rounded-xl flex items-center gap-3 shadow-lg shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined">person_add</span>
+<span class="text-body-sm font-bold font-arabic">إضافة مستخدم جديد</span>
+</button>
+</div>
+<!-- Statistics Widgets -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all group">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div class="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-full text-label-caps">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                    12%
+                </div>
+</div>
+<p class="text-body-sm text-on-surface-variant font-arabic font-medium">إجمالي المستخدمين</p>
+<h3 class="text-display-lg font-bold text-on-surface tracking-tight">1,284</h3>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all group">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 bg-secondary-fixed rounded-xl flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="px-2 py-1 bg-secondary-fixed-dim/20 text-secondary font-bold rounded-full text-[10px] uppercase">Live</div>
+</div>
+<p class="text-body-sm text-on-surface-variant font-arabic font-medium">نشط الآن</p>
+<h3 class="text-display-lg font-bold text-on-surface tracking-tight">156</h3>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/50 shadow-sm hover:shadow-md transition-all group">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-xl flex items-center justify-center text-on-surface-variant group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">manage_accounts</span>
+</div>
+<p class="text-[11px] text-on-surface-variant font-semibold">5 فئات</p>
+</div>
+<p class="text-body-sm text-on-surface-variant font-arabic font-medium">توزيع الأدوار</p>
+<h3 class="text-display-lg font-bold text-on-surface tracking-tight">42 <span class="text-title-md font-arabic font-semibold opacity-50">مدير</span></h3>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border-2 border-secondary shadow-sm hover:shadow-md transition-all group">
+<div class="flex items-center justify-between mb-4">
+<div class="w-12 h-12 bg-error-container/30 rounded-xl flex items-center justify-center text-error group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+<span class="px-2 py-0.5 bg-error text-on-error rounded-full text-[10px] font-bold font-arabic">هام</span>
+</div>
+<p class="text-body-sm text-on-surface-variant font-arabic font-medium">بانتظار الموافقة</p>
+<h3 class="text-display-lg font-bold text-on-surface tracking-tight">18</h3>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex gap-10 border-b border-outline-variant/30 mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
+<button class="pb-4 px-2 border-b-2 border-secondary text-secondary font-bold text-body-sm font-arabic transition-all flex items-center gap-2" id="tab-users" onclick="switchTab('users')">
+<span class="material-symbols-outlined text-[20px]">person_search</span>
+            قائمة المستخدمين
+        </button>
+<button class="pb-4 px-2 border-b-2 border-transparent text-on-surface-variant hover:text-primary font-medium text-body-sm font-arabic transition-all flex items-center gap-2" id="tab-permissions" onclick="switchTab('permissions')">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+            الأدوار والصلاحيات
+        </button>
+</div>
+<!-- User List Content -->
+<div class="space-y-6 block" id="content-users">
+<!-- Filters -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/50 shadow-sm flex flex-col lg:flex-row gap-4 items-center">
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">filter_alt</span>
+<input class="w-full pr-12 pl-4 py-3 bg-surface border border-outline-variant/50 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-body-sm transition-all" placeholder="البحث بالاسم، البريد، أو المدرسة..." type="text"/>
+</div>
+<div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+<select class="py-3 pr-10 pl-4 border border-outline-variant/50 rounded-xl focus:ring-2 focus:ring-secondary/20 text-body-sm bg-surface font-arabic">
+<option>كل الأدوار</option>
+<option>مدير نظام</option>
+<option>مدير مدرسة</option>
+<option>مدرب قيادة</option>
+</select>
+<select class="py-3 pr-10 pl-4 border border-outline-variant/50 rounded-xl focus:ring-2 focus:ring-secondary/20 text-body-sm bg-surface font-arabic">
+<option>كل الحالات</option>
+<option>نشط</option>
+<option>غير نشط</option>
+</select>
+<button class="bg-surface-container-high text-on-surface px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-outline-variant/30 transition-all text-body-sm font-bold font-arabic">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                    تصفية متقدمة
+                </button>
+</div>
+</div>
+<!-- Modern Table -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-sm overflow-hidden">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 text-body-sm font-bold text-on-surface-variant/70 font-arabic border-b border-outline-variant/30">
+<th class="px-8 py-5">المستخدم</th>
+<th class="px-8 py-5">الدور الوظيفي</th>
+<th class="px-8 py-5">المدرسة / الفرع</th>
+<th class="px-8 py-5">آخر نشاط</th>
+<th class="px-8 py-5 text-center">الحالة</th>
+<th class="px-8 py-5 text-left">الإجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-all group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-2xl bg-secondary-fixed-dim text-secondary font-bold flex items-center justify-center text-title-md font-arabic shadow-sm">أ م</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface text-body-lg font-arabic">أحمد محمد</span>
+<span class="text-body-sm text-on-surface-variant opacity-60">ahmed.m@drivehub.sa</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg text-[12px] font-bold font-arabic">مدير مدرسة</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic font-medium opacity-80">مدرسة الرياض النموذجية</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic text-body-sm opacity-60">منذ ساعتين</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-center">
+<span class="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[12px] font-bold font-arabic">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                    نشط الآن
+                                </span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+<button class="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors" title="تعديل"><span class="material-symbols-outlined text-[20px]">edit_square</span></button>
+<button class="p-2 hover:bg-on-surface/10 text-on-surface-variant rounded-lg transition-colors" title="كلمة المرور"><span class="material-symbols-outlined text-[20px]">key</span></button>
+<button class="p-2 hover:bg-error/10 text-error rounded-lg transition-colors" title="حذف"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-all group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-2xl overflow-hidden shadow-sm">
+<img alt="Instructor Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaDDTm4vTqqJM0CX9pKOHHeZwJY6wDeqFiBkWn4sstFfiLaJTCJS1dGL7o_FcNV18djI92Nym8ZQShjpPMUtCpr4BxQvEOgDYUZOVNxMnlyVU99LrkgivfCZ0TzrLHkJB0MQB0155v83fTbZ1pzhJckQTfcvhTE20vCAYg6Lfww3fWs_Ms5xqlDlWEhBhlZxIQzJlNRN1STR0qG_FiqQJqZIg1iyGvwf5kXOC0kkheYkWrz3KMIkBhRPZmfjAOTTrfViI9L9XXzM5b"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface text-body-lg font-arabic">سارة خالد</span>
+<span class="text-body-sm text-on-surface-variant opacity-60">sara.k@drivehub.sa</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-lg text-[12px] font-bold font-arabic">مدرب قيادة</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic font-medium opacity-80">فرع جدة الرئيسي</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic text-body-sm opacity-60">أمس، 10:30 م</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-center">
+<span class="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[12px] font-bold font-arabic">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    نشط
+                                </span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+<button class="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors" title="تعديل"><span class="material-symbols-outlined text-[20px]">edit_square</span></button>
+<button class="p-2 hover:bg-on-surface/10 text-on-surface-variant rounded-lg transition-colors" title="كلمة المرور"><span class="material-symbols-outlined text-[20px]">key</span></button>
+<button class="p-2 hover:bg-error/10 text-error rounded-lg transition-colors" title="حذف"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-all group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-2xl bg-surface-container-highest text-on-surface-variant font-bold flex items-center justify-center text-title-md font-arabic shadow-sm">ف ع</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface text-body-lg font-arabic">فهد العتيبي</span>
+<span class="text-body-sm text-on-surface-variant opacity-60">f.otaibi@traffic.gov.sa</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-primary-fixed text-primary rounded-lg text-[12px] font-bold font-arabic">ضابط مرور</span>
+</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic font-medium opacity-80">الإدارة العامة للمرور</td>
+<td class="px-8 py-6 text-on-surface-variant font-arabic text-body-sm opacity-60">منذ 3 أيام</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-center">
+<span class="flex items-center gap-2 px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-full text-[12px] font-bold font-arabic">
+<span class="w-1.5 h-1.5 rounded-full bg-outline opacity-40"></span>
+                                    غير نشط
+                                </span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+<button class="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors" title="تعديل"><span class="material-symbols-outlined text-[20px]">edit_square</span></button>
+<button class="p-2 hover:bg-on-surface/10 text-on-surface-variant rounded-lg transition-colors" title="كلمة المرور"><span class="material-symbols-outlined text-[20px]">key</span></button>
+<button class="p-2 hover:bg-error/10 text-error rounded-lg transition-colors" title="حذف"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-8 py-5 bg-surface-container-low/30 flex items-center justify-between">
+<span class="text-body-sm text-on-surface-variant font-arabic opacity-60">عرض 1-10 من أصل 1,284 مستخدم</span>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant/50 rounded-xl hover:bg-white transition-all disabled:opacity-30"><span class="material-symbols-outlined">chevron_right</span></button>
+<button class="p-2 border border-outline-variant/50 rounded-xl hover:bg-white transition-all"><span class="material-symbols-outlined">chevron_left</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Permissions Section (Hidden) -->
+<div class="hidden" id="content-permissions">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-sm overflow-hidden flex flex-col">
+<div class="p-6 border-b border-outline-variant/30 bg-surface-container-low/50 flex items-center justify-between">
+<h4 class="text-body-lg font-bold text-on-surface font-arabic">الأدوار المتاحة</h4>
+<button class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center hover:bg-secondary hover:text-white transition-all"><span class="material-symbols-outlined text-[18px]">add</span></button>
+</div>
+<div class="p-2 space-y-1">
+<button class="w-full text-right p-4 rounded-xl transition-all border-r-4 border-secondary bg-surface-container-high" onclick="selectRole('admin')">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center"><span class="material-symbols-outlined">admin_panel_settings</span></div>
+<div>
+<p class="font-bold text-on-surface font-arabic text-body-sm">مدير النظام</p>
+<p class="text-[11px] text-on-surface-variant font-arabic opacity-60">وصول كامل لجميع المميزات</p>
+</div>
+</div>
+</button>
+<button class="w-full text-right p-4 rounded-xl transition-all border-r-4 border-transparent hover:bg-surface-container-low" onclick="selectRole('school-manager')">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary-fixed rounded-xl flex items-center justify-center text-primary"><span class="material-symbols-outlined">school</span></div>
+<div>
+<p class="font-bold text-on-surface font-arabic text-body-sm">مدير مدرسة</p>
+<p class="text-[11px] text-on-surface-variant font-arabic opacity-60">إدارة الفرع والطلاب</p>
+</div>
+</div>
+</button>
+</div>
+</div>
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-sm flex flex-col">
+<div class="p-8 border-b border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div>
+<h4 class="text-headline-lg font-bold text-primary font-arabic mb-1" id="role-title">مدير النظام (System Admin)</h4>
+<p class="text-body-sm text-on-surface-variant font-arabic opacity-60">تعديل الأذونات لهذا الدور سيؤثر على 12 مستخدم نشط حالياً.</p>
+</div>
+<button class="bg-secondary text-white px-8 py-3 rounded-xl font-bold font-arabic shadow-md hover:brightness-110 active:scale-95 transition-all">حفظ التغييرات</button>
+</div>
+<div class="p-8 space-y-8 max-h-[600px] overflow-y-auto">
+<!-- Permission Group -->
+<div>
+<h5 class="text-body-lg font-bold text-on-surface font-arabic mb-5 flex items-center gap-3">
+<span class="w-2 h-6 bg-secondary rounded-full"></span>
+                            إدارة المدرسة
+                        </h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<label class="flex items-start gap-4 p-5 border border-outline-variant/50 rounded-2xl cursor-pointer hover:bg-surface-container-low/50 transition-all group">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 text-secondary border-outline-variant/50 rounded focus:ring-secondary/20 transition-all" type="checkbox"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface font-arabic text-body-sm">إنشاء مدارس جديدة</span>
+<span class="text-[12px] text-on-surface-variant font-arabic opacity-60 mt-1">القدرة على تسجيل مدارس قيادة جديدة في النظام</span>
+</div>
+</label>
+<label class="flex items-start gap-4 p-5 border border-outline-variant/50 rounded-2xl cursor-pointer hover:bg-surface-container-low/50 transition-all group">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 text-secondary border-outline-variant/50 rounded focus:ring-secondary/20 transition-all" type="checkbox"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-on-surface font-arabic text-body-sm">تعديل ملفات المدارس</span>
+<span class="text-[12px] text-on-surface-variant font-arabic opacity-60 mt-1">تحديث بيانات الاتصال والمواقع للفروع</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    function switchTab(tab) {
+        const usersBtn = document.getElementById('tab-users');
+        const permissionsBtn = document.getElementById('tab-permissions');
+        const usersContent = document.getElementById('content-users');
+        const permissionsContent = document.getElementById('content-permissions');
+
+        if (tab === 'users') {
+            usersBtn.classList.add('border-secondary', 'text-secondary', 'font-bold');
+            usersBtn.classList.remove('border-transparent', 'text-on-surface-variant', 'font-medium');
+            permissionsBtn.classList.remove('border-secondary', 'text-secondary', 'font-bold');
+            permissionsBtn.classList.add('border-transparent', 'text-on-surface-variant', 'font-medium');
+            
+            usersContent.classList.remove('hidden');
+            usersContent.classList.add('block');
+            permissionsContent.classList.remove('block');
+            permissionsContent.classList.add('hidden');
+        } else {
+            permissionsBtn.classList.add('border-secondary', 'text-secondary', 'font-bold');
+            permissionsBtn.classList.remove('border-transparent', 'text-on-surface-variant', 'font-medium');
+            usersBtn.classList.remove('border-secondary', 'text-secondary', 'font-bold');
+            usersBtn.classList.add('border-transparent', 'text-on-surface-variant', 'font-medium');
+
+            permissionsContent.classList.remove('hidden');
+            permissionsContent.classList.add('block');
+            usersContent.classList.remove('block');
+            usersContent.classList.add('hidden');
+        }
+    }
+
+    function selectRole(roleId) {
+        const buttons = document.querySelectorAll('#content-permissions button[onclick^="selectRole"]');
+        buttons.forEach(btn => {
+            btn.classList.remove('bg-surface-container-high', 'border-secondary');
+            btn.classList.add('border-transparent', 'hover:bg-surface-container-low');
+        });
+
+        const selectedBtn = document.querySelector(`#content-permissions button[onclick="selectRole('${roleId}')"]`);
+        selectedBtn.classList.add('bg-surface-container-high', 'border-secondary');
+        selectedBtn.classList.remove('border-transparent', 'hover:bg-surface-container-low');
+
+        const title = document.getElementById('role-title');
+        const roleMap = {
+            'admin': 'مدير النظام (System Admin)',
+            'school-manager': 'مدير مدرسة',
+            'instructor': 'مدرب قيادة',
+            'traffic': 'ضابط مرور',
+            'finance': 'مسؤول مالي'
+        };
+        title.innerText = roleMap[roleId];
+    }
+</script>
+</body></html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>طلبات الالتحاق - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#264191",
+                        "on-error-container": "#93000a",
+                        "surface": "#faf8ff",
+                        "secondary": "#855300",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#f39461",
+                        "outline": "#757682",
+                        "surface-dim": "#d2d9f4",
+                        "surface-container": "#eaedff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "on-surface": "#131b2e",
+                        "surface-tint": "#4059aa",
+                        "on-surface-variant": "#444651",
+                        "on-secondary-fixed": "#2a1700",
+                        "inverse-on-surface": "#eef0ff",
+                        "outline-variant": "#c5c5d3",
+                        "on-tertiary-fixed-variant": "#773205",
+                        "primary-fixed": "#dce1ff",
+                        "inverse-surface": "#283044",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#4b1c00",
+                        "tertiary-container": "#6e2c00",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-variant": "#dae2fd",
+                        "on-secondary-container": "#684000",
+                        "primary": "#00236f",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1e3a8a",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "secondary-fixed": "#ffddb8",
+                        "surface-container-highest": "#dae2fd",
+                        "secondary-container": "#fea619",
+                        "on-tertiary-fixed": "#341100",
+                        "inverse-primary": "#b6c4ff",
+                        "on-background": "#131b2e",
+                        "surface-container-high": "#e2e7ff",
+                        "on-primary-container": "#90a8ff",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "on-primary-fixed": "#00164e",
+                        "tertiary-fixed": "#ffdbcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "1.5rem",
+                        "margin-desktop": "2.5rem",
+                        "margin-mobile": "1rem",
+                        "compact": "0.5rem",
+                        "loose": "2rem",
+                        "comfortable": "1rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["IBM Plex Sans Arabic"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "headline-sm": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c5c5d3; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Shell -->
+<nav class="fixed right-0 top-0 h-full w-64 bg-surface dark:bg-inverse-surface border-l border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex flex-col z-40">
+<div class="p-6">
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-inverse-primary mb-1">DriveFlow Admin</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant opacity-70">التحكم المؤسسي</p>
+</div>
+<div class="mt-4 flex flex-col space-y-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="text-label-md font-label-md">Courses</span>
+</a>
+<!-- Active State: Enrollment Requests -->
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-inverse-primary border-r-4 border-primary font-bold bg-surface-container-low dark:bg-surface-container-highest transition-all duration-150 scale-[0.98] rounded-l-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="text-label-md font-label-md">Enrollment Requests</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="text-label-md font-label-md">Instructors</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-label-md font-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto p-4 border-t border-outline-variant">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>دورة تدريبية جديدة</span>
+</button>
+</div>
+</nav>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 left-0 right-64 z-30 flex justify-between items-center px-gutter h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pr-10 pl-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="البحث عن طلب..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<span class="text-label-md font-label-md text-primary cursor-pointer hover:underline">الدعم الفني</span>
+</div>
+<div class="flex items-center gap-3 pr-6 border-r border-outline-variant">
+<div class="text-left">
+<p class="text-label-md font-bold text-on-surface">أحمد المدير</p>
+<p class="text-label-sm text-on-surface-variant opacity-70">مدير النظام</p>
+</div>
+<img alt="Manager Profile" class="w-10 h-10 rounded-full bg-surface-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKRzleIaPTGtj1EZ2bRempM-JTUhAA0voomPK3H90zFO1B3AwNuSlP-nm-BmBde91EomvVkjEeY_wT2DQWiRKVRKuKr0IqCKVOaSRVW1MIBfakC8EN6S9mNNH_sSkP34V1yn-CwDrHVRx5ZBpj6XpUQ8NpuYUI-Vc5ZaKK21MHEaVhqifNuwbN5OXMCnQgrNp26daDW0_LDxqqCkeF3ug8A6IRgZJmF__OMMCTu4dvYBNQESH-RnYffn0WNjC8d9YmjpCKBx3msbUA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="mr-64 pt-20 p-gutter min-h-screen">
+<div class="max-w-7xl mx-auto">
+<!-- Page Header & Stats -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="text-headline-md font-headline-md text-primary mb-2">طلبات التحاق المتدربين</h2>
+<p class="text-body-md text-on-surface-variant">مراجعة ومعالجة طلبات التسجيل الجديدة بناءً على الأولوية والمقاعد المتاحة.</p>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="bg-primary-container p-2 rounded-lg">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="event_seat">event_seat</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant">المقاعد المتاحة</p>
+<p class="text-headline-sm font-bold text-primary">24 / 100</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="bg-secondary-container p-2 rounded-lg">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="pending_actions">pending_actions</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant">طلبات قيد المراجعة</p>
+<p class="text-headline-sm font-bold text-secondary">12</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Controls -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant mb-6 flex flex-wrap gap-4 items-center">
+<span class="text-label-md font-bold text-on-surface-variant ml-2">ترتيب حسب:</span>
+<button class="bg-primary-container text-white px-4 py-2 rounded-full text-label-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="schedule">schedule</span>
+                    الأقدمية (الأولوية)
+                </button>
+<button class="hover:bg-surface-container-high px-4 py-2 rounded-full text-label-md border border-outline-variant flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="category">category</span>
+                    فئة الرخصة
+                </button>
+<div class="mr-auto flex gap-3">
+<select class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 text-label-md outline-none focus:ring-1 focus:ring-primary">
+<option>جميع الفئات (B1/B2)</option>
+<option>فئة B1</option>
+<option>فئة B2</option>
+</select>
+</div>
+</div>
+<!-- Enrollment Requests List -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Request Card 1 -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden" id="req-1">
+<div class="absolute right-0 top-0 w-1 h-full bg-secondary"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<img alt="Student" class="w-16 h-16 rounded-full bg-surface-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt4eumxwLUsKrGkiMKFdrS2GtzHfKnmfz6J08MRqarw1sNkh-CNFA8xpo58njm_ddkEB6Ex04WgQaOiDk-tugYL_wAzj0mJb_mgcsBoDmFW9crNS_PNI1JyMO0GK5D-on9ho6gWmOkpBim-onMLxyNnGcgeweVRIoa2T28QfnASXOZJ_x2jHLso5abQUWzV6PuBXgd84ruK1cVQeH7a8J6VwKRR_uFleueSrAjmhtF05WI3LLqIeKmyH3-kp5s2TdxwC-QQc1IfUg1"/>
+<div>
+<h3 class="text-headline-sm font-bold text-on-surface">محمد العتيبي</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="bg-surface-container-high text-on-primary-fixed-variant px-3 py-1 rounded-full text-label-sm font-bold">فئة B2 (ناقل حركة آلي)</span>
+<span class="text-on-surface-variant text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span>
+                                        منذ ساعتين
+                                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-8 items-center lg:border-r lg:pr-8 border-outline-variant">
+<div class="space-y-2">
+<p class="text-label-sm text-on-surface-variant">الوثائق المرفوعة</p>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 text-success group/doc cursor-pointer">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle">check_circle</span>
+<span class="text-label-md text-green-700 font-medium">الهوية الوطنية</span>
+</div>
+<div class="flex items-center gap-2 text-success group/doc cursor-pointer">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle">check_circle</span>
+<span class="text-label-md text-green-700 font-medium">الرخصة الحالية</span>
+</div>
+</div>
+</div>
+<div class="lg:w-32">
+<p class="text-label-sm text-on-surface-variant">المقاعد المتبقية</p>
+<p class="text-label-md font-bold text-secondary">5 مقاعد فقط</p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-1">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3" id="actions-1">
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-sm" onclick="handleAccept(1)">
+<span class="material-symbols-outlined" data-icon="done">done</span>
+                                قبول الطلب
+                            </button>
+<button class="bg-error-container text-on-error-container px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-red-100 transition-all">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+                                رفض
+                            </button>
+</div>
+<!-- Accept Field (Hidden initially) -->
+<div class="hidden flex-1 animate-in fade-in slide-in-from-right duration-300" id="payment-field-1">
+<div class="bg-surface-container-high p-4 rounded-lg flex items-end gap-4 border border-primary/20">
+<div class="flex-1">
+<label class="block text-label-sm font-bold text-primary mb-2">تحديد موعد السداد النهائي</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg p-2 text-label-md outline-none focus:ring-2 focus:ring-primary" type="date"/>
+</div>
+</div>
+<button class="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:opacity-90 transition-all" onclick="confirmAccept(1)">
+                                    تأكيد وإرسال الفاتورة
+                                </button>
+<button class="text-on-surface-variant hover:underline text-label-md pb-2" onclick="cancelAccept(1)">إلغاء</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Card 2 -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden" id="req-2">
+<div class="absolute right-0 top-0 w-1 h-full bg-primary"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<img alt="Student" class="w-16 h-16 rounded-full bg-surface-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhTCmvrsEdPqoI1D_RvX-4dM4bAQ1zg1UlONGTDOpNSDZWpWYqT1157rlQainCHQaLxPzM0gh92zhHX2ygFEkHJPj6Epp3RtoXi_27b5AgbwsKtyFTK470N9jKk-yjkW_isGSohf0fxEUb4sKzKrjA4_ysnNcGO7zkE8iVSAFbhh5OU_tSjCut-9CsEIIMIg0uq6NRhp29hCUvpvRp2WgUJSQZacEaYbKmqkwKiK6BLmx6aSuhAsS0njAyIqV52Km_FJrWnbTyxVSc"/>
+<div>
+<h3 class="text-headline-sm font-bold text-on-surface">سارة القحطاني</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="bg-surface-container-high text-on-primary-fixed-variant px-3 py-1 rounded-full text-label-sm font-bold">فئة B1 (ناقل حركة يدوي)</span>
+<span class="text-on-surface-variant text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span>
+                                        منذ 5 ساعات
+                                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-8 items-center lg:border-r lg:pr-8 border-outline-variant">
+<div class="space-y-2">
+<p class="text-label-sm text-on-surface-variant">الوثائق المرفوعة</p>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 text-success">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle">check_circle</span>
+<span class="text-label-md text-green-700 font-medium">الهوية الوطنية</span>
+</div>
+<div class="flex items-center gap-2 text-on-tertiary-container bg-tertiary-fixed px-2 py-0.5 rounded border border-tertiary">
+<span class="material-symbols-outlined text-[18px]" data-icon="error">error</span>
+<span class="text-label-md font-medium">الرخصة مفقودة</span>
+</div>
+</div>
+</div>
+<div class="lg:w-32">
+<p class="text-label-sm text-on-surface-variant">المقاعد المتبقية</p>
+<p class="text-label-md font-bold text-primary">12 مقعد</p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-1">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3" id="actions-2">
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-all" onclick="handleAccept(2)">
+<span class="material-symbols-outlined" data-icon="done">done</span>
+                                قبول الطلب
+                            </button>
+<button class="bg-error-container text-on-error-container px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-red-100 transition-all">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+                                رفض
+                            </button>
+</div>
+<div class="hidden flex-1" id="payment-field-2">
+<div class="bg-surface-container-high p-4 rounded-lg flex items-end gap-4 border border-primary/20">
+<div class="flex-1">
+<label class="block text-label-sm font-bold text-primary mb-2">تحديد موعد السداد النهائي</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg p-2 text-label-md outline-none" type="date"/>
+</div>
+<button class="bg-primary text-white px-6 py-2 rounded-lg font-bold" onclick="confirmAccept(2)">تأكيد</button>
+<button class="text-on-surface-variant hover:underline text-label-md" onclick="cancelAccept(2)">إلغاء</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Card 3 -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden" id="req-3">
+<div class="absolute right-0 top-0 w-1 h-full bg-outline"></div>
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold text-xl">خ</div>
+<div>
+<h3 class="text-headline-sm font-bold text-on-surface">خالد العبدالله</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="bg-surface-container-high text-on-primary-fixed-variant px-3 py-1 rounded-full text-label-sm font-bold">فئة B2 (ناقل حركة آلي)</span>
+<span class="text-on-surface-variant text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span>
+                                        منذ يوم واحد
+                                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-8 items-center lg:border-r lg:pr-8 border-outline-variant">
+<div class="space-y-2">
+<p class="text-label-sm text-on-surface-variant">الوثائق المرفوعة</p>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 text-success">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle">check_circle</span>
+<span class="text-label-md text-green-700 font-medium">الهوية الوطنية</span>
+</div>
+<div class="flex items-center gap-2 text-success">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle">check_circle</span>
+<span class="text-label-md text-green-700 font-medium">الرخصة الحالية</span>
+</div>
+</div>
+</div>
+<div class="lg:w-32">
+<p class="text-label-sm text-on-surface-variant">المقاعد المتبقية</p>
+<p class="text-label-md font-bold text-secondary">5 مقاعد فقط</p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full mt-1">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3" id="actions-3">
+<button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-all" onclick="handleAccept(3)">
+<span class="material-symbols-outlined" data-icon="done">done</span>
+                                قبول الطلب
+                            </button>
+<button class="bg-error-container text-on-error-container px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-red-100 transition-all">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+                                رفض
+                            </button>
+</div>
+<div class="hidden flex-1" id="payment-field-3">
+<div class="bg-surface-container-high p-4 rounded-lg flex items-end gap-4 border border-primary/20">
+<div class="flex-1">
+<label class="block text-label-sm font-bold text-primary mb-2">تحديد موعد السداد النهائي</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg p-2 text-label-md outline-none" type="date"/>
+</div>
+<button class="bg-primary text-white px-6 py-2 rounded-lg font-bold" onclick="confirmAccept(3)">تأكيد</button>
+<button class="text-on-surface-variant hover:underline text-label-md" onclick="cancelAccept(3)">إلغاء</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Illustration Placeholder (Hidden) -->
+<div class="hidden flex-col items-center justify-center py-24 text-center" id="empty-state">
+<div class="bg-surface-container-highest p-8 rounded-full mb-6">
+<span class="material-symbols-outlined text-primary text-[64px]" data-icon="check_circle">check_circle</span>
+</div>
+<h3 class="text-headline-sm font-bold text-on-surface">تمت معالجة جميع الطلبات!</h3>
+<p class="text-body-md text-on-surface-variant mt-2 max-w-md">لا توجد طلبات معلقة حالياً. سيتم إخطارك عند وصول طلبات تسجيل جديدة.</p>
+</div>
+</div>
+</main>
+<script>
+        function handleAccept(id) {
+            const actions = document.getElementById(`actions-${id}`);
+            const paymentField = document.getElementById(`payment-field-${id}`);
+            
+            actions.classList.add('hidden');
+            paymentField.classList.remove('hidden');
+            paymentField.classList.add('flex');
+        }
+
+        function cancelAccept(id) {
+            const actions = document.getElementById(`actions-${id}`);
+            const paymentField = document.getElementById(`payment-field-${id}`);
+            
+            actions.classList.remove('hidden');
+            paymentField.classList.add('hidden');
+            paymentField.classList.remove('flex');
+        }
+
+        function confirmAccept(id) {
+            const reqCard = document.getElementById(`req-${id}`);
+            reqCard.classList.add('opacity-0', 'scale-95', '-translate-x-10', 'transition-all', 'duration-500');
+            
+            setTimeout(() => {
+                reqCard.remove();
+                checkEmptyState();
+            }, 500);
+        }
+
+        function checkEmptyState() {
+            const container = document.querySelector('.grid');
+            if (container.children.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('empty-state').classList.add('flex');
+            }
+        }
+    </script>
+</body></html>

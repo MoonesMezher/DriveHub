@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة الأسعار والإيرادات - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#f39461",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed": "#dce1ff",
+                    "secondary": "#855300",
+                    "on-surface": "#131b2e",
+                    "on-primary-fixed": "#00164e",
+                    "inverse-surface": "#283044",
+                    "primary": "#00236f",
+                    "on-surface-variant": "#444651",
+                    "surface-tint": "#4059aa",
+                    "on-tertiary-fixed": "#341100",
+                    "tertiary-container": "#6e2c00",
+                    "secondary-container": "#fea619",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#90a8ff",
+                    "primary-container": "#1e3a8a",
+                    "surface-container-high": "#e2e7ff",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "inverse-primary": "#b6c4ff",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-variant": "#dae2fd",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "secondary-fixed": "#ffddb8",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "inverse-on-surface": "#eef0ff",
+                    "tertiary": "#4b1c00",
+                    "surface-bright": "#faf8ff",
+                    "surface": "#faf8ff",
+                    "outline-variant": "#c5c5d3",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#684000",
+                    "on-background": "#131b2e",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "background": "#faf8ff",
+                    "outline": "#757682",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary-fixed-variant": "#264191",
+                    "surface-container": "#eaedff",
+                    "surface-dim": "#d2d9f4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "compact": "0.5rem",
+                    "gutter": "1.5rem",
+                    "loose": "2rem",
+                    "margin-desktop": "2.5rem",
+                    "margin-mobile": "1rem",
+                    "comfortable": "1rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["IBM Plex Sans Arabic"],
+                    "headline-md": ["IBM Plex Sans Arabic"],
+                    "label-md": ["IBM Plex Sans Arabic"],
+                    "body-md": ["IBM Plex Sans Arabic"],
+                    "label-sm": ["IBM Plex Sans Arabic"],
+                    "headline-sm": ["IBM Plex Sans Arabic"],
+                    "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                    "display-lg": ["IBM Plex Sans Arabic"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+      body {
+        font-family: 'IBM Plex Sans Arabic', sans-serif;
+        background-color: #faf8ff;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .revenue-chart-bar {
+        transition: height 1s ease-in-out;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #c5c5d3;
+        border-radius: 10px;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Sidebar (Right for Arabic) -->
+<aside class="fixed right-0 top-0 h-full w-64 z-50 bg-surface-container border-l border-outline-variant flex flex-col py-loose transition-all duration-200 ease-in-out">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-black text-primary leading-none">DriveHub</h1>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">System Administration</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-compact text-on-surface-variant hover:bg-surface-container-high mx-2 px-3 py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">لوحة التحكم</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:bg-surface-container-high mx-2 px-3 py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-md text-label-md">المدارس</span>
+</a>
+<!-- Active Tab: Pricing -->
+<a class="flex items-center gap-compact bg-primary text-on-primary rounded-lg mx-2 px-3 py-2 border-r-4 border-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-md text-label-md">التسعير</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:bg-surface-container-high mx-2 px-3 py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md">التحققات</span>
+</a>
+<a class="flex items-center gap-compact text-on-surface-variant hover:bg-surface-container-high mx-2 px-3 py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">التحليلات</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg font-label-md text-label-md shadow-md active:scale-95 transition-transform">
+                تسجيل مدرسة جديدة
+            </button>
+<div class="mt-4 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-compact text-on-surface-variant hover:text-error px-3 py-2" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">تسجيل الخروج</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="mr-64 p-margin-desktop min-h-screen">
+<!-- Header -->
+<header class="flex justify-between items-center mb-loose">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">إدارة الأسعار والإيرادات</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">تحكم في هيكل التكاليف والعمولات والضرائب عبر المنصة.</p>
+</div>
+<div class="flex gap-4">
+<div class="relative">
+<input class="bg-surface border border-outline-variant rounded-lg pr-10 pl-4 py-2 text-label-md focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="بحث عن معاملة..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant">search</span>
+</div>
+<button class="bg-surface-container-high p-2 rounded-full text-primary hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-2 bg-white p-1 pr-4 rounded-full border border-outline-variant shadow-sm">
+<span class="font-label-md text-label-md font-bold text-on-surface">أدمن النظام</span>
+<img alt="Admin" class="w-8 h-8 rounded-full bg-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhKom5pzP239t20qwNRP9P6cZ8UXctu0bxOtmivAavt5mbb-4zzxM22xxBVCFnl2ZwSnqKRASumP4xCLFj4n9y2igk_j19TKpYKAtivbQzmjrkEubX2oHscCer0kCAFahLj6wwiWn7AbftRoLI1YfVud8srhwiG8KUwIWlv0qr4nxPCSfoWO3KCZQuCu17vT2GTiY2kfqKPVf4MvwHBzRmI6sKzOM-nA893r46Ykdqhg4B5hAN-_f7JJDYoCgZ3IMrRTRFPXVtJvzS"/>
+</div>
+</div>
+</header>
+<!-- Bento Layout Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Revenue Overview Chart -->
+<section class="col-span-8 glass-card rounded-xl p-loose shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">نظرة عامة على الإيرادات</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">إجمالي الدخل الشهري من جميع المدارس</p>
+</div>
+<div class="flex gap-2">
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-1 text-label-sm">
+<option>آخر 6 أشهر</option>
+<option>سنة كاملة</option>
+</select>
+<button class="bg-primary-container text-on-primary-container px-4 py-1 rounded-lg text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            تقرير PDF
+                        </button>
+</div>
+</div>
+<!-- Chart Visualization -->
+<div class="h-64 flex items-end justify-between gap-4 px-2">
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 45%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">12,450 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">يناير</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 65%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">18,200 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">فبراير</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 85%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">24,100 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">مارس</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 55%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">15,600 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">أبريل</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 95%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">28,900 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">مايو</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container/20 rounded-t-lg relative group">
+<div class="revenue-chart-bar w-full bg-primary rounded-t-lg absolute bottom-0" style="height: 70%;">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] py-1 px-2 rounded whitespace-nowrap transition-opacity">20,300 ر.س</div>
+</div>
+</div>
+<span class="text-label-sm mt-3">يونيو</span>
+</div>
+</div>
+</section>
+<!-- Commission & Tax Settings (Side Card) -->
+<section class="col-span-4 flex flex-col gap-gutter">
+<div class="bg-white rounded-xl p-6 border border-outline-variant shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary p-2 bg-secondary-fixed rounded-lg">percent</span>
+<h3 class="font-headline-sm text-[20px] font-bold text-on-surface">عمولة المنصة</h3>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-label-sm text-on-surface-variant mb-1">النسبة المقتطعة لكل تسجيل</label>
+<div class="flex items-center">
+<input class="w-full border border-outline-variant rounded-r-lg px-4 py-2 focus:ring-2 focus:ring-primary" type="number" value="15"/>
+<span class="bg-surface-container-high px-4 py-2 border-y border-l border-outline-variant rounded-l-lg text-primary font-bold">%</span>
+</div>
+</div>
+<p class="text-[12px] text-on-surface-variant italic">سيتم تطبيق هذه النسبة تلقائياً على جميع الفواتير الجديدة.</p>
+<button class="w-full bg-primary text-on-primary py-2 rounded-lg font-label-md transition-all active:scale-95">تحديث الإعدادات</button>
+</div>
+</div>
+<div class="bg-white rounded-xl p-6 border border-outline-variant shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary p-2 bg-primary-fixed rounded-lg">account_balance</span>
+<h3 class="font-headline-sm text-[20px] font-bold text-on-surface">الضرائب و VAT</h3>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-label-md text-on-surface-variant">ضريبة القيمة المضافة</span>
+<span class="text-label-md font-bold text-primary">15%</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-label-md text-on-surface-variant">رسوم التحصيل البنكي</span>
+<span class="text-label-md font-bold text-primary">2.5%</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-label-md text-on-surface-variant">حالة الضريبة</span>
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">نشط</span>
+</div>
+<button class="w-full border border-primary text-primary py-2 rounded-lg font-label-md hover:bg-primary/5 transition-all">تعديل الضرائب</button>
+</div>
+</div>
+</section>
+<!-- Pricing Tables -->
+<section class="col-span-12">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-6">جداول تسعير الرخص</h3>
+<div class="grid grid-cols-3 gap-gutter">
+<!-- License B -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-shadow">
+<div class="p-6 bg-surface-container-low border-b border-outline-variant">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-sm text-[20px] font-extrabold text-primary">رخصة خصوصي (B)</h4>
+<p class="text-label-sm text-on-surface-variant">المركبات الخفيفة والخاصة</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">directions_car</span>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">التكلفة الأساسية</span>
+<span class="text-body-lg font-bold text-on-surface">2,500 ر.س</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">رسوم المنصة</span>
+<span class="text-body-lg font-bold text-secondary">375 ر.س</span>
+</div>
+<hr class="border-outline-variant/50"/>
+<div class="flex justify-between items-center">
+<span class="text-label-md font-bold text-primary">الإجمالي للطالب</span>
+<span class="text-headline-sm text-[24px] font-black text-primary">2,875 ر.س</span>
+</div>
+<button class="w-full mt-4 bg-surface-container-highest text-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                                تعديل التكلفة
+                            </button>
+</div>
+</div>
+<!-- License C -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-shadow">
+<div class="p-6 bg-surface-container-low border-b border-outline-variant">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-sm text-[20px] font-extrabold text-primary">رخصة نقل ثقيل (C)</h4>
+<p class="text-label-sm text-on-surface-variant">الشاحنات والحافلات الكبيرة</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">التكلفة الأساسية</span>
+<span class="text-body-lg font-bold text-on-surface">4,800 ر.س</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">رسوم المنصة</span>
+<span class="text-body-lg font-bold text-secondary">720 ر.س</span>
+</div>
+<hr class="border-outline-variant/50"/>
+<div class="flex justify-between items-center">
+<span class="text-label-md font-bold text-primary">الإجمالي للطالب</span>
+<span class="text-headline-sm text-[24px] font-black text-primary">5,520 ر.س</span>
+</div>
+<button class="w-full mt-4 bg-surface-container-highest text-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                                تعديل التكلفة
+                            </button>
+</div>
+</div>
+<!-- License D -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-shadow">
+<div class="p-6 bg-surface-container-low border-b border-outline-variant">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-sm text-[20px] font-extrabold text-primary">رخصة دراجة نارية (D)</h4>
+<p class="text-label-sm text-on-surface-variant">الدراجات والمركبات ثلاثية العجلات</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">two_wheeler</span>
+</div>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">التكلفة الأساسية</span>
+<span class="text-body-lg font-bold text-on-surface">1,200 ر.س</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">رسوم المنصة</span>
+<span class="text-body-lg font-bold text-secondary">180 ر.س</span>
+</div>
+<hr class="border-outline-variant/50"/>
+<div class="flex justify-between items-center">
+<span class="text-label-md font-bold text-primary">الإجمالي للطالب</span>
+<span class="text-headline-sm text-[24px] font-black text-primary">1,380 ر.س</span>
+</div>
+<button class="w-full mt-4 bg-surface-container-highest text-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                                تعديل التكلفة
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Financial Activities -->
+<section class="col-span-12 glass-card rounded-xl p-6 mt-4">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-sm text-headline-sm text-primary">آخر التحويلات المالية</h3>
+<button class="text-primary font-label-md flex items-center gap-1 hover:underline">عرض جميع المعاملات <span class="material-symbols-outlined">arrow_left</span></button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-right">
+<thead>
+<tr class="border-b border-outline-variant text-on-surface-variant text-label-sm font-bold uppercase">
+<th class="pb-4 px-4">رقم العملية</th>
+<th class="pb-4 px-4">اسم المدرسة</th>
+<th class="pb-4 px-4">نوع الرخصة</th>
+<th class="pb-4 px-4">المبلغ الإجمالي</th>
+<th class="pb-4 px-4">عمولة المنصة</th>
+<th class="pb-4 px-4">التاريخ</th>
+<th class="pb-4 px-4">الحالة</th>
+</tr>
+</thead>
+<tbody class="text-body-md">
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-4 font-mono">#TRX-88210</td>
+<td class="py-4 px-4 font-bold">مدرسة الرواد لتعليم القيادة</td>
+<td class="py-4 px-4">رخصة خصوصي (B)</td>
+<td class="py-4 px-4 font-bold text-primary">2,875 ر.س</td>
+<td class="py-4 px-4 text-secondary">431 ر.س</td>
+<td class="py-4 px-4 text-on-surface-variant">24 يونيو 2024</td>
+<td class="py-4 px-4">
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[12px] font-bold">مكتملة</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-4 font-mono">#TRX-88211</td>
+<td class="py-4 px-4 font-bold">مركز جدة المتقدم</td>
+<td class="py-4 px-4">رخصة نقل ثقيل (C)</td>
+<td class="py-4 px-4 font-bold text-primary">5,520 ر.س</td>
+<td class="py-4 px-4 text-secondary">828 ر.س</td>
+<td class="py-4 px-4 text-on-surface-variant">23 يونيو 2024</td>
+<td class="py-4 px-4">
+<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[12px] font-bold">قيد المعالجة</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/30 hover:bg-surface-container-low transition-colors">
+<td class="py-4 px-4 font-mono">#TRX-88212</td>
+<td class="py-4 px-4 font-bold">مدرسة الرياض الدولية</td>
+<td class="py-4 px-4">رخصة خصوصي (B)</td>
+<td class="py-4 px-4 font-bold text-primary">2,875 ر.س</td>
+<td class="py-4 px-4 text-secondary">431 ر.س</td>
+<td class="py-4 px-4 text-on-surface-variant">23 يونيو 2024</td>
+<td class="py-4 px-4">
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[12px] font-bold">مكتملة</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB for quick actions -->
+<button class="fixed bottom-8 left-8 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<script>
+        // Simple Chart Animation Simulation
+        window.addEventListener('DOMContentLoaded', () => {
+            const bars = document.querySelectorAll('.revenue-chart-bar');
+            bars.forEach(bar => {
+                const finalHeight = bar.style.height;
+                bar.style.height = '0px';
+                setTimeout(() => {
+                    bar.style.height = finalHeight;
+                }, 100);
+            });
+        });
+    </script>
+</body></html>

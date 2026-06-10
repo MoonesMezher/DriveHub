@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DriveHub | تسجيل الرخصة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#90a8ff",
+                    "inverse-primary": "#b6c4ff",
+                    "on-secondary-container": "#684000",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#c5c5d3",
+                    "surface-tint": "#4059aa",
+                    "on-surface": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "surface-variant": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#444651",
+                    "secondary-fixed": "#ffddb8",
+                    "surface-dim": "#d2d9f4",
+                    "primary": "#00236f",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "outline": "#757682",
+                    "tertiary": "#4b1c00",
+                    "primary-container": "#1e3a8a",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-tertiary-fixed": "#341100",
+                    "inverse-on-surface": "#eef0ff",
+                    "primary-fixed": "#dce1ff",
+                    "surface": "#faf8ff",
+                    "on-secondary-fixed": "#2a1700",
+                    "surface-container": "#eaedff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "secondary": "#855300",
+                    "surface-bright": "#faf8ff",
+                    "surface-container-low": "#f2f3ff",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#dae2fd",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-container-high": "#e2e7ff",
+                    "on-tertiary-container": "#f39461",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#fea619",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "on-secondary-fixed-variant": "#653e00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "1.5rem",
+                    "loose": "2rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "compact": "0.5rem",
+                    "margin-mobile": "1rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "label-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "display-lg-mobile": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "headline-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "display-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "body-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "body-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+                    "label-md": ["IBM Plex Sans Arabic", "sans-serif"]
+            },
+            "fontSize": {
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .step-active { color: #1e3a8a; }
+        .step-line { position: relative; }
+        .step-line::after { content: ''; position: absolute; top: 12px; right: 24px; width: calc(100% - 48px); height: 2px; background: #e2e8f0; z-index: -1; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">DriveHub</span>
+<nav class="hidden md:flex gap-6 items-center mr-8">
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 text-label-md font-label-md hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant text-label-md font-label-md hover:text-primary transition-colors" href="#">Licenses</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant text-label-md font-label-md hover:text-primary transition-colors" href="#">Schools</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant text-label-md font-label-md hover:text-primary transition-colors" href="#">FAQ</a>
+</nav>
+</div>
+<div class="flex items-center gap-compact">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant rounded-full transition-all">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-margin-mobile md:px-margin-desktop py-loose">
+<!-- Progress Tracker Section -->
+<div class="mb-12">
+<div class="flex justify-between items-center mb-8 step-line">
+<div class="flex flex-col items-center gap-2 bg-background px-2">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<span class="text-label-sm font-label-sm text-primary">المعلومات الشخصية</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-background px-2">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</div>
+<span class="text-label-sm font-label-sm text-primary">اختيار الفئة</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-background px-2">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center border-2 border-outline-variant">
+<span class="text-label-md">3</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">تأكيد المدرسة</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-background px-2">
+<div class="w-8 h-8 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center border-2 border-outline-variant">
+<span class="text-label-md">4</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">رفع المستندات</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Main Content Area -->
+<div class="lg:col-span-8 space-y-gutter">
+<!-- Section 1: Personal Info Review -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-comfortable">
+<div class="flex justify-between items-center mb-6 border-b border-outline-variant pb-compact">
+<h2 class="text-headline-sm font-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">person</span>
+                            مراجعة المعلومات الشخصية
+                        </h2>
+<button class="text-primary text-label-md font-label-md flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                            تعديل
+                        </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-comfortable">
+<div class="space-y-1">
+<label class="text-label-sm font-label-sm text-on-surface-variant">الاسم الكامل</label>
+<div class="bg-surface-container-low px-4 py-2 rounded-lg text-body-md font-body-md text-on-surface">أحمد محمد العلي</div>
+</div>
+<div class="space-y-1">
+<label class="text-label-sm font-label-sm text-on-surface-variant">رقم الهوية / الإقامة</label>
+<div class="bg-surface-container-low px-4 py-2 rounded-lg text-body-md font-body-md text-on-surface">234****981</div>
+</div>
+<div class="space-y-1">
+<label class="text-label-sm font-label-sm text-on-surface-variant">رقم الجوال</label>
+<div class="bg-surface-container-low px-4 py-2 rounded-lg text-body-md font-body-md text-on-surface">055****342</div>
+</div>
+<div class="space-y-1">
+<label class="text-label-sm font-label-sm text-on-surface-variant">البريد الإلكتروني</label>
+<div class="bg-surface-container-low px-4 py-2 rounded-lg text-body-md font-body-md text-on-surface">a.alali@example.com</div>
+</div>
+</div>
+</section>
+<!-- Section 2: License Category Selection -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-comfortable">
+<h2 class="text-headline-sm font-headline-sm text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined">directions_car</span>
+                        اختيار فئة الرخصة (فئة ب)
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-comfortable">
+<label class="relative group cursor-pointer">
+<input checked="" class="peer sr-only" name="license" type="radio" value="B1"/>
+<div class="p-6 rounded-xl border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-fixed/30 transition-all hover:bg-surface-container">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">minor_crash</span>
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:bg-primary flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+</div>
+</div>
+<h3 class="text-headline-sm font-headline-sm mb-1">فئة B1</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">ناقل حركة أوتوماتيكي فقط. مثالي للمدينة والراحة.</p>
+</div>
+</label>
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="license" type="radio" value="B2"/>
+<div class="p-6 rounded-xl border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-fixed/30 transition-all hover:bg-surface-container">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">settings_input_component</span>
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:bg-primary"></div>
+</div>
+<h3 class="text-headline-sm font-headline-sm mb-1">فئة B2</h3>
+<p class="text-body-md font-body-md text-on-surface-variant">ناقل حركة يدوي وأوتوماتيكي. تحكم كامل في القيادة.</p>
+</div>
+</label>
+</div>
+</section>
+<!-- Section 3: School Confirmation & Map -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="p-comfortable">
+<h2 class="text-headline-sm font-headline-sm text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined">school</span>
+                            تأكيد المدرسة المختارة
+                        </h2>
+<p class="text-body-md font-body-md text-on-surface-variant mb-4">لقد اخترت المدرسة التالية بناءً على موقعك وتوفر المقاعد.</p>
+<div class="flex items-center gap-4 bg-surface-container-low p-4 rounded-lg mb-4">
+<img class="w-16 h-16 rounded-lg object-cover" data-alt="A professional architectural photograph of a modern driving school building exterior, featuring large glass windows and a sleek navy blue facade. The lighting is crisp afternoon sun, creating sharp shadows and highlighting the clean, institutional lines of the structure, conveying a sense of systematic safety and educational excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4jrQoNeeqG3Y2airM5Rkfb2_aKftsOprVke8hhG3WGE4HtNMar3j6j09Dfw1HsyxP62x7b4wI9_2XAEJkkLAPaF9Fs5bG2GDwXewaV7IMvdbJr9dfCLraHkohgUxA1bi5dBX6yqMligTuqp80tstu5E4tTnVKUSjJLC_rbu1VwQtZSXGNreaxFncZUBFYaQ4PLI_S2Nlp8D6zKTBQANAZMi4-_6Y_zqvHIRn-TDY4ZPuhG3G3FfYvagIBLgX7r_gFXihq9K63lEyY"/>
+<div>
+<h3 class="text-body-lg font-bold text-primary">مدرسة القيادة النموذجية - الرياض</h3>
+<div class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                    حي النرجس، طريق الملك سلمان
+                                </div>
+</div>
+</div>
+</div>
+<div class="h-48 w-full bg-surface-dim relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-50" data-alt="A high-resolution satellite-style map view of a modern urban intersection in Riyadh, Saudi Arabia, featuring organized road markings and green spaces. The visual style is clean and technical, utilizing a palette of slate greys, soft greens, and primary blue accents for navigation markers, reflecting a safe and systematic logistical environment." data-location="Riyadh, Saudi Arabia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB_l_9_9D4gyX23QHmBY-pr3Nfx43VQr1f-KgbHDnKVVaoyzVXelnGjAD1AaHWRRmBVDZ0-8xwglRQeiTy0hFayoTNBz65VWsSNBRVXGtbkMzwM_Zz53NNASDErC1BlrjMDoWARDDYbm4Gw40Ah6oWp5pyUqdEzkSiPb_d4wWyT_nzd7d07OUeW9zdo2uAZZhoh6O7ayK7a3Xb5S6-jvCFU8KKKpxFuG5N7Hi-5qVMbY7A1eG7qnuJ8S7FY6QKv4oBMtxVrTB9t1kQ"/>
+<div class="absolute bg-primary p-2 rounded-full shadow-lg animate-bounce">
+<span class="material-symbols-outlined text-white">location_on</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Document Upload -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-comfortable">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-headline-sm font-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">upload_file</span>
+                            رفع المستندات المطلوبة
+                        </h2>
+<div class="flex items-center gap-1 bg-on-primary-container/10 px-3 py-1 rounded-full text-primary border border-primary/20">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="text-label-sm font-label-sm">تخزين مشفر آمن</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-comfortable">
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center gap-2 hover:border-primary transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">add_a_photo</span>
+<h4 class="text-label-md font-bold">صورة الهوية الوطنية</h4>
+<p class="text-label-sm text-on-surface-variant">JPG, PNG (بحد أقصى 5MB)</p>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center gap-2 hover:border-primary transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">badge</span>
+<h4 class="text-label-md font-bold">صورة الرخصة القديمة (إن وجدت)</h4>
+<p class="text-label-sm text-on-surface-variant">JPG, PNG (بحد أقصى 5MB)</p>
+</div>
+</div>
+</section>
+<!-- Section 7: Informational Note -->
+<div class="bg-surface-container-high rounded-xl p-comfortable border-r-4 border-secondary flex gap-4 items-start">
+<span class="material-symbols-outlined text-secondary">info</span>
+<div>
+<p class="text-body-md font-body-md text-on-surface">ملاحظة هامة: بعد إتمام التسجيل، سيتم وضعك في قائمة الانتظار. ستحتاج لانتظار إطلاق الدورة التدريبية بعد سداد الرسوم المقررة.</p>
+</div>
+</div>
+<div class="flex justify-end gap-comfortable pt-loose">
+<button class="px-8 py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-surface-container transition-all active:scale-95">إلغاء الطلب</button>
+<button class="px-12 py-3 rounded-lg bg-primary text-on-primary font-bold shadow-md hover:bg-primary-container transition-all active:scale-95">إرسال الطلب والمتابعة</button>
+</div>
+</div>
+<!-- Sidebar / Status Tracker Area -->
+<aside class="lg:col-span-4 space-y-gutter sticky top-24">
+<!-- Section 6: Enrollment Status Tracker -->
+<div class="bg-primary text-on-primary rounded-xl p-comfortable shadow-md">
+<h3 class="text-label-sm font-label-sm uppercase tracking-wider opacity-80 mb-2">حالة الطلب الحالية</h3>
+<div class="flex items-center justify-between mb-4">
+<span class="text-headline-sm font-headline-sm">قيد الإرسال</span>
+<div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+<span class="text-label-sm font-label-sm">نشط</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<span class="text-body-md font-body-md">تم التحقق من الحساب</span>
+</div>
+<div class="flex items-center gap-3 opacity-50">
+<div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center border border-white/20"></div>
+<span class="text-body-md font-body-md">بانتظار مراجعة الوثائق</span>
+</div>
+</div>
+</div>
+<!-- Section 5: Waiting List Logic -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-comfortable">
+<h3 class="text-body-lg font-bold text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">hourglass_empty</span>
+                        قائمة الانتظار
+                    </h3>
+<div class="bg-secondary-container/10 border border-secondary-container/20 rounded-lg p-4 mb-6">
+<div class="flex justify-between items-center mb-1">
+<span class="text-label-md font-bold text-on-secondary-container">المقاعد المتبقية</span>
+<span class="text-headline-sm font-bold text-secondary">5 مقاعد</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 85%;"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary">priority_high</span>
+<p class="text-label-md text-on-surface-variant">تعتمد الأولوية على الطابع الزمني (Timestamp) لوقت تقديم الطلب والسداد.</p>
+</div>
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary">event_seat</span>
+<p class="text-label-md text-on-surface-variant">يتم تخصيص المقاعد آلياً فور توفر شاغر في المدرسة المختارة.</p>
+</div>
+</div>
+</div>
+<!-- Safe & Systematic Badge -->
+<div class="bg-white/50 rounded-xl p-8 border border-outline-variant flex flex-col items-center text-center gap-4">
+<img class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" data-alt="A focused close-up of a student driver's hands positioned correctly on a high-tech steering wheel in a modern vehicle. The lighting is soft and natural, emphasizing the 'Safe &amp; Systematic' narrative. The aesthetic is professional, with a clean and calm atmosphere, using a color palette of deep blues and crisp whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwG8a8CBsn6g5OD97gM-sQSmCs5ZpalBVr6K16zEyWPJQV9AHO0Kb07x8YlhH13j6K7F1MRf9tD_se9bAWkeTLfzlMa10nVnxu43Yhfk8pmmwI-cWpQaZFqvkbyep50cdIdkcXYTDWQfNcIpzd3ceW1PgMq_Wc9VXxntZ0NbPRLcitnB8I9C6FCmFw-wiwjo4QmMAwkmPBKDjPwUBAWeV3Z1RWiuRY8Qm31df2L4x3MiGy-mkcqcHN9evIePkjDzRc8DFnuV3jz9Ub"/>
+<div>
+<h4 class="font-bold text-primary">نظام DriveHub الذكي</h4>
+<p class="text-label-sm text-on-surface-variant mt-1">نضمن لك رحلة تدريبية منظمة وآمنة وفق أعلى المعايير الدولية.</p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container w-full py-loose border-t border-outline-variant mt-24">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto">
+<div class="md:col-span-1">
+<span class="text-headline-sm font-headline-sm font-bold text-on-primary">DriveHub</span>
+<p class="mt-4 text-body-md font-body-md opacity-80">نعمل على تمكين الجيل القادم من السائقين المحترفين من خلال التكنولوجيا والابتكار.</p>
+</div>
+<div>
+<h4 class="font-bold mb-4">روابط سريعة</h4>
+<ul class="space-y-2 text-label-md font-label-md opacity-80">
+<li><a class="hover:text-secondary-container transition-colors" href="#">عن المنصة</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">اتصل بنا</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">الأسئلة الشائعة</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-4">قانوني</h4>
+<ul class="space-y-2 text-label-md font-label-md opacity-80">
+<li><a class="hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">التحقق من الرخص</a></li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-bold mb-0">تواصل معنا</h4>
+<div class="flex gap-4">
+<span class="material-symbols-outlined p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all cursor-pointer">share</span>
+<span class="material-symbols-outlined p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all cursor-pointer">mail</span>
+<span class="material-symbols-outlined p-2 bg-white/10 rounded-full hover:bg-white/20 transition-all cursor-pointer">phone</span>
+</div>
+<p class="text-label-sm font-label-sm opacity-60">© 2024 DriveHub. Safe &amp; Systematic Progress.</p>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions for Radio Selection
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Potential for adding visual feedback or state logging
+                console.log('Category selected:', e.target.value);
+            });
+        });
+
+        // Simple scroll reveal for cards
+        const observerOptions = {
+            threshold: 0.1
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-4');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-4');
+            observer.observe(section);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#90a8ff",
+                    "inverse-primary": "#b6c4ff",
+                    "on-secondary-container": "#684000",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#c5c5d3",
+                    "surface-tint": "#4059aa",
+                    "on-surface": "#131b2e",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#773205",
+                    "surface-variant": "#dae2fd",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#444651",
+                    "secondary-fixed": "#ffddb8",
+                    "surface-dim": "#d2d9f4",
+                    "primary": "#00236f",
+                    "tertiary-fixed-dim": "#ffb691",
+                    "outline": "#757682",
+                    "tertiary": "#4b1c00",
+                    "primary-container": "#1e3a8a",
+                    "on-primary-fixed-variant": "#264191",
+                    "inverse-surface": "#283044",
+                    "on-tertiary-fixed": "#341100",
+                    "inverse-on-surface": "#eef0ff",
+                    "primary-fixed": "#dce1ff",
+                    "surface": "#faf8ff",
+                    "on-secondary-fixed": "#2a1700",
+                    "surface-container": "#eaedff",
+                    "tertiary-container": "#6e2c00",
+                    "on-primary-fixed": "#00164e",
+                    "on-background": "#131b2e",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "secondary": "#855300",
+                    "surface-bright": "#faf8ff",
+                    "surface-container-low": "#f2f3ff",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#dae2fd",
+                    "tertiary-fixed": "#ffdbcb",
+                    "surface-container-high": "#e2e7ff",
+                    "on-tertiary-container": "#f39461",
+                    "on-secondary": "#ffffff",
+                    "secondary-container": "#fea619",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#b6c4ff",
+                    "background": "#faf8ff",
+                    "on-secondary-fixed-variant": "#653e00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "1.5rem",
+                    "loose": "2rem",
+                    "comfortable": "1rem",
+                    "margin-desktop": "2.5rem",
+                    "compact": "0.5rem",
+                    "margin-mobile": "1rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "display-lg-mobile": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "headline-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "display-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "body-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans"],
+                    "label-md": ["IBM Plex Sans Arabic", "IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "700"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .step-active { color: theme('colors.primary'); }
+        .progress-line { position: relative; }
+        .progress-line::after {
+            content: '';
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            left: 1.5rem;
+            height: 2px;
+            background: theme('colors.outline-variant');
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 sticky top-0 z-50">
+<div class="flex items-center gap-gutter">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">DriveHub</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors text-label-md font-label-md" href="#">Home</a>
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 text-label-md font-label-md" href="#">Licenses</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors text-label-md font-label-md" href="#">Schools</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors text-label-md font-label-md" href="#">FAQ</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-2">
+<button class="px-4 py-2 text-label-md font-label-md text-primary border border-primary rounded-lg hover:bg-primary-fixed duration-100 active:scale-95">Login</button>
+<button class="px-4 py-2 text-label-md font-label-md bg-primary text-on-primary rounded-lg hover:opacity-90 duration-100 active:scale-95">Register</button>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">account_circle</span>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-loose space-y-12">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-surface-container p-loose rounded-xl border border-outline-variant">
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg text-primary">رخصة الخصوصي - فئة ب (B)</h1>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md font-bold">L-PRIV-B</span>
+</div>
+<p class="text-body-lg text-on-surface-variant max-w-2xl">البوابة الشاملة للحصول على رخصة القيادة الخاصة للمركبات الخفيفة، مما يمنحك حرية الحركة والأمان على الطريق.</p>
+</div>
+<button class="bg-secondary-container hover:bg-secondary text-on-secondary-container hover:text-on-secondary px-8 py-4 rounded-lg font-bold text-headline-sm transition-all active:scale-95 shadow-md">
+                سجل الآن
+            </button>
+</header>
+<!-- Description & Details Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Main Details -->
+<section class="md:col-span-2 bg-white p-comfortable rounded-xl shadow-sm border border-outline-variant space-y-6">
+<div class="flex items-center gap-2 border-b border-outline-variant pb-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<h2 class="text-headline-sm font-headline-sm">تفاصيل الرخصة</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="space-y-4">
+<h3 class="font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">directions_car</span> المركبات المسموح بها
+                        </h3>
+<p class="text-body-md text-on-surface-variant">قيادة المركبات التي لا يزيد وزنها الإجمالي عن 3500 كجم ولا يتجاوز عدد ركابها 8 أشخاص (بخلاف السائق).</p>
+</div>
+<div class="space-y-4">
+<h3 class="font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">cake</span> السن القانوني
+                        </h3>
+<p class="text-body-md text-on-surface-variant">يجب ألا يقل عمر المتقدم عن 18 عاماً هجرياً للحصول على الرخصة الدائمة.</p>
+</div>
+<div class="space-y-4">
+<h3 class="font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">health_and_safety</span> الشروط الصحية
+                        </h3>
+<p class="text-body-md text-on-surface-variant">سلامة المتقدم من العاهات التي تمنع قيادة المركبة، واجتياز الفحص الطبي المعتمد.</p>
+</div>
+<div class="space-y-4">
+<h3 class="font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">gavel</span> السجل الجنائي
+                        </h3>
+<p class="text-body-md text-on-surface-variant">أن لا يكون المتقدم قد أدين بحكم قضائي في جرائم تتعلق بالمخدرات أو المسكرات.</p>
+</div>
+</div>
+</section>
+<!-- B1 vs B2 Card -->
+<section class="bg-primary p-comfortable rounded-xl shadow-md text-on-primary space-y-6 flex flex-col justify-center">
+<h2 class="text-headline-sm font-headline-sm text-secondary-container">اختر نوع التدريب</h2>
+<div class="space-y-4">
+<div class="p-4 bg-white/10 rounded-lg border border-white/20">
+<div class="flex justify-between items-center mb-2">
+<span class="font-bold text-lg">فئة B1</span>
+<span class="bg-secondary text-on-secondary px-2 py-0.5 rounded text-label-sm">عادي (Manual)</span>
+</div>
+<p class="text-body-md opacity-90">يسمح لك بقيادة المركبات ذات الناقل اليدوي والآلي.</p>
+</div>
+<div class="p-4 bg-white/10 rounded-lg border border-white/20">
+<div class="flex justify-between items-center mb-2">
+<span class="font-bold text-lg">فئة B2</span>
+<span class="bg-on-primary-container text-primary px-2 py-0.5 rounded text-label-sm">آلي (Automatic)</span>
+</div>
+<p class="text-body-md opacity-90">يسمح لك بقيادة المركبات ذات الناقل الآلي فقط.</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Requirements & Flow -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Requirements List -->
+<section class="lg:col-span-5 bg-white p-comfortable rounded-xl shadow-sm border border-outline-variant space-y-6">
+<div class="flex items-center gap-2 border-b border-outline-variant pb-4">
+<span class="material-symbols-outlined text-primary">list_alt</span>
+<h2 class="text-headline-sm font-headline-sm">متطلبات التسجيل</h2>
+</div>
+<ul class="space-y-4">
+<li class="flex gap-4 items-start group">
+<div class="bg-surface-container p-2 rounded-lg group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">id_card</span>
+</div>
+<div>
+<p class="font-bold">أصل الهوية الوطنية / الإقامة</p>
+<p class="text-label-md text-on-surface-variant">يجب أن تكون سارية المفعول.</p>
+</div>
+</li>
+<li class="flex gap-4 items-start group">
+<div class="bg-surface-container p-2 rounded-lg group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<div>
+<p class="font-bold">تقرير فحص طبي</p>
+<p class="text-label-md text-on-surface-variant">من المراكز الطبية المعتمدة عبر نظام إفادة.</p>
+</div>
+</li>
+<li class="flex gap-4 items-start group">
+<div class="bg-surface-container p-2 rounded-lg group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">image</span>
+</div>
+<div>
+<p class="font-bold">صور شخصية (4*6)</p>
+<p class="text-label-md text-on-surface-variant">عدد 6 صور بخلفية بيضاء.</p>
+</div>
+</li>
+<li class="flex gap-4 items-start group">
+<div class="bg-surface-container p-2 rounded-lg group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="font-bold">إيصال سداد الرسوم</p>
+<p class="text-label-md text-on-surface-variant">عبر نظام سداد للمدفوعات الحكومية.</p>
+</div>
+</li>
+</ul>
+</section>
+<!-- Progress Flow Visual -->
+<section class="lg:col-span-7 bg-surface-container-low p-comfortable rounded-xl border border-outline-variant space-y-8 overflow-hidden">
+<div class="flex items-center gap-2 border-b border-outline-variant pb-4">
+<span class="material-symbols-outlined text-primary">route</span>
+<h2 class="text-headline-sm font-headline-sm">رحلة الحصول على الرخصة</h2>
+</div>
+<div class="relative py-8">
+<!-- Progress Line Mobile (Vertical) -->
+<div class="md:hidden absolute right-6 top-10 bottom-10 w-0.5 bg-outline-variant"></div>
+<!-- Progress Grid -->
+<div class="grid grid-cols-1 md:grid-cols-6 gap-6 relative z-10">
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg">1</div>
+<div>
+<p class="font-bold text-label-md">تقديم الطلب</p>
+<p class="text-[10px] text-on-surface-variant">عبر منصة أبشر</p>
+</div>
+</div>
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg">2</div>
+<div>
+<p class="font-bold text-label-md">قبول الموعد</p>
+<p class="text-[10px] text-on-surface-variant">اختيار المدرسة</p>
+</div>
+</div>
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold shadow-lg">3</div>
+<div>
+<p class="font-bold text-label-md">سداد الرسوم</p>
+<p class="text-[10px] text-on-surface-variant">البرامج التدريبية</p>
+</div>
+</div>
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold shadow-lg ring-4 ring-secondary-container/30">4</div>
+<div>
+<p class="font-bold text-label-md">دورة 15 يوم</p>
+<p class="text-[10px] text-on-surface-variant">نظري وعملي</p>
+</div>
+</div>
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-white border-2 border-outline text-outline flex items-center justify-center font-bold">5</div>
+<div>
+<p class="font-bold text-label-md">الاختبار النهائي</p>
+<p class="text-[10px] text-on-surface-variant">المرور</p>
+</div>
+</div>
+<div class="flex md:flex-col items-center gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-white border-2 border-outline text-outline flex items-center justify-center font-bold">6</div>
+<div>
+<p class="font-bold text-label-md">استلام الرخصة</p>
+<p class="text-[10px] text-on-surface-variant">مبروك!</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- School Selection -->
+<section class="space-y-6">
+<div class="flex justify-between items-end">
+<div class="space-y-1">
+<h2 class="text-headline-sm font-headline-sm text-primary">مدارس القيادة القريبة</h2>
+<p class="text-body-md text-on-surface-variant">اختر المدرسة الأنسب لك لبدء رحلتك التدريبية</p>
+</div>
+<button class="text-primary font-bold flex items-center gap-1 hover:underline">
+                    عرض الكل <span class="material-symbols-outlined">arrow_left_alt</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- School Card 1 -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="h-48 overflow-hidden">
+<img alt="School" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern, high-tech driving school campus with large glass windows and professional signage. Several white training cars with blue company branding are parked in neat rows on a pristine asphalt practice track. The lighting is bright morning sun, casting soft shadows, creating a welcoming and authoritative institutional atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXVxKBJ58ltXBAwR2355zMZ9vKbVhLD0fjIj7B9yDnXaHzXObR72Uv6zoE2vm5rM-j6Ha4Xnu9VN_5Eay9lPIKDg-_7YSdrFkK1AcZHN3J4hOp_iuaVzEjVq6tS-zQNXEMzERYhWw_AZv7FhZxTUZvaTzNm_QYwQxzlcYbNkiavJn_H0oickad7J7c9B93CoWZdiEvOpxAYF2bKopNCs___LlbmHG-eXFmRpbJdZLmE7y9NBv6N--Alcj_XeV8WXXAdeJUY5-lQSKX"/>
+</div>
+<div class="p-comfortable space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="text-headline-sm font-bold">مدرسة دلة للقيادة</h3>
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.8</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-sm">location_on</span> حي الصحافة، الرياض
+                        </div>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container px-2 py-1 rounded text-[10px] font-bold">متاح B1</span>
+<span class="bg-surface-container px-2 py-1 rounded text-[10px] font-bold">متاح B2</span>
+<span class="bg-success-container/10 text-success text-[10px] font-bold text-green-700">فحص طبي فوري</span>
+</div>
+<button class="w-full py-3 bg-surface-container text-primary font-bold rounded-lg group-hover:bg-primary group-hover:text-on-primary transition-colors">اختيار المدرسة</button>
+</div>
+</div>
+<!-- School Card 2 -->
+<div class="bg-white rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="h-48 overflow-hidden">
+<img alt="School" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="The interior of a premium driving simulation room inside a modern driving school. Students are seated in realistic car cockpit simulators with large curved screens showing high-definition traffic scenarios. The room is sleek with charcoal walls and cool blue ambient LED lighting, emphasizing a tech-forward and safe learning environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVKBosk9sX1fAkQGt_l5Lc1kZ-wbn2iNreq7-IK3gclWgWJJSm9RZdd25Hrbgt6kTQDx4XoNzl_Gvf1q-rq8ZwHGkeaUhYnlGwV0Udi9fIGPb5msHjnEDH5WrBV-dLrVcJDaNJh7nEpVE2Td-hWJ_dD4ZU0BlcyE8xlNh7FC2HvKgwL3DOcMR5F4IZJlsHK3GOLbKDfCzTmRotOBnSO3MbNhdjReHpTtgZ7FWkyaOTAy_OOhTbJ6o-_ouSLwT4rL9VhNaoON32jEXl"/>
+</div>
+<div class="p-comfortable space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="text-headline-sm font-bold">المدرسة النموذجية</h3>
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.5</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-sm">location_on</span> حي النرجس، الرياض
+                        </div>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container px-2 py-1 rounded text-[10px] font-bold">متاح B2</span>
+<span class="bg-success-container/10 text-success text-[10px] font-bold text-green-700">تدريب ليلي</span>
+</div>
+<button class="w-full py-3 bg-surface-container text-primary font-bold rounded-lg group-hover:bg-primary group-hover:text-on-primary transition-colors">اختيار المدرسة</button>
+</div>
+</div>
+<!-- Map Integration -->
+<div class="bg-surface-container-high rounded-xl overflow-hidden border border-outline-variant flex flex-col">
+<div class="flex-grow relative h-64 md:h-full">
+<img alt="Map" class="w-full h-full object-cover" data-location="Riyadh" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2t1_G3vZdTRzHGWsVhpF-WwrEjH8FboChuvxkUa5tTzFQS5g9vVKvy3LDgPY3v_YKrkywggL6VT7F0DNVxXO8ama9saPx2e8i8HjHyFLrNCd75CoVWRrPEMsugM9TBXzLBrzCM6VKn2Vh3EdGeGEFoUHa8w7mQa4YsV_rt6U3c20nJcOljPq8i6c4QYAmJa18jBk3RykvzrMblGqDx_IaFbYvb9k6UChl1hno7ty0jET-GAKGDIjwQ6-ZFZbJUyDSRMg2dTfPEPcH"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
+<div class="bg-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">map</span>
+<span class="font-bold text-label-md">تصفح الخريطة التفاعلية</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Final -->
+<section class="bg-primary-container p-loose rounded-3xl text-center space-y-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+<h2 class="text-display-lg-mobile md:text-headline-md font-headline-md text-white relative z-10">هل أنت مستعد لبدء رحلة القيادة؟</h2>
+<p class="text-body-lg text-on-primary-container max-w-xl mx-auto relative z-10">انضم إلى آلاف السائقين الذين حصلوا على رخصهم عبر DriveHub بكل سهولة واحترافية.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+<button class="bg-secondary-container text-on-secondary-container px-12 py-4 rounded-lg font-bold text-headline-sm hover:scale-105 transition-transform shadow-lg">سجل الآن</button>
+<button class="border-2 border-white text-white px-12 py-4 rounded-lg font-bold text-headline-sm hover:bg-white/10 transition-colors">تواصل معنا</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container w-full py-loose border-t border-outline-variant grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="space-y-4">
+<span class="text-headline-sm font-headline-sm font-bold text-on-primary">DriveHub</span>
+<p class="text-body-md opacity-80">المنصة الرائدة لإدارة مدارس القيادة وتسهيل رحلة الطلاب نحو القيادة الآمنة والمنظمة.</p>
+</div>
+<div class="space-y-4">
+<h4 class="font-bold border-b border-white/20 pb-2">روابط سريعة</h4>
+<ul class="space-y-2 text-label-md">
+<li><a class="hover:text-secondary-container transition-colors" href="#">عن المنصة</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">اتصل بنا</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">الأسئلة الشائعة</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">التحقق من الشهادات</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-bold border-b border-white/20 pb-2">قانوني</h4>
+<ul class="space-y-2 text-label-md">
+<li><a class="hover:text-secondary-container transition-colors" href="#">الشروط والأحكام</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">سياسة الخصوصية</a></li>
+<li><a class="hover:text-secondary-container transition-colors" href="#">حقوق المستخدم</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-bold border-b border-white/20 pb-2">تواصل معنا</h4>
+<div class="flex gap-4">
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-container transition-colors">share</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-container transition-colors">mail</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-secondary-container transition-colors">call</span>
+</div>
+<p class="text-label-sm mt-8 opacity-60">© 2024 DriveHub. Safe &amp; Systematic Progress.</p>
+</div>
+</footer>
+<script>
+        // Simple interaction for step highlighting
+        document.querySelectorAll('.md\\:flex-col').forEach(step => {
+            step.addEventListener('mouseenter', () => {
+                step.querySelector('.rounded-full').classList.add('scale-110');
+                step.querySelector('.rounded-full').style.transition = 'all 0.3s ease';
+            });
+            step.addEventListener('mouseleave', () => {
+                step.querySelector('.rounded-full').classList.remove('scale-110');
+            });
+        });
+    </script>
+</body></html>

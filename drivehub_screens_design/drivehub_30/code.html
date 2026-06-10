@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة المدارس - DriveHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-secondary-fixed": "#001a42",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#131b2e",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-secondary-fixed-variant": "#004395",
+                        "surface-variant": "#d3e4fe",
+                        "tertiary": "#000000",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-highest": "#d3e4fe",
+                        "tertiary-container": "#191c1e",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary-container": "#2170e4",
+                        "on-background": "#0b1c30",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-low": "#eff4ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "secondary": "#0058be",
+                        "inverse-surface": "#213145",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-container": "#7c839b",
+                        "on-error": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "background": "#f8f9ff",
+                        "on-primary-fixed": "#131b2e",
+                        "surface-tint": "#565e74",
+                        "outline": "#76777d",
+                        "surface-container": "#e5eeff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "on-tertiary-container": "#818486",
+                        "primary-fixed-dim": "#bec6e0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "section-gap": "64px",
+                        "stack-sm": "4px",
+                        "gutter": "24px",
+                        "container-margin": "40px",
+                        "stack-md": "12px",
+                        "stack-lg": "24px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Inter"],
+                        "headline-lg": ["IBM Plex Sans"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["IBM Plex Sans"],
+                        "display-lg": ["IBM Plex Sans"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-md": ["20px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans', 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .card-shadow:hover {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen selection:bg-secondary-fixed">
+<!-- SideNavBar (Authority: COMPONENTS_35) -->
+<aside class="fixed right-0 top-0 bottom-0 w-64 flex flex-col py-stack-lg z-40 bg-white dark:bg-primary-container border-l border-outline-variant shadow-xl dark:shadow-none hidden md:flex">
+<div class="px-gutter mb-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary-fixed dark:text-on-primary-container">DriveHub Admin</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-70">System Controller</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm shadow-sm" href="#">
+<span class="material-symbols-outlined">school</span>
+<span>Schools</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Students</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span>Instructors</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span>Traffic Logs</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl mx-2 flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all duration-150 active:scale-95 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-8 space-y-4">
+<button class="w-full bg-secondary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-secondary/20 hover:bg-secondary-container hover:text-on-secondary-container transition-all active:scale-95">
+<span class="material-symbols-outlined">add_circle</span>
+<span>New Registration</span>
+</button>
+<div class="pt-6 border-t border-outline-variant space-y-1">
+<a class="text-on-surface-variant hover:bg-surface-container-low rounded-xl flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Support</span>
+</a>
+<a class="text-error hover:bg-error-container/20 rounded-xl flex items-center gap-3 p-3 font-body-sm text-body-sm transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 md:right-64 left-0 h-20 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-gutter">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-full max-w-xl group">
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary transition-colors">search</span>
+<input class="w-full pr-12 pl-6 py-3 bg-surface-container-low border border-transparent rounded-2xl text-body-sm focus:bg-white focus:ring-4 focus:ring-secondary/5 focus:border-secondary/20 transition-all outline-none" placeholder="ابحث عن مدرسة، مالك، أو موقع..." type="text"/>
+<div class="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1">
+<button class="p-1.5 hover:bg-surface-container-high rounded-lg text-outline-variant hover:text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">tune</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="p-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full bg-secondary-fixed-dim overflow-hidden ring-2 ring-surface-container-highest">
+<img alt="Admin Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoXmCHaEGFvbgPMDcYL1LUuoiq_6RVy9ZmrDXZkOatHIKDN7uWUF1iGpNJpKjfQX5H5Nrj885xIqv_r2q3WLYu-Dut4-Ch5eJGZAk_gxLCNXMVR03zR9BGsXW6p29SpmyCiCKV9rMFQjxSgWAYKgJ35kT6Qz19gT8ltNpYN3NR9FUtK-4EGMwIbGjNtndrGzxJ0vy21lNz68L0UqaEh-5wVId_gMkXtDeRHYrjSMCbP6eEnz_d7XJBAbCmOYfgaKmhCgbm6Vhws-Ie"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-28 pb-12 px-gutter md:pr-72 md:pl-10">
+<!-- Page Title & Stats Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+<div>
+<nav class="flex items-center gap-2 text-label-caps text-outline mb-2">
+<a class="hover:text-secondary" href="#">الرئيسية</a>
+<span class="material-symbols-outlined text-[12px]">chevron_left</span>
+<span class="text-on-surface font-semibold">إدارة المدارس</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">إدارة المدارس المسجلة</h2>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex p-1 bg-surface-container-low rounded-xl border border-outline-variant">
+<button class="p-2 bg-white text-secondary rounded-lg shadow-sm">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="p-2 text-outline-variant hover:text-on-surface-variant">
+<span class="material-symbols-outlined">view_list</span>
+</button>
+</div>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm font-semibold hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">filter_alt</span>
+<span>تصفية</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-body-sm font-semibold hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">download</span>
+<span>تصدير</span>
+</button>
+</div>
+</div>
+<!-- Quick Insights -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-12">
+<div class="bg-white p-6 rounded-2xl border border-outline-variant card-shadow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-secondary/5 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl">domain</span>
+</div>
+<span class="text-label-caps text-green-600 bg-green-50 px-2 py-1 rounded-lg">+12%</span>
+</div>
+<div class="mt-4">
+<p class="text-body-sm text-outline font-medium">إجمالي المدارس</p>
+<p class="text-3xl font-bold mt-1">142</p>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant card-shadow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined text-2xl">verified</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-body-sm text-outline font-medium">مدارس مفعلة</p>
+<p class="text-3xl font-bold mt-1">128</p>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant card-shadow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined text-2xl">pending_actions</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-body-sm text-outline font-medium">بانتظار التحقق</p>
+<p class="text-3xl font-bold mt-1 text-amber-600">14</p>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant card-shadow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-body-sm text-outline font-medium">إجمالي الطلاب</p>
+<p class="text-3xl font-bold mt-1">12,450</p>
+</div>
+</div>
+</div>
+<!-- Schools Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- School Card 1 -->
+<div class="bg-white rounded-[24px] border border-outline-variant overflow-hidden card-shadow group transition-all duration-300">
+<div class="relative h-48 overflow-hidden">
+<img alt="مدرسة النخبة للقيادة" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaz72PDD61AEdXpAsusxSPcMV5oP-of_siFj7FBhMr8_h4eEcdJVLELDYeHK2K1joD62mOwHOCsgPVaWETeAJ6gFXpMFPIkyVy5Np4MX-sSuY15zcojpYrAOwW_UwUL5ozkBr7pI9iEJ6BZRuRmLsIyf3X0g474fNe9PjOgGYPYnBYIzpDpbk0oF53EGzYzeLa9oZg55ixQnvCeGX7exrSiXzfmbQncpwwzo3D7XXijZVI6-mCuv4TIb5Syjkn8VBsUFZmbM_uEv-2"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 flex gap-2">
+<span class="bg-green-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] fill-1">verified</span>
+<span>موثقة</span>
+</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<p class="text-[10px] opacity-80 font-medium">الرياض، حي الملقا</p>
+<h3 class="text-lg font-bold">مدرسة النخبة للقيادة</h3>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-6 pb-6 border-b border-outline-variant">
+<div>
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">المالك</p>
+<p class="text-body-sm font-semibold text-on-surface">أحمد الراجحي</p>
+</div>
+<div class="text-left">
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">تاريخ الانضمام</p>
+<p class="text-body-sm font-medium">12 أكتوبر 2023</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[11px] font-semibold border border-outline-variant/30">خصوصي</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[11px] font-semibold border border-outline-variant/30">عمومي</span>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="px-4 py-3 bg-secondary-container text-on-secondary-container rounded-xl text-sm font-bold hover:shadow-md transition-all">التفاصيل</button>
+<button class="px-4 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-bold hover:bg-surface-container-low transition-all">الإعدادات</button>
+</div>
+</div>
+</div>
+</div>
+<!-- School Card 2 (Pending) -->
+<div class="bg-white rounded-[24px] border border-outline-variant overflow-hidden card-shadow group transition-all duration-300">
+<div class="relative h-48 overflow-hidden">
+<img alt="مركز ريادة الدولي" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv1Xcfl_JPpuqevJvpD_m8vrNFKi5wIfC54Dl8dQWIiIisCoFb5O0_Z19ulvB12YKex-fbkcpQ29766xQRWcUSRPMZny_il18VCBHT2iXhm1Y4Bh0jTD06I0dgpwrGan96ntlP2n184fov5Dt9ZuD0JRTAMdw8SGmhdu81a9ZPZlerGDeI2u3iJCpeh3hxZTeyTkRCpppl6OOLLqCv7XorG4nmVBmfz-242svOx395tX7Q1Z1exnogSrDByjG3uk8BNHwgcpPW20rB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 flex gap-2">
+<span class="bg-amber-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>قيد المراجعة</span>
+</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<p class="text-[10px] opacity-80 font-medium">جدة، حي الشاطئ</p>
+<h3 class="text-lg font-bold">مركز ريادة الدولي</h3>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-6 pb-6 border-b border-outline-variant">
+<div>
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">المالك</p>
+<p class="text-body-sm font-semibold text-on-surface">سارة الغامدي</p>
+</div>
+<div class="text-left">
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">الحالة</p>
+<p class="text-body-sm font-medium text-amber-600">طلب جديد</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[11px] font-semibold border border-outline-variant/30">خصوصي نسائي</span>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="px-4 py-3 bg-secondary text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-secondary/20 transition-all">توثيق الآن</button>
+<button class="px-4 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-bold hover:bg-surface-container-low transition-all">مراجعة</button>
+</div>
+</div>
+</div>
+</div>
+<!-- School Card 3 -->
+<div class="bg-white rounded-[24px] border border-outline-variant overflow-hidden card-shadow group transition-all duration-300">
+<div class="relative h-48 overflow-hidden">
+<img alt="مدرسة الشرق لتعليم القيادة" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_NQn7rGcRijegzYNT5TF5OyNdMS5q1jxrEiyVNarXlGeFKdu9AyEEhwqTX64AUWItNcgi5JAnFqujRIsCnSISZFwN-fTGejJQeY51RcNMKF3s6J9Lrq_toNQe9wqjvB7Qi27s6JvDpBw6XejY-Rc8t3Nke1R0Y0yhUY_2BolKVZ9L_uqoC6Te_DWp66Yo1Y726pC0fSsyDsdaElKHuAQ-zGzJDPBpbDoE4lT0ooH1uTVx2RLRvOFHvbqCb7ydmh5Dm1e3Icl0WVHP"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+<div class="absolute top-4 right-4 flex gap-2">
+<span class="bg-green-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] fill-1">verified</span>
+<span>موثقة</span>
+</span>
+</div>
+<div class="absolute bottom-4 right-4 text-white">
+<p class="text-[10px] opacity-80 font-medium">الدمام، حي الفيصلية</p>
+<h3 class="text-lg font-bold">مدرسة الشرق لتعليم القيادة</h3>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-6 pb-6 border-b border-outline-variant">
+<div>
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">المالك</p>
+<p class="text-body-sm font-semibold text-on-surface">فهد الشمري</p>
+</div>
+<div class="text-left">
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">تاريخ الانضمام</p>
+<p class="text-body-sm font-medium">05 يناير 2024</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[11px] font-semibold border border-outline-variant/30">خصوصي</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[11px] font-semibold border border-outline-variant/30">نقل متوسط</span>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="px-4 py-3 bg-secondary-container text-on-secondary-container rounded-xl text-sm font-bold hover:shadow-md transition-all">التفاصيل</button>
+<button class="px-4 py-3 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-bold hover:bg-surface-container-low transition-all">الإعدادات</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Add New School Action -->
+<button class="relative rounded-[24px] border-2 border-dashed border-outline-variant bg-surface-container-low flex flex-col items-center justify-center p-12 hover:bg-surface-container-highest hover:border-secondary transition-all group overflow-hidden min-h-[420px]">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="w-20 h-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-secondary mb-6 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-4xl">add_business</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mb-2 font-bold">تسجيل مدرسة جديدة</h3>
+<p class="text-body-sm text-outline text-center max-w-[240px] leading-relaxed">
+                قم بإضافة مدرسة تعليم قيادة جديدة إلى المنظومة للبدء في عمليات التحقق والتشغيل الفوري.
+            </p>
+</button>
+<!-- School Card 4 (Disabled) -->
+<div class="bg-surface-container-low/50 rounded-[24px] border border-outline-variant overflow-hidden group transition-all duration-300 opacity-80">
+<div class="relative h-48 overflow-hidden grayscale contrast-75">
+<img alt="مدرسة المستقبل" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOqMZWBZub4bI5G3Ju3wbJI999SdcFxmW43YNAfq1Vo2W_NeJED54OXe-7E6qFkiM_jSk75Hul46MdM6ujnr92W-6bdc0b80SuYhEtV9lwBjzbW1U4_b8BjuOrWeIVCnwhDb9qi4akmdNCj8euEvIfWzZrh1j19e1_NzCIs25cajIx0sEaPbJ_aEABLip-Ta1wBTKodyJHmWNdk-sWHVXiyPhggJnwcj-xLcF-pzSxrg2qT7I20eylOuC4ZAS5jedGTNZYJRMO85ui"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="bg-error text-white px-6 py-2 rounded-full font-bold text-sm shadow-xl">معطلة مؤقتاً</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-6 pb-6 border-b border-outline-variant/50">
+<div>
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">المالك</p>
+<p class="text-body-sm font-semibold text-on-surface">نورة الشهري</p>
+</div>
+<div class="text-left">
+<p class="text-[10px] text-outline uppercase tracking-wider mb-1">الموقع</p>
+<p class="text-body-sm font-medium">أبها</p>
+</div>
+</div>
+<button class="w-full py-3.5 bg-on-tertiary-container text-white rounded-xl text-sm font-bold hover:bg-tertiary transition-all">إعادة التفعيل</button>
+</div>
+</div>
+</div>
+<!-- Modern Pagination -->
+<div class="mt-16 flex flex-col sm:flex-row items-center justify-between gap-6 py-8 border-t border-outline-variant">
+<span class="text-body-sm text-outline font-medium">عرض 4 من أصل 142 مدرسة مسجلة</span>
+<div class="flex items-center gap-1 bg-white p-1 rounded-2xl shadow-sm border border-outline-variant">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-secondary text-white font-bold shadow-md shadow-secondary/20">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container transition-colors text-on-surface font-semibold">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container transition-colors text-on-surface font-semibold">3</button>
+<span class="mx-1 text-outline">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container transition-colors text-on-surface font-semibold">12</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-outline">chevron_left</span>
+</button>
+</div>
+</div>
+</main>
+<script>
+    // Micro-interactions
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('mousedown', () => {
+            button.style.transform = 'scale(0.96)';
+        });
+        button.addEventListener('mouseup', () => {
+            button.style.transform = 'scale(1)';
+        });
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'scale(1)';
+        });
+    });
+</script>
+</body></html>
