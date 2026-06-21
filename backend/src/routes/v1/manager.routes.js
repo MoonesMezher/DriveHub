@@ -38,6 +38,7 @@ router.post('/courses/:id/launch', ...idParam('id', 'الدورة'), requirePerm
 
 // Enrollments
 router.get('/courses/:courseId/enrollments', mongoIdParam('courseId', 'الدورة'), validate, requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), managerController.enrollmentQueue);
+router.get('/courses/:courseId/roster-candidates', mongoIdParam('courseId', 'الدورة'), validate, requirePermission(PERMISSIONS.SUBMIT_ROSTER), managerController.rosterCandidates);
 router.post('/enrollments/:id/accept', ...idParam('id', 'طلب الاشتراك'), requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), acceptEnrollmentRules, validate, audit('manager.enrollment.accept'), managerController.acceptEnrollment);
 router.post('/enrollments/:id/reject', ...idParam('id', 'طلب الاشتراك'), requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), rejectEnrollmentRules, validate, audit('manager.enrollment.reject'), managerController.rejectEnrollment);
 
@@ -47,6 +48,7 @@ router.post('/instructors', requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), a
 router.patch('/instructors/:id', ...idParam('id', 'المدرب'), requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), updateInstructorRules, validate, managerController.updateInstructor);
 
 // Question bank
+router.get('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), managerController.listQuestionBanks);
 router.post('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionBankRules, validate, managerController.createQuestionBank);
 router.post('/question-banks/:bankId/questions', mongoIdParam('bankId', 'بنك الأسئلة'), validate, requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionRules, validate, managerController.addQuestion);
 
@@ -55,8 +57,12 @@ router.get('/content-edits/pending', requirePermission(PERMISSIONS.APPROVE_CONTE
 router.post('/content-edits/:id/review', ...idParam('id', 'طلب التعديل'), requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), reviewEditRequestRules, validate, managerController.reviewEdit);
 
 // Roster
+router.get('/rosters', requirePermission(PERMISSIONS.SUBMIT_ROSTER), managerController.listRosters);
 router.post('/rosters', requirePermission(PERMISSIONS.SUBMIT_ROSTER), createRosterRules, validate, audit('manager.roster.create'), managerController.createRoster);
 router.post('/rosters/:id/submit', ...idParam('id', 'القائمة'), requirePermission(PERMISSIONS.SUBMIT_ROSTER), submitRosterRules, validate, audit('manager.roster.submit'), managerController.submitRoster);
+
+// Schedule
+router.get('/schedule', requirePermission(PERMISSIONS.MANAGE_COURSES), managerController.schoolSchedule);
 
 // Final exam results (internal record)
 router.post('/exam-results', requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), finalExamResultRules, validate, managerController.recordFinalResult);

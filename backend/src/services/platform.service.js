@@ -13,6 +13,7 @@ const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const config = require('../config');
+const passwordService = require('../utils/passwordService');
 const rosterService = require('./roster.service');
 
 class PlatformService {
@@ -88,6 +89,38 @@ class PlatformService {
         return this.updateSchool(id, { status });
     }
 
+    async deleteSchool(id) {
+        const { TrainingCourse, Enrollment } = require('../models');
+        const { COURSE_STATUS } = require('../constants/courseStatus');
+        const enrollmentHelper = require('../helpers/enrollment.helper');
+
+        const school = await DrivingSchool.findById(id);
+        if (!school || school.status === 'deleted') {
+            throw new ApiError(404, ERR.SCHOOL_NOT_FOUND);
+        }
+
+        const activeCourse = await TrainingCourse.findOne({
+            schoolId: id,
+            status: { $in: [COURSE_STATUS.REGISTRATION_OPEN, COURSE_STATUS.ACTIVE] },
+        });
+        if (activeCourse) {
+            throw new ApiError(409, ERR.SCHOOL_DELETE_BLOCKED);
+        }
+
+        const activeEnrollment = await Enrollment.findOne({
+            schoolId: id,
+            status: { $in: enrollmentHelper.ACTIVE_STUDENT_STATUSES },
+        });
+        if (activeEnrollment) {
+            throw new ApiError(409, ERR.SCHOOL_DELETE_BLOCKED);
+        }
+
+        school.status = 'deleted';
+        school.registrationPaused = true;
+        await school.save();
+        return school;
+    }
+
     async listUsers(query = {}) {
         const filter = {};
         if (query.status) filter.status = query.status;
@@ -144,6 +177,26 @@ class PlatformService {
         );
 
         return roleDoc;
+    }
+
+    async createTrafficAccount({ name, email, phone, password }, grantedBy) {
+        const normalizedEmail = email.trim().toLowerCase();
+        const existing = await User.findOne({ email: normalizedEmail });
+        if (existing) throw new ApiError(409, ERR.EMAIL_EXISTS);
+
+        const user = await User.create({
+            name,
+            email: normalizedEmail,
+            phone,
+            password: await passwordService.hashPassword(password),
+            activeContext: { role: ROLES.TRAFFIC },
+        });
+
+        await this.assignRole({ userId: user._id, role: ROLES.TRAFFIC }, grantedBy);
+
+        return {
+            user: { _id: user._id, name: user.name, email: user.email, phone: user.phone },
+        };
     }
 
     async suspendUser(userId, { status, reason = null }) {

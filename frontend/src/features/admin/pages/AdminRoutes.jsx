@@ -7,6 +7,7 @@ import { AdminUsersPage } from './AdminUsersPage'
 import { AdminReportsPage } from './AdminReportsPage'
 import { AdminAuditPage } from './AdminAuditPage'
 import { AdminSettingsPage } from './AdminSettingsPage'
+import { AdminAdsPage } from './AdminAdsPage'
 
 export const AdminRoutes = () => (
   <Routes>
@@ -16,6 +17,7 @@ export const AdminRoutes = () => (
     <Route path="compliance" element={<AdminCompliancePage />} />
     <Route path="users" element={<AdminUsersPage />} />
     <Route path="reports" element={<AdminReportsPage />} />
+    <Route path="ads" element={<AdminAdsPage />} />
     <Route path="settings" element={<AdminSettingsPage />} />
     <Route path="audit" element={<AdminAuditPage />} />
     <Route path="*" element={<Navigate to="" replace />} />

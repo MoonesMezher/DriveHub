@@ -5,7 +5,18 @@ export const PUBLIC_NAV = [
   { to: ROUTES.HOME, label: 'الرئيسية', icon: 'home', end: true },
   { to: ROUTES.LICENSES, label: 'الرخص', icon: 'badge' },
   { to: ROUTES.SCHOOLS_NEARBY, label: 'المدارس', icon: 'location_on' },
+  { to: ROUTES.REQUIREMENTS, label: 'المتطلبات', icon: 'checklist' },
   { to: ROUTES.FAQ, label: 'الأسئلة الشائعة', icon: 'help' },
+]
+
+export const PUBLIC_FOOTER_NAV = [
+  { to: ROUTES.HOME, label: 'الرئيسية' },
+  { to: ROUTES.LICENSES, label: 'الرخص' },
+  { to: ROUTES.SCHOOLS_NEARBY, label: 'المدارس' },
+  { to: ROUTES.REQUIREMENTS, label: 'المتطلبات' },
+  { to: ROUTES.FAQ, label: 'الأسئلة الشائعة' },
+  { to: ROUTES.SAMPLE, label: 'عينة مجانية' },
+  { to: ROUTES.PRIVACY, label: 'سياسة الخصوصية' },
 ]
 
 export const SIDEBAR_BY_ROLE = {
@@ -34,10 +45,13 @@ export const SIDEBAR_BY_ROLE = {
   [ROLES.MANAGER]: {
     subtitle: 'إدارة المدرسة',
     items: [
-      { to: ROUTES.MANAGER, label: 'لوحة التحكم', icon: 'dashboard' },
+      { to: ROUTES.MANAGER, label: 'لوحة التحكم', icon: 'dashboard', end: true },
       { to: `${ROUTES.MANAGER}/courses`, label: 'الدورات', icon: 'school' },
+      { to: `${ROUTES.MANAGER}/schedule`, label: 'الجدول الشامل', icon: 'calendar_month' },
       { to: `${ROUTES.MANAGER}/enrollments`, label: 'طلبات الالتحاق', icon: 'person_add' },
       { to: `${ROUTES.MANAGER}/instructors`, label: 'المدربون', icon: 'supervisor_account' },
+      { to: `${ROUTES.MANAGER}/question-banks`, label: 'بنوك الأسئلة', icon: 'quiz' },
+      { to: `${ROUTES.MANAGER}/content-edits`, label: 'تعديلات المحتوى', icon: 'edit_note' },
       { to: `${ROUTES.MANAGER}/roster`, label: 'رفع الأسماء', icon: 'upload_file' },
     ],
   },
@@ -51,6 +65,7 @@ export const SIDEBAR_BY_ROLE = {
       { to: `${ROUTES.ADMIN}/compliance`, label: 'التحقق والامتثال', icon: 'verified_user' },
       { to: `${ROUTES.ADMIN}/users`, label: 'المستخدمون', icon: 'manage_accounts' },
       { to: `${ROUTES.ADMIN}/reports`, label: 'التقارير', icon: 'monitoring' },
+      { to: `${ROUTES.ADMIN}/ads`, label: 'الإعلانات', icon: 'campaign' },
       { to: `${ROUTES.ADMIN}/audit`, label: 'سجل التدقيق', icon: 'history' },
       { to: `${ROUTES.ADMIN}/settings`, label: 'الإعدادات', icon: 'settings' },
     ],
@@ -59,7 +74,8 @@ export const SIDEBAR_BY_ROLE = {
   [ROLES.TRAFFIC]: {
     subtitle: 'بوابة المرور',
     items: [
-      { to: ROUTES.TRAFFIC, label: 'القوائم', icon: 'list_alt' },
+      { to: ROUTES.TRAFFIC, label: 'لوحة التحكم', icon: 'dashboard', end: true },
+      { to: `${ROUTES.TRAFFIC}/rosters`, label: 'القوائم', icon: 'list_alt' },
       { to: `${ROUTES.TRAFFIC}/schedules`, label: 'مواعيد الامتحان', icon: 'event' },
       { to: `${ROUTES.TRAFFIC}/results`, label: 'إدخال النتائج', icon: 'assignment_turned_in' },
     ],

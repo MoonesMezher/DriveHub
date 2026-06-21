@@ -1,5 +1,6 @@
 const {
     PracticeExam,
+    PracticeExamSession,
     QuestionBank,
     TheoryContent,
     FinalExamResult,
@@ -12,9 +13,11 @@ const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const { getActiveEnrollment } = require('../helpers/enrollment.helper');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
+const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
 const PASS_THRESHOLD = 70;
 const DEFAULT_QUESTION_COUNT = 20;
+const SUBMIT_GRACE_SECONDS = 5;
 
 const shuffle = (arr) => {
     const copy = [...arr];
@@ -108,6 +111,17 @@ class ExamService {
         return pool;
     }
 
+    async _assertCanTakePractice(userId, categoryCode) {
+        const lastPassed = await PracticeExam.findOne({
+            userId,
+            categoryCode: categoryCode.toUpperCase(),
+            passed: true,
+        })
+            .sort({ completedAt: -1 })
+            .lean();
+        if (lastPassed) throw new ApiError(403, ERR.PRACTICE_ALREADY_PASSED);
+    }
+
     async startPractice(userId, data) {
         const enrollment = data.enrollmentId
             ? await Enrollment.findOne({ _id: data.enrollmentId, userId })
@@ -115,6 +129,8 @@ class ExamService {
 
         const categoryCode = data.categoryCode || enrollment?.categoryCode;
         if (!categoryCode) throw new ApiError(400, ERR.ACTIVE_ENROLLMENT_REQUIRED);
+
+        await this._assertCanTakePractice(userId, categoryCode);
 
         const subTypeCode = data.subTypeCode || enrollment?.subTypeCode;
         const schoolId = data.schoolId || enrollment?.schoolId;
@@ -125,27 +141,72 @@ class ExamService {
         const count = Math.min(data.questionCount || DEFAULT_QUESTION_COUNT, pool.length);
         const questions = shuffle(pool).slice(0, count);
         const previousAttempts = await PracticeExam.countDocuments({ userId, categoryCode: categoryCode.toUpperCase() });
+        const durationSeconds = data.durationSeconds || 1800;
+        const startedAt = new Date();
+        const expiresAt = new Date(startedAt.getTime() + durationSeconds * 1000);
 
-        return {
-            categoryCode: categoryCode.toUpperCase(),
-            subTypeCode: subTypeCode?.toUpperCase() || null,
+        await PracticeExamSession.updateMany(
+            { userId, status: 'active' },
+            { status: 'expired' },
+        );
+
+        const session = await PracticeExamSession.create({
+            userId,
             enrollmentId: enrollment?._id || null,
             schoolId: schoolId || null,
+            categoryCode: categoryCode.toUpperCase(),
+            subTypeCode: subTypeCode?.toUpperCase() || null,
             attempt: previousAttempts + 1,
+            durationSeconds,
+            questionIds: questions.map((q) => q._id),
+            questions,
+            startedAt,
+            expiresAt,
+        });
+
+        return {
+            sessionId: session._id,
+            categoryCode: session.categoryCode,
+            subTypeCode: session.subTypeCode,
+            enrollmentId: enrollment?._id || null,
+            schoolId: schoolId || null,
+            attempt: session.attempt,
             questionCount: count,
-            durationSeconds: data.durationSeconds || 1800,
+            durationSeconds,
+            expiresAt,
+            passThreshold: PASS_THRESHOLD,
             questions,
         };
     }
 
     async submitPractice(userId, data) {
-        const enrollment = await getActiveEnrollment(userId);
-        const categoryCode = enrollment?.categoryCode || data.categoryCode || 'B';
-        const subTypeCode = enrollment?.subTypeCode || data.subTypeCode || null;
-        const schoolId = enrollment?.schoolId || data.schoolId || null;
+        if (!data.sessionId) throw new ApiError(400, ERR.PRACTICE_SESSION_REQUIRED);
+
+        const session = await PracticeExamSession.findOne({
+            _id: data.sessionId,
+            userId,
+        });
+        if (!session) throw new ApiError(404, ERR.PRACTICE_SESSION_NOT_FOUND);
+        if (session.status === 'submitted') throw new ApiError(400, ERR.PRACTICE_SESSION_NOT_FOUND);
+
+        const now = Date.now();
+        const expiresMs = session.expiresAt.getTime() + SUBMIT_GRACE_SECONDS * 1000;
+        if (now > expiresMs) {
+            session.status = 'expired';
+            await session.save();
+            throw new ApiError(400, ERR.PRACTICE_SESSION_EXPIRED);
+        }
+
+        const enrollment = session.enrollmentId
+            ? await Enrollment.findById(session.enrollmentId)
+            : await getActiveEnrollment(userId);
+        const categoryCode = session.categoryCode;
+        const subTypeCode = session.subTypeCode;
+        const schoolId = session.schoolId;
 
         const answerKey = await buildAnswerKey(categoryCode, subTypeCode, schoolId);
-        const answers = data.answers || [];
+        const allowedIds = new Set(session.questionIds.map(String));
+        const answers = (data.answers || []).filter((a) => allowedIds.has(String(a.questionId)));
         let correctCount = 0;
         const review = answers.map((answer) => {
             const key = answerKey.get(String(answer.questionId));
@@ -161,23 +222,32 @@ class ExamService {
             };
         });
 
-        const total = answers.length || 1;
+        const total = session.questionIds.length || 1;
         const score = Math.round((correctCount / total) * 100);
         const passed = score >= PASS_THRESHOLD;
+        const elapsedSeconds = Math.min(
+            session.durationSeconds,
+            Math.round((now - session.startedAt.getTime()) / 1000),
+        );
 
         const exam = await PracticeExam.create({
             userId,
-            enrollmentId: enrollment?._id || null,
+            enrollmentId: enrollment?._id || session.enrollmentId || null,
             schoolId: schoolId || null,
-            categoryCode: categoryCode.toUpperCase(),
-            subTypeCode: subTypeCode?.toUpperCase() || null,
+            categoryCode,
+            subTypeCode,
             score,
             passed,
-            attempt: data.attempt || 1,
-            durationSeconds: data.durationSeconds || 0,
+            attempt: session.attempt,
+            durationSeconds: elapsedSeconds,
             answers,
-            questionIds: answers.map((a) => a.questionId),
+            questionIds: session.questionIds,
         });
+
+        session.status = 'submitted';
+        session.submittedAt = new Date();
+        session.practiceExamId = exam._id;
+        await session.save();
 
         if (enrollment) {
             const { StudentStatistics } = require('../models');
@@ -200,7 +270,27 @@ class ExamService {
             );
         }
 
-        return { exam, review, score, passed };
+        return { exam, review, score, passed, passThreshold: PASS_THRESHOLD };
+    }
+
+    async getPracticeStatus(userId) {
+        const enrollment = await getActiveEnrollment(userId);
+        const categoryCode = enrollment?.categoryCode;
+        let lastPassed = null;
+        if (categoryCode) {
+            lastPassed = await PracticeExam.findOne({
+                userId,
+                categoryCode: categoryCode.toUpperCase(),
+                passed: true,
+            })
+                .sort({ completedAt: -1 })
+                .lean();
+        }
+        return {
+            passThreshold: PASS_THRESHOLD,
+            alreadyPassed: Boolean(lastPassed),
+            lastPassedAt: lastPassed?.completedAt || null,
+        };
     }
 
     async listPracticeHistory(userId, query = {}) {
@@ -217,6 +307,14 @@ class ExamService {
 
     async getExamInfo(userId) {
         const enrollment = await getActiveEnrollment(userId);
+        const pendingRetake = await Enrollment.findOne({
+            userId,
+            archiveRef: null,
+            status: ENROLLMENT_STATUS.AWAITING_PAYMENT,
+            retakeAttempt: { $gte: 1 },
+        }).sort({ createdAt: -1 }).lean();
+
+        const activeEnrollment = enrollment || pendingRetake;
         const [schedules, finalResult] = await Promise.all([
             TrafficExamSchedule.find({
                 studentId: userId,
@@ -230,13 +328,47 @@ class ExamService {
                 : null,
         ]);
 
+        const retakeEligible = enrollment
+            && !enrollment.archiveRef
+            && ['final_failed_theory', 'final_theory_passed'].includes(enrollment.status);
+        let retakeScope = null;
+        if (retakeEligible) {
+            const enrollmentService = require('./enrollment.service');
+            try {
+                retakeScope = await enrollmentService.deriveRetakeScope(enrollment, finalResult);
+            } catch {
+                retakeScope = enrollment.retakeScope || null;
+            }
+        }
+
+        const tomorrowStart = new Date();
+        tomorrowStart.setHours(0, 0, 0, 0);
+        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+        const tomorrowEnd = new Date(tomorrowStart);
+        tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
+        const examTomorrow = schedules.find(
+            (s) => s.status === 'scheduled'
+                && new Date(s.examDate) >= tomorrowStart
+                && new Date(s.examDate) < tomorrowEnd,
+        );
+
         return {
-            enrollment: enrollment
-                ? { id: enrollment._id, status: enrollment.status, categoryCode: enrollment.categoryCode }
+            enrollment: activeEnrollment
+                ? {
+                    id: activeEnrollment._id,
+                    status: activeEnrollment.status,
+                    categoryCode: activeEnrollment.categoryCode,
+                    retakeAttempt: activeEnrollment.retakeAttempt,
+                    retakeScope: activeEnrollment.retakeScope,
+                }
                 : null,
             schedules,
             finalResult,
             passThreshold: PASS_THRESHOLD,
+            retakeEligible,
+            retakeScope,
+            pendingRetakePayment: Boolean(pendingRetake),
+            examTomorrow: examTomorrow || null,
         };
     }
 
@@ -251,6 +383,16 @@ class ExamService {
         const theoryPassed = data.theoryScore != null ? data.theoryScore >= PASS_THRESHOLD : null;
         const practicalPassed = data.practicalScore != null ? data.practicalScore >= PASS_THRESHOLD : null;
 
+        const enrollmentService = require('./enrollment.service');
+        const retakeScope = data.retakeScope
+            || (['final_failed_theory', 'final_failed_practical'].includes(data.finalStatus)
+                ? await enrollmentService.deriveRetakeScope(enrollment, {
+                    enrollmentId: enrollment._id,
+                    theoryPassed,
+                    practicalPassed,
+                })
+                : null);
+
         const result = await FinalExamResult.create({
             enrollmentId: enrollment._id,
             userId: enrollment.userId,
@@ -260,7 +402,7 @@ class ExamService {
             theoryPassed,
             practicalPassed,
             finalStatus: data.finalStatus,
-            retakeScope: data.retakeScope || null,
+            retakeScope,
             attemptNumber: data.attemptNumber || 1,
             enteredBy,
             theoryAt: data.theoryScore != null ? new Date() : null,
@@ -271,20 +413,18 @@ class ExamService {
             theory_passed: ENROLLMENT_STATUS.FINAL_THEORY_PASSED,
             final_passed: ENROLLMENT_STATUS.FINAL_PASSED,
             final_failed_theory: ENROLLMENT_STATUS.FINAL_FAILED_THEORY,
-            final_failed_practical: ENROLLMENT_STATUS.FINAL_FAILED_THEORY,
+            final_failed_practical: ENROLLMENT_STATUS.FINAL_THEORY_PASSED,
         };
         if (statusMap[data.finalStatus]) {
             enrollment.status = statusMap[data.finalStatus];
-            enrollment.retakeScope = data.retakeScope || null;
+            enrollment.retakeScope = retakeScope;
             if (data.finalStatus === 'final_passed') {
                 enrollment.status = ENROLLMENT_STATUS.COMPLETED;
             }
             await enrollment.save();
         }
 
-        const notificationService = require('./notification.service');
-        await notificationService.send({
-            userId: enrollment.userId,
+        await sendInstant(enrollment.userId, {
             type: NOTIFICATION_TYPES.EXAM_RESULT,
             title: 'نتيجة الامتحان النهائي',
             message: `تم تسجيل نتيجتك: ${data.finalStatus}`,

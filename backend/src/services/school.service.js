@@ -5,6 +5,21 @@ const { sortSchoolsByDistance } = require('../helpers/school.helper');
 const { buildPaginationMeta, parsePagination } = require('../utils/pagination');
 
 class SchoolService {
+    async findForMap({ lat, lng, category, femaleCoach } = {}) {
+        const filter = { status: 'active', registrationPaused: { $ne: true } };
+        if (category) filter.licenses = category.toUpperCase();
+        if (femaleCoach === 'true') filter.hasFemaleCoaches = true;
+
+        const schools = await DrivingSchool.find(filter)
+            .select('name address governorate lat lng licenses hasFemaleCoaches')
+            .lean();
+
+        if (lat != null && lng != null) {
+            return sortSchoolsByDistance(schools, Number(lat), Number(lng));
+        }
+        return schools;
+    }
+
     async findNearby({ lat, lng, category, femaleCoach, query = {} }) {
         const { page, limit, skip } = parsePagination(query);
         const filter = { status: 'active', registrationPaused: { $ne: true } };

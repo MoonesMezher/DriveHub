@@ -5,6 +5,7 @@ const {
     PracticalLesson,
     Notification,
     PracticeExam,
+    TrainingCourse,
 } = require('../models');
 const { getActiveEnrollment } = require('../helpers/enrollment.helper');
 
@@ -25,8 +26,22 @@ class StudentService {
         ]);
 
         let statistics = null;
+        let courseDaysRemaining = null;
         if (enrollment) {
             statistics = await StudentStatistics.findOne({ enrollmentId: enrollment._id }).lean();
+            const course = enrollment.courseId
+                ? await TrainingCourse.findById(enrollment.courseId).select('endDate launchDate durationDays').lean()
+                : null;
+            if (course) {
+                const endDate = course.endDate
+                    || (course.launchDate
+                        ? new Date(new Date(course.launchDate).getTime() + (course.durationDays || 0) * 86400000)
+                        : null);
+                if (endDate) {
+                    const diffMs = endDate.getTime() - Date.now();
+                    courseDaysRemaining = Math.max(0, Math.ceil(diffMs / 86400000));
+                }
+            }
         }
 
         return {
@@ -41,6 +56,7 @@ class StudentService {
                 }
                 : null,
             statistics,
+            courseDaysRemaining,
             unreadNotifications: unreadCount,
             upcomingLesson,
             lastPractice: recentPractice,

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { cn } from '@/lib/cn'
 import {
-  PageHeader, AsyncContent, Card, Button, Badge, Input, RatingStars,
+  PageHeader, AsyncContent, Card, Button, Badge, Input, RatingStars, Textarea, Icon,
 } from '@/components/ui'
 import { coachService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
@@ -39,8 +40,9 @@ export const CoachLessonsPage = () => {
   return (
     <div dir="rtl">
       <PageHeader
+        variant="compact"
         title="تقييم الدرس العملي"
-        description="يرجى ملء استمارة التقييم بدقة لضمان متابعة تقدم الطالب — شاشة 8 من مركز التصميم"
+        description="يرجى ملء استمارة التقييم بدقة لضمان متابعة تقدم الطالب"
       />
 
       <AsyncContent
@@ -52,35 +54,45 @@ export const CoachLessonsPage = () => {
         emptyDescription="ستظهر الدروس المجدولة هنا عند حجز الطلاب"
       >
         {() => (
-<div className="grid gap-loose lg:grid-cols-3">
-          <div className="space-y-comfortable lg:col-span-1">
-            <h2 className="text-label-md text-on-surface-variant">دروس اليوم</h2>
-            {lessons.map((lesson) => (
-              <div
-                key={lesson._id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedId(lesson._id)}
-                onKeyDown={(e) => e.key === 'Enter' && setSelectedId(lesson._id)}
-              >
-              <Card
-                hoverable
-                className={selected?._id === lesson._id ? 'ring-2 ring-primary' : ''}
-              >
-                <p className="text-headline-sm text-on-surface">{formatDateTime(lesson.scheduledAt)}</p>
-                <p className="mt-1 text-body-md text-on-surface-variant">
-                  {lesson.studentId?.name ?? 'طالب'}
-                </p>
-                <Badge variant="primary" className="mt-2">
-                  {LESSON_STATUS_LABELS[lesson.status]}
-                </Badge>
-              </Card>
-              </div>
-            ))}
-          </div>
+        <div className="grid gap-loose lg:grid-cols-[minmax(0,320px)_1fr]">
+          <Card title="دروس بانتظار التقييم" padding="md" className="h-fit lg:sticky lg:top-4">
+            <div className="space-y-comfortable">
+              {lessons.map((lesson) => (
+                <button
+                  key={lesson._id}
+                  type="button"
+                  onClick={() => setSelectedId(lesson._id)}
+                  className={cn(
+                    'w-full rounded-xl border p-comfortable text-start transition-all',
+                    selected?._id === lesson._id
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                      : 'border-outline-variant/60 hover:border-primary/40',
+                  )}
+                >
+                  <p className="text-headline-sm text-on-surface">{formatDateTime(lesson.scheduledAt)}</p>
+                  <p className="mt-1 text-body-md text-on-surface-variant">
+                    {lesson.studentId?.name ?? 'طالب'}
+                  </p>
+                  <Badge variant="primary" className="mt-2">
+                    {LESSON_STATUS_LABELS[lesson.status]}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </Card>
 
           {selected && (
-            <Card className="lg:col-span-2" title="استمارة التقييم" padding="lg">
+            <Card title="استمارة التقييم" padding="lg">
+              <div className="mb-loose flex items-center gap-3 rounded-xl bg-surface-container-low p-comfortable">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-container">
+                  <Icon name="person" size={24} className="text-primary" />
+                </div>
+                <div>
+                  <p className="text-headline-sm text-on-surface">{selected.studentId?.name ?? 'طالب'}</p>
+                  <p className="text-body-md text-on-surface-variant">{formatDateTime(selected.scheduledAt)}</p>
+                </div>
+              </div>
+
               <div className="grid gap-gutter md:grid-cols-2">
                 <Input
                   label="اسم الطالب"
@@ -123,19 +135,15 @@ export const CoachLessonsPage = () => {
                 </div>
               </div>
 
-              <div className="mt-comfortable">
-                <label htmlFor="coach-notes" className="mb-2 block text-label-md text-on-surface">
-                  ملاحظات وتوصيات المدرب
-                </label>
-                <textarea
-                  id="coach-notes"
-                  rows={4}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="نقاط القوة والمجالات التي تحتاج تحسيناً..."
-                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md focus-ring"
-                />
-              </div>
+              <Textarea
+                label="ملاحظات وتوصيات المدرب"
+                id="coach-notes"
+                rows={4}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="نقاط القوة والمجالات التي تحتاج تحسيناً..."
+                className="mt-comfortable"
+              />
 
               <div className="mt-loose flex flex-wrap gap-3 border-t border-outline-variant pt-comfortable">
                 <Button
@@ -147,7 +155,7 @@ export const CoachLessonsPage = () => {
                   }
                   disabled={complete.isPending}
                 >
-                  حفظ التقييم
+                  {complete.isPending ? 'جاري الحفظ…' : 'حفظ التقييم'}
                 </Button>
                 <Button variant="outline" onClick={() => { setNotes(''); setRating(4) }}>
                   إعادة تعيين
@@ -156,7 +164,6 @@ export const CoachLessonsPage = () => {
             </Card>
           )}
         </div>
-
         )}
       </AsyncContent>
     </div>

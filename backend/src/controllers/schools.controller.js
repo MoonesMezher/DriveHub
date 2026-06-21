@@ -2,6 +2,12 @@ const asyncHandler = require('../utils/asyncHandler');
 const { success } = require('../utils/response');
 const { schoolService } = require('../services');
 
+const getMap = asyncHandler(async (req, res) => {
+    const { lat, lng, category, femaleCoach } = req.query;
+    const schools = await schoolService.findForMap({ lat, lng, category, femaleCoach });
+    return success(res, { schools });
+});
+
 const getNearby = asyncHandler(async (req, res) => {
     const { lat, lng, category, femaleCoach } = req.query;
     if (!lat || !lng) {
@@ -28,4 +34,4 @@ const getCoaches = asyncHandler(async (req, res) => {
     return success(res, { coaches });
 });
 
-module.exports = { getNearby, getById, getCourses, getCoaches };
+module.exports = { getMap, getNearby, getById, getCourses, getCoaches };

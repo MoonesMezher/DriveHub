@@ -14,7 +14,7 @@ const drivingSchoolSchema = new mongoose.Schema(
         vehiclesCount: { type: Number, default: 0 },
         hasFemaleCoaches: { type: Boolean, default: false },
         bankAccount: { type: String, select: false },
-        status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+        status: { type: String, enum: ['active', 'suspended', 'deleted'], default: 'active' },
         registrationPaused: { type: Boolean, default: false },
         preRegistrationEnabled: { type: Boolean, default: true },
         managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },

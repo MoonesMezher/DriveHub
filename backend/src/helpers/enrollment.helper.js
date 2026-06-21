@@ -40,6 +40,7 @@ const getRetakePaymentInfo = (basePrice, attemptNumber) => ({
 const getActiveEnrollment = async (userId, { required = false } = {}) => {
     const enrollment = await Enrollment.findOne({
         userId,
+        archiveRef: null,
         status: { $in: ACTIVE_STUDENT_STATUSES },
     })
         .sort({ updatedAt: -1 })

@@ -5,6 +5,7 @@ const {
     schoolApplicationService,
     reviewService,
     auditService,
+    settingsService,
 } = require('../services');
 
 module.exports = {
@@ -17,6 +18,7 @@ module.exports = {
     listSchools: makeHandler((req) => platformService.listSchools(req.query), { wrap: (d) => ({ schools: d }) }),
     createSchool: makeHandler((req) => platformService.createSchool(req.body), { status: 201 }),
     updateSchool: makeHandler((req) => platformService.updateSchool(req.params.id, req.body)),
+    deleteSchool: makeHandler((req) => platformService.deleteSchool(req.params.id)),
     listApplications: makeHandler((req) => schoolApplicationService.listPending(req.query), { wrap: (d) => ({ applications: d }) }),
     reviewApplication: makeHandler((req) => schoolApplicationService.review(req.params.id, req._user.userId, req.body)),
     listUsers: makeHandler((req) => platformService.listUsers(req.query), { wrap: (d) => ({ users: d }) }),
@@ -30,4 +32,11 @@ module.exports = {
     reports: makeHandler((req) => platformService.getReports(req.query), { wrap: (d) => ({ reports: d }) }),
     listPendingReviews: makeHandler(() => reviewService.listPending(), { wrap: (d) => ({ reviews: d }) }),
     moderateReview: makeHandler((req) => reviewService.moderate(req.params.id, req._user.userId, req.body), { wrap: (d) => ({ review: d }) }),
+    createTrafficAccount: makeHandler((req) => platformService.createTrafficAccount(req.body, req._user.userId), { status: 201 }),
+    getPrivacy: makeHandler(() => settingsService.getPrivacy()),
+    updatePrivacy: makeHandler((req) => settingsService.updatePrivacy(req.body.content, req._user.userId)),
+    getRegistrationSettings: makeHandler(() => settingsService.getRegistrationSettings()),
+    updateRegistrationSettings: makeHandler(
+        (req) => settingsService.updateRegistrationSettings(req.body, req._user.userId),
+    ),
 };

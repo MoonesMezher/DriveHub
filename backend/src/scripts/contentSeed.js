@@ -5,15 +5,28 @@ const {
     TrainingContentSpecific,
     PracticalVideo,
     QuestionBank,
-    User,
 } = require('../models');
 
-const makeMcq = (text, options, correctKey, explanation = '') => ({
+// Unsplash / placeholder media — stable public URLs for dev seed
+const MEDIA = {
+    trafficLight: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80',
+    roadSigns: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80',
+    drivingLesson: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
+    parking: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80',
+    safety: 'https://images.unsplash.com/photo-1511919888226-fd3cad34687d?w=800&q=80',
+    videoThumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80',
+    videoIntro: 'https://www.youtube.com/embed/ysz5S6PUM-U',
+    videoSigns: 'https://www.youtube.com/embed/9GvLrezw3K8',
+    videoParking: 'https://www.youtube.com/embed/k3Q20AmBAPM',
+};
+
+const makeMcq = (text, options, correctKey, explanation = '', imageUrl = null) => ({
     text,
     type: 'mcq',
     options,
     correctAnswer: correctKey,
     explanation,
+    imageUrl,
     status: 'active',
 });
 
@@ -28,6 +41,7 @@ const SAMPLE_QUESTIONS = [
         ],
         'A',
         'الأحمر يعني توقفاً تاماً وعدم تجاوز خط التوقف.',
+        MEDIA.trafficLight,
     ),
     makeMcq(
         'ما المسافة الآمنة بين مركبتين على الطريق السريع؟',
@@ -50,6 +64,7 @@ const SAMPLE_QUESTIONS = [
         ],
         'B',
         'تُستخدم للتنبيه عند رؤية ضعيفة أو توقف طارئ يهدد السلامة.',
+        MEDIA.safety,
     ),
     makeMcq(
         'ما السرعة القصوى المسموحة داخل المدن عادةً؟',
@@ -72,6 +87,7 @@ const SAMPLE_QUESTIONS = [
         ],
         'A',
         'قاعدة اليمين تُطبّق عند غياب الإشارات والعلامات.',
+        MEDIA.roadSigns,
     ),
 ];
 
@@ -135,15 +151,28 @@ const BANK_QUESTIONS = [
 ];
 
 const contentSeed = async ({ schoolId, managerId } = {}) => {
-    await connectDatabase();
+    const shouldDisconnect = !schoolId;
+    if (shouldDisconnect) await connectDatabase();
 
+    // ── Sample content (articles + videos + questions) ──
     await TheoryContent.findOneAndUpdate(
         { categoryCode: 'B', isSample: true, sampleTier: 'partial' },
         {
             categoryCode: 'B',
             phase: 0,
-            title: 'عينة مجانية — نظري',
-            body: 'أسئلة تفاعلية للزوار قبل التسجيل الكامل.',
+            title: 'مقدمة في قواعد المرور',
+            body: `## مرحباً بك في العينة المجانية
+
+تعلّم أساسيات القيادة الآمنة من خلال **مقالات نظرية** و**فيديوهات توضيحية** و**أسئلة تفاعلية**.
+
+### ما ستتعلمه:
+- معنى الإشارات الضوئية وكيفية الالتزام بها
+- المسافة الآمنة بين المركبات
+- استخدام أضواء الطوارئ في الظروف المناسبة
+
+> نصيحة: اقرأ المقال أولاً، شاهد الفيديو، ثم اختبر فهمك بالأسئلة أدناه.`,
+            imageUrl: MEDIA.trafficLight,
+            videoUrl: MEDIA.videoIntro,
             order: 0,
             isSample: true,
             sampleTier: 'partial',
@@ -158,8 +187,17 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
         {
             categoryCode: 'B',
             phase: 0,
-            title: 'عينة كاملة — نظري',
-            body: 'أسئلة إضافية للمستخدمين المسجّلين.',
+            title: 'دليل السلامة على الطريق',
+            body: `## محتوى إضافي للمسجّلين
+
+بعد التسجيل تحصل على مقالات موسّعة تغطي:
+- **السرعات** المسموحة في مختلف المناطق
+- **قواعد الأولوية** عند التقاطعات
+- **العلامات المرورية** ومعانيها
+
+شاهد الفيديو التعليمي عن الإشارات ثم أجب على الأسئلة الإضافية.`,
+            imageUrl: MEDIA.roadSigns,
+            videoUrl: MEDIA.videoSigns,
             order: 1,
             isSample: true,
             sampleTier: 'full',
@@ -169,61 +207,197 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
         { upsert: true, new: true },
     );
 
-    await TheoryContent.findOneAndUpdate(
-        { categoryCode: 'B', phase: 1, title: 'قواعد المرور الأساسية' },
+    // ── Core theory lessons ──
+    const coreLessons = [
         {
-            categoryCode: 'B',
-            subTypeCode: 'B1',
-            phase: 1,
-            title: 'قواعد المرور الأساسية',
-            body: 'مقدمة في قواعد السير والأولويات والسرعات.',
-            order: 1,
-            interactiveQuestions: BANK_QUESTIONS.slice(0, 5),
-            isActive: true,
-            updatedBy: managerId || null,
+            filter: { categoryCode: 'B', phase: 1, title: 'قواعد المرور الأساسية' },
+            data: {
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+                phase: 1,
+                title: 'قواعد المرور الأساسية',
+                body: 'مقدمة شاملة في قواعد السير: الأولويات، السرعات، وسلوك السائق المسؤول. يتضمن شرحاً نظرياً مع أمثلة عملية من الطرق السورية.',
+                imageUrl: MEDIA.drivingLesson,
+                videoUrl: MEDIA.videoIntro,
+                order: 1,
+                interactiveQuestions: BANK_QUESTIONS.slice(0, 5),
+                isActive: true,
+                updatedBy: managerId || null,
+            },
         },
-        { upsert: true, new: true },
-    );
+        {
+            filter: { categoryCode: 'B', phase: 1, title: 'الإشارات الضوئية والعلامات' },
+            data: {
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+                phase: 1,
+                title: 'الإشارات الضوئية والعلامات',
+                body: 'شرح تفصيلي للإشارات الضوئية (أحمر، أصفر، أخضر) والعلامات الأرضية. تعلّم كيف تتفاعل مع كل إشارة بشكل صحيح.',
+                imageUrl: MEDIA.trafficLight,
+                videoUrl: MEDIA.videoSigns,
+                order: 2,
+                interactiveQuestions: BANK_QUESTIONS.slice(3, 6),
+                isActive: true,
+                updatedBy: managerId || null,
+            },
+        },
+        {
+            filter: { categoryCode: 'B', phase: 2, title: 'السلامة المرورية' },
+            data: {
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+                phase: 2,
+                title: 'السلامة المرورية',
+                body: 'مبادئ السلامة: حزام الأمان، المسافة الآمنة، القيادة الدفاعية، والتعامل مع الظروف الجوية الصعبة.',
+                imageUrl: MEDIA.safety,
+                order: 1,
+                interactiveQuestions: BANK_QUESTIONS.slice(6, 9),
+                isActive: true,
+                updatedBy: managerId || null,
+            },
+        },
+    ];
 
-    await TrainingContentShared.findOneAndUpdate(
-        { section: 'signs', title: 'الإشارات التحذيرية' },
-        {
-            section: 'signs',
-            title: 'الإشارات التحذيرية',
-            body: 'تنبّه السائق لوجود خطر محتمل وتحتاج إلى حذر إضافي.',
-            order: 1,
-            isActive: true,
-        },
-        { upsert: true, new: true },
-    );
+    for (const lesson of coreLessons) {
+        await TheoryContent.findOneAndUpdate(lesson.filter, lesson.data, { upsert: true, new: true });
+    }
 
-    await TrainingContentSpecific.findOneAndUpdate(
-        { categoryCode: 'B', section: 'vehicle_ops', title: 'الركن الآمن' },
+    // ── Shared training content ──
+    const sharedContent = [
         {
-            categoryCode: 'B',
-            section: 'vehicle_ops',
-            title: 'الركن الآمن',
-            body: 'اختر مكاناً مرئياً، استخدم فرامل اليد، وأغلق المركبة.',
-            order: 1,
-            isActive: true,
+            filter: { section: 'signs', title: 'الإشارات التحذيرية' },
+            data: {
+                section: 'signs',
+                title: 'الإشارات التحذيرية',
+                body: 'الإشارات التحذيرية مثلّثة الشكل ذات حافة حمراء. تنبّه السائق لوجود خطر محتمل: منعطف حاد، تقاطع، مشاة، أو طريق زلق.',
+                mediaUrl: MEDIA.roadSigns,
+                order: 1,
+                isActive: true,
+            },
         },
-        { upsert: true, new: true },
-    );
+        {
+            filter: { section: 'rules', title: 'قواعد الأولوية' },
+            data: {
+                section: 'rules',
+                title: 'قواعد الأولوية',
+                body: 'عند التقاطعات بدون إشارات: الأولوية للقادم من اليمين. عند الدوار: الأولوية للمركبات داخل الدوار. احترم إشارات الشرطة دائماً.',
+                mediaUrl: MEDIA.trafficLight,
+                order: 1,
+                isActive: true,
+            },
+        },
+        {
+            filter: { section: 'safety', title: 'معدات السلامة' },
+            data: {
+                section: 'safety',
+                title: 'معدات السلامة',
+                body: 'حزام الأمان، المثلث العاكس، طفاية الحريق، وحقيبة الإسعافات الأولية — تأكد من توفرها في مركبتك.',
+                mediaUrl: MEDIA.safety,
+                order: 1,
+                isActive: true,
+            },
+        },
+    ];
 
-    await PracticalVideo.findOneAndUpdate(
-        { categoryCode: 'B', title: 'الانطلاق والتوقف' },
+    for (const item of sharedContent) {
+        await TrainingContentShared.findOneAndUpdate(item.filter, item.data, { upsert: true, new: true });
+    }
+
+    // ── Category-specific content ──
+    const specificContent = [
         {
-            categoryCode: 'B',
-            subTypeCode: 'B1',
-            phase: 1,
-            title: 'الانطلاق والتوقف',
-            url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            durationSeconds: 300,
-            order: 1,
-            isActive: true,
+            filter: { categoryCode: 'B', section: 'vehicle_ops', title: 'الركن الآمن' },
+            data: {
+                categoryCode: 'B',
+                section: 'vehicle_ops',
+                title: 'الركن الآمن',
+                body: 'اختر مكاناً مرئياً، استخدم فرامل اليد، أغلق المركبة، وتحقق من المرايا قبل فتح الباب.',
+                mediaUrl: MEDIA.parking,
+                order: 1,
+                isActive: true,
+            },
         },
-        { upsert: true, new: true },
-    );
+        {
+            filter: { categoryCode: 'B', section: 'mechanics', title: 'فحص المركبة قبل القيادة' },
+            data: {
+                categoryCode: 'B',
+                section: 'mechanics',
+                title: 'فحص المركبة قبل القيادة',
+                body: 'تحقق من: مستوى الزيت، ضغط الإطارات، مستوى سائل التبريد، عمل الأنوار والإشارات، ونظافة المرايا.',
+                mediaUrl: MEDIA.drivingLesson,
+                order: 1,
+                isActive: true,
+            },
+        },
+    ];
+
+    for (const item of specificContent) {
+        await TrainingContentSpecific.findOneAndUpdate(item.filter, item.data, { upsert: true, new: true });
+    }
+
+    // ── Videos (sample + core) ──
+    const videos = [
+        {
+            filter: { categoryCode: 'B', title: 'مقدمة — العينة المجانية', isSample: true },
+            data: {
+                categoryCode: 'B',
+                phase: 0,
+                title: 'مقدمة — العينة المجانية',
+                url: MEDIA.videoIntro,
+                thumbnailUrl: MEDIA.videoThumb,
+                durationSeconds: 180,
+                order: 0,
+                isSample: true,
+                isActive: true,
+            },
+        },
+        {
+            filter: { categoryCode: 'B', title: 'الإشارات المرورية — عينة', isSample: true },
+            data: {
+                categoryCode: 'B',
+                phase: 0,
+                title: 'الإشارات المرورية — عينة',
+                url: MEDIA.videoSigns,
+                thumbnailUrl: MEDIA.roadSigns,
+                durationSeconds: 240,
+                order: 1,
+                isSample: true,
+                isActive: true,
+            },
+        },
+        {
+            filter: { categoryCode: 'B', title: 'الانطلاق والتوقف' },
+            data: {
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+                phase: 1,
+                title: 'الانطلاق والتوقف',
+                url: MEDIA.videoIntro,
+                thumbnailUrl: MEDIA.videoThumb,
+                durationSeconds: 300,
+                order: 1,
+                isActive: true,
+            },
+        },
+        {
+            filter: { categoryCode: 'B', title: 'الركن الموازي' },
+            data: {
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+                phase: 2,
+                title: 'الركن الموازي',
+                url: MEDIA.videoParking,
+                thumbnailUrl: MEDIA.parking,
+                durationSeconds: 420,
+                order: 1,
+                isActive: true,
+            },
+        },
+    ];
+
+    for (const video of videos) {
+        await PracticalVideo.findOneAndUpdate(video.filter, video.data, { upsert: true, new: true });
+    }
 
     if (schoolId && managerId) {
         await QuestionBank.findOneAndUpdate(
@@ -242,7 +416,7 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
     }
 
     console.log('✓ contentSeed complete');
-    await disconnectDatabase();
+    if (shouldDisconnect) await disconnectDatabase();
 };
 
 if (require.main === module) {
@@ -252,4 +426,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { contentSeed, SAMPLE_QUESTIONS, BANK_QUESTIONS };
+module.exports = { contentSeed, SAMPLE_QUESTIONS, BANK_QUESTIONS, MEDIA };

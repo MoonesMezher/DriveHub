@@ -4,7 +4,7 @@ const {
     startPracticeExamRules,
     submitPracticeExamRules,
 } = require('../../validators/exam.validator');
-const { bookLessonRules } = require('../../validators/lesson.validator');
+const { bookLessonRules, autoBookLessonRules } = require('../../validators/lesson.validator');
 const { contentUnlockRules } = require('../../validators/content.validator');
 const { paginationQuery } = require('../../validators/common.validator');
 const {
@@ -36,6 +36,8 @@ router.get('/exam-info', requirePermission(PERMISSIONS.VIEW_EXAM_INFO), studentC
 router.get('/certificates', requirePermission(PERMISSIONS.VIEW_CERTIFICATES), studentController.listCertificates);
 
 router.post('/lessons', requirePermission(PERMISSIONS.BOOK_LESSONS), bookLessonRules, validate, studentController.bookLesson);
+router.post('/lessons/auto-book', requirePermission(PERMISSIONS.BOOK_LESSONS), autoBookLessonRules, validate, studentController.autoBookLesson);
+router.get('/lessons/eligible-coaches', requirePermission(PERMISSIONS.BOOK_LESSONS), studentController.listEligibleCoaches);
 router.get('/lessons', requirePermission(PERMISSIONS.BOOK_LESSONS), studentController.listLessons);
 
 module.exports = router;

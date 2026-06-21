@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { Icon } from '@/components/ui/Icon'
 
-export const SidebarNavItem = ({ to, icon, label, variant = 'default', onClick }) => {
+export const SidebarNavItem = ({ to, icon, label, variant = 'default', onClick, end = false }) => {
   const base = 'mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 text-label-md transition-all'
 
   if (onClick) {
@@ -17,6 +17,7 @@ export const SidebarNavItem = ({ to, icon, label, variant = 'default', onClick }
   return (
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         cn(
           base,

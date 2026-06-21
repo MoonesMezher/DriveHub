@@ -43,7 +43,7 @@ export const DashboardPage = () => {
   const unread = notifications?.items?.length ?? 0
 
   return (
-    <div dir="rtl">
+    <div dir="rtl" className="space-y-loose">
       <PageHeader
         title={`مرحباً، ${user?.name || 'مستخدم'}`}
         description={`السياق النشط: ${ROLE_LABELS[activeRole] || activeRole}`}
@@ -58,7 +58,7 @@ export const DashboardPage = () => {
         }
       />
 
-      <div className="mb-loose grid gap-comfortable sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="الدور الحالي" value={ROLE_LABELS[activeRole] || '—'} icon="badge" />
         <StatCard label="إشعارات جديدة" value={unread} icon="notifications" />
         <StatCard
@@ -72,7 +72,7 @@ export const DashboardPage = () => {
       <AsyncContent isLoading={enrollLoading}>
         {() =>
           activeEnrollment ? (
-            <Card className="mb-loose" title="آخر اشتراك">
+            <Card title="آخر اشتراك">
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge status={activeEnrollment.status} />
                 <span className="text-body-md text-on-surface-variant">
@@ -87,23 +87,30 @@ export const DashboardPage = () => {
         }
       </AsyncContent>
 
-      <h2 className="mb-comfortable text-headline-sm text-primary">اختصارات سريعة</h2>
-      <div className="bento-grid">
-        {quickLinks.map((link) => (
-          <Link key={link.to} to={link.to} className="col-span-12 sm:col-span-6 lg:col-span-3">
-            <Card hoverable className="h-full">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container text-primary">
-                <Icon name={link.icon} size={22} />
-              </div>
-              <h3 className="text-headline-sm text-primary">{link.label}</h3>
-              <p className="mt-1 text-body-md text-on-surface-variant">{link.desc}</p>
-              <span className="mt-3 inline-flex items-center gap-1 text-label-md text-primary">
-                فتح
-                <Icon name="arrow_back" size={16} />
-              </span>
-            </Card>
-          </Link>
-        ))}
+      <div>
+        <PageHeader
+          variant="compact"
+          title="اختصارات سريعة"
+          description="انتقل مباشرة إلى أهم الصفحات"
+          className="mb-comfortable"
+        />
+        <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-4">
+          {quickLinks.map((link) => (
+            <Link key={link.to} to={link.to}>
+              <Card hoverable className="h-full">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-container text-on-primary-container">
+                  <Icon name={link.icon} size={28} />
+                </div>
+                <h3 className="text-headline-sm text-primary">{link.label}</h3>
+                <p className="mt-1 text-body-md text-on-surface-variant">{link.desc}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-label-md text-primary">
+                  فتح
+                  <Icon name="arrow_back" size={16} />
+                </span>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )

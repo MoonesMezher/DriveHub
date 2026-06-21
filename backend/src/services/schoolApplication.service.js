@@ -6,6 +6,11 @@ const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 
 class SchoolApplicationService {
     async submit(applicantUserId, data) {
+        const settingsService = require('./settings.service');
+        if (await settingsService.isRegistrationPaused()) {
+            throw new ApiError(400, ERR.PLATFORM_REGISTRATION_PAUSED);
+        }
+
         const pending = await SchoolApplication.findOne({
             applicantUserId,
             status: 'pending',

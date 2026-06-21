@@ -2,6 +2,7 @@ const { User } = require('../models');
 const jwtService = require('../utils/jwtService');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
+const { getEffectivePermissions } = require('../constants/rolePermissions');
 
 const auth = async (req, res, next) => {
     try {
@@ -23,10 +24,18 @@ const auth = async (req, res, next) => {
             return next(new ApiError(403, ERR.ACCOUNT_SUSPENDED));
         }
 
+        const roles = [
+            user.activeContext?.role || decoded.role,
+            ...(decoded.roles?.map((r) => r.role) || []),
+        ].filter(Boolean);
+
         req._user = {
             ...decoded,
+            role: user.activeContext?.role || decoded.role,
+            schoolId: user.activeContext?.schoolId?.toString() || decoded.schoolId || null,
             name: user.name,
             status: user.status,
+            permissions: getEffectivePermissions([...new Set(roles)]),
         };
 
         return next();

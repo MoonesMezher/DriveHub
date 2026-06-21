@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Button, Input, Tabs } from '@/components/ui'
+import { Button, Input, Tabs, PageHeader, Alert, Icon } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/lib/constants/routes'
 import { resolvePostLoginRoute } from '@/lib/auth/authUtils'
+import { TRUST_BADGES } from '@/lib/constants/homeVisuals'
 
 const LOGIN_TABS = [
   { id: 'student', label: 'دخول الطلاب' },
@@ -39,19 +40,21 @@ export const LoginPage = () => {
   }
 
   return (
-    <>
+    <div dir="rtl">
       <Tabs tabs={LOGIN_TABS} activeId={tab} onChange={setTab} />
       <div className="p-comfortable md:p-loose">
-        <div className="mb-loose">
-          <h2 className="text-headline-sm text-on-surface">{copy.title}</h2>
-          <p className="text-body-md text-on-surface-variant">{copy.desc}</p>
-        </div>
+        <PageHeader
+          variant="compact"
+          title={copy.title}
+          description={copy.desc}
+          className="mb-loose"
+        />
 
         <form onSubmit={handleSubmit} className="space-y-comfortable">
           {error && (
-            <p className="rounded-lg bg-error-container px-3 py-2 text-label-sm text-on-error-container">
+            <Alert variant="error" title="تعذّر تسجيل الدخول">
               {error}
-            </p>
+            </Alert>
           )}
           <Input
             label="البريد الإلكتروني"
@@ -86,7 +89,19 @@ export const LoginPage = () => {
             إنشاء حساب
           </Link>
         </p>
+
+        <div className="mt-loose flex flex-wrap justify-center gap-3 border-t border-outline-variant/50 pt-comfortable">
+          {TRUST_BADGES.map((badge) => (
+            <span
+              key={badge.label}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container px-3 py-1.5 text-label-sm text-on-surface-variant"
+            >
+              <Icon name={badge.icon} size={16} className="text-primary" />
+              {badge.label}
+            </span>
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   )
 }

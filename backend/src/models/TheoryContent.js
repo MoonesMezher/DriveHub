@@ -5,9 +5,11 @@ const theoryContentSchema = new mongoose.Schema(
     {
         categoryCode: { type: String, required: true, index: true },
         subTypeCode: { type: String, default: null },
-        phase: { type: Number, required: true, min: 1 },
+        phase: { type: Number, required: true, min: 0 },
         title: { type: String, required: true, trim: true },
         body: { type: String, required: true },
+        imageUrl: { type: String, default: null },
+        videoUrl: { type: String, default: null },
         order: { type: Number, default: 0 },
         isSample: { type: Boolean, default: false },
         sampleTier: { type: String, enum: ['partial', 'full'], default: null },

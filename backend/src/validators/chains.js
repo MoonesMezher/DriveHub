@@ -1,5 +1,6 @@
 const { body, param, query } = require('express-validator');
 const msg = require('./messages');
+const { SYRIAN_GOVERNORATES } = require('../constants/syrianGovernorates');
 
 const PASSWORD_REGEX = {
     upper: /[A-Z]/,
@@ -236,8 +237,25 @@ const paginationQuery = [
     query('sort').optional().isString().trim().withMessage('ترتيب غير صالح'),
 ];
 
+const requiredGovernorate = (field = 'governorate') =>
+    body(field)
+        .trim()
+        .notEmpty()
+        .withMessage(msg.required('المحافظة'))
+        .isIn(SYRIAN_GOVERNORATES)
+        .withMessage('المحافظة غير صالحة');
+
+const optionalGovernorate = (field = 'governorate') =>
+    body(field)
+        .optional({ values: 'falsy' })
+        .trim()
+        .isIn(SYRIAN_GOVERNORATES)
+        .withMessage('المحافظة غير صالحة');
+
 module.exports = {
     PASSWORD_REGEX,
+    requiredGovernorate,
+    optionalGovernorate,
     requiredString,
     optionalString,
     requiredEmail,

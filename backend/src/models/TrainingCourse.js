@@ -15,6 +15,7 @@ const trainingCourseSchema = new mongoose.Schema(
             default: COURSE_STATUS.REGISTRATION_OPEN,
         },
         registrationOpen: { type: Boolean, default: true },
+        registrationClosedAt: { type: Date, default: null },
         launchDate: { type: Date, default: null },
         endDate: { type: Date, default: null },
         durationDays: { type: Number, default: COURSE_DURATION_DAYS },

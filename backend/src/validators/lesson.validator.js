@@ -33,8 +33,14 @@ const coachNoteRules = [
     optionalMongoIdBody('lessonId', 'الدرس'),
 ];
 
+const autoBookLessonRules = [
+    mongoIdBody('enrollmentId', 'طلب الاشتراك'),
+    optionalInt('durationMinutes', 'مدة الدرس', { min: 30, max: 120 }),
+];
+
 module.exports = {
     bookLessonRules,
+    autoBookLessonRules,
     completeLessonRules,
     coachNoteRules,
 };

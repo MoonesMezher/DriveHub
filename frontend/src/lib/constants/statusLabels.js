@@ -43,3 +43,8 @@ export const EXAM_TYPE_LABELS = {
   theory: 'نظري',
   practical: 'عملي',
 }
+
+export const RETAKE_SCOPE_LABELS = {
+  full: 'إعادة كاملة (نظري + عملي)',
+  practical_only: 'إعادة عملي فقط',
+}

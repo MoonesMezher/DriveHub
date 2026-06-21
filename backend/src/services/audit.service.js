@@ -19,7 +19,12 @@ class AuditService {
     }
 
     async getRecent(limit = 50, filter = {}) {
-        return AuditLog.find(filter).sort({ at: -1 }).limit(limit).lean();
+        const parsedLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);
+        return AuditLog.find(filter)
+            .populate('userId', 'name email')
+            .sort({ at: -1 })
+            .limit(parsedLimit)
+            .lean();
     }
 }
 

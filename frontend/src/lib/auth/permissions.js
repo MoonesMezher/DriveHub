@@ -37,6 +37,7 @@ export const PERMISSIONS = {
   MANAGE_ADS: 'admin:ads',
   VIEW_AUDIT_LOG: 'admin:audit',
   ACCESS_TRAFFIC_PORTAL: 'traffic:portal',
+  VIEW_TRAFFIC_DASHBOARD: 'traffic:dashboard',
   VIEW_TRAFFIC_ROSTERS: 'traffic:rosters',
   MANAGE_EXAM_SCHEDULES: 'traffic:schedules',
   ENTER_EXAM_RESULTS: 'traffic:results',

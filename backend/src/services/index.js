@@ -21,4 +21,6 @@ module.exports = {
     schoolApplicationService: require('./schoolApplication.service'),
     preRegistrationService: require('./preRegistration.service'),
     studentService: require('./student.service'),
+    settingsService: require('./settings.service'),
+    searchService: require('./search.service'),
 };

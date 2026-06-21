@@ -27,8 +27,9 @@ import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { RequirementsPage } from '@/features/shared/pages/RequirementsPage'
 import { SamplePage } from '@/features/shared/pages/SamplePage'
 import { FaqPage } from '@/features/shared/pages/FaqPage'
-import { AddSchoolPage } from '@/features/shared/pages/AddSchoolPage'
+import { PrivacyPage } from '@/features/shared/pages/PrivacyPage'
 import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
+import { AddSchoolPage } from '@/features/shared/pages/AddSchoolPage'
 
 export const AppRouter = () => (
   <Routes>
@@ -42,6 +43,7 @@ export const AppRouter = () => (
       <Route path="requirements" element={<RequirementsPage />} />
       <Route path="sample" element={<SamplePage />} />
       <Route path="faq" element={<FaqPage />} />
+      <Route path="privacy" element={<PrivacyPage />} />
       <Route path="add-school" element={<AddSchoolPage />} />
       <Route path="unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />

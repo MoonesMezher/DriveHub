@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PageHeader, Card, Button, Input, AsyncContent, StatusBadge } from '@/components/ui'
+import {
+  PageHeader, Card, Button, Input, DataTable, SkeletonTable, Alert, Tabs, StatusBadge,
+} from '@/components/ui'
 import { adminService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDate } from '@/lib/helpers/date'
+import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 
 const reviewStatusLabels = {
@@ -18,9 +21,15 @@ const reviewStatusVariants = {
   rejected: 'error',
 }
 
+const TABS = [
+  { id: 'reviews', label: 'تقييمات معلّقة' },
+  { id: 'applications', label: 'طلبات المدارس' },
+]
+
 export const AdminCompliancePage = () => {
   const toast = useToast()
   const queryClient = useQueryClient()
+  const [tab, setTab] = useState('reviews')
   const [rejectReasons, setRejectReasons] = useState({})
 
   const reviewsQuery = useQuery({
@@ -60,152 +69,145 @@ export const AdminCompliancePage = () => {
     onError: (err) => toast.error(err, 'فشل مراجعة الطلب'),
   })
 
+  const reviewColumns = [
+    {
+      key: 'school',
+      label: 'المدرسة',
+      render: (review) => review.schoolId?.name || '—',
+    },
+    {
+      key: 'reviewer',
+      label: 'المقيّم',
+      render: (review) => review.reviewerId?.name || '—',
+    },
+    { key: 'rating', label: 'التقييم', render: (review) => `${review.rating}/5` },
+    {
+      key: 'comment',
+      label: 'التعليق',
+      render: (review) => <span className="max-w-xs truncate">{review.comment || '—'}</span>,
+    },
+    {
+      key: 'actions',
+      label: 'إجراءات',
+      render: (review) => (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => moderateMutation.mutate({ id: review._id, adminStatus: 'approved' })}
+            disabled={moderateMutation.isPending}
+          >
+            موافقة
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => moderateMutation.mutate({ id: review._id, adminStatus: 'rejected' })}
+            disabled={moderateMutation.isPending}
+          >
+            رفض
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
+  const applicationColumns = [
+    { key: 'schoolName', label: 'اسم المدرسة' },
+    {
+      key: 'applicant',
+      label: 'مقدّم الطلب',
+      render: (app) => app.applicantUserId?.name || '—',
+    },
+    { key: 'governorate', label: 'المحافظة', render: (app) => app.governorate || '—' },
+    {
+      key: 'status',
+      label: 'الحالة',
+      render: (app) => (
+        <StatusBadge
+          status={app.status}
+          labels={reviewStatusLabels}
+          variants={reviewStatusVariants}
+        />
+      ),
+    },
+    {
+      key: 'createdAt',
+      label: 'التاريخ',
+      render: (app) => formatDate(app.createdAt),
+    },
+    {
+      key: 'actions',
+      label: 'إجراءات',
+      render: (app) => (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            size="sm"
+            onClick={() => reviewAppMutation.mutate({ id: app._id, status: 'approved' })}
+            disabled={reviewAppMutation.isPending}
+          >
+            قبول
+          </Button>
+          <Input
+            placeholder="سبب الرفض"
+            value={rejectReasons[app._id] || ''}
+            onChange={(e) =>
+              setRejectReasons((r) => ({ ...r, [app._id]: e.target.value }))
+            }
+            wrapperClassName="min-w-[140px]"
+          />
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() =>
+              reviewAppMutation.mutate({
+                id: app._id,
+                status: 'rejected',
+                rejectionReason: rejectReasons[app._id] || 'مرفوض',
+              })
+            }
+            disabled={reviewAppMutation.isPending}
+          >
+            رفض
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
+  const isLoading = tab === 'reviews' ? reviewsQuery.isLoading : applicationsQuery.isLoading
+  const error = tab === 'reviews' ? reviewsQuery.error : applicationsQuery.error
+
   return (
     <div>
       <PageHeader
+        variant="compact"
         title="التحقق والامتثال"
         description="مراجعة التقييمات المعلّقة وطلبات انضمام المدارس"
       />
 
-      <div className="space-y-loose">
-        <Card title="تقييمات بانتظار الموافقة">
-          <AsyncContent
-            isLoading={reviewsQuery.isLoading}
-            error={reviewsQuery.error}
-            isEmpty={reviews.length === 0}
-            emptyTitle="لا توجد تقييمات معلّقة"
-          >
-            {() => (
-<div className="overflow-x-auto">
-              <table className="w-full text-body-md">
-                <thead>
-                  <tr className="border-b border-outline-variant text-label-md text-on-surface-variant">
-                    <th className="py-3 pe-4 text-start">المدرسة</th>
-                    <th className="py-3 pe-4 text-start">المقيّم</th>
-                    <th className="py-3 pe-4 text-start">التقييم</th>
-                    <th className="py-3 pe-4 text-start">التعليق</th>
-                    <th className="py-3 pe-4 text-start">إجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reviews.map((review) => (
-                    <tr key={review._id} className="border-b border-outline-variant/50 last:border-0">
-                      <td className="py-3 pe-4">{review.schoolId?.name || '—'}</td>
-                      <td className="py-3 pe-4">{review.reviewerId?.name || '—'}</td>
-                      <td className="py-3 pe-4">{review.rating}/5</td>
-                      <td className="py-3 pe-4 max-w-xs truncate">{review.comment || '—'}</td>
-                      <td className="py-3 pe-4">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              moderateMutation.mutate({ id: review._id, adminStatus: 'approved' })
-                            }
-                            disabled={moderateMutation.isPending}
-                          >
-                            موافقة
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() =>
-                              moderateMutation.mutate({ id: review._id, adminStatus: 'rejected' })
-                            }
-                            disabled={moderateMutation.isPending}
-                          >
-                            رفض
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <Card padding="none">
+        <Tabs tabs={TABS} activeId={tab} onChange={setTab} className="px-comfortable" />
 
-            )}
-          </AsyncContent>
-        </Card>
-
-        <Card title="طلبات انضمام المدارس">
-          <AsyncContent
-            isLoading={applicationsQuery.isLoading}
-            error={applicationsQuery.error}
-            isEmpty={applications.length === 0}
-            emptyTitle="لا توجد طلبات معلّقة"
-          >
-            {() => (
-<div className="overflow-x-auto">
-              <table className="w-full text-body-md">
-                <thead>
-                  <tr className="border-b border-outline-variant text-label-md text-on-surface-variant">
-                    <th className="py-3 pe-4 text-start">اسم المدرسة</th>
-                    <th className="py-3 pe-4 text-start">مقدّم الطلب</th>
-                    <th className="py-3 pe-4 text-start">المحافظة</th>
-                    <th className="py-3 pe-4 text-start">الحالة</th>
-                    <th className="py-3 pe-4 text-start">التاريخ</th>
-                    <th className="py-3 pe-4 text-start">إجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.map((app) => (
-                    <tr key={app._id} className="border-b border-outline-variant/50 last:border-0">
-                      <td className="py-3 pe-4">{app.schoolName}</td>
-                      <td className="py-3 pe-4">{app.applicantUserId?.name || '—'}</td>
-                      <td className="py-3 pe-4">{app.governorate || '—'}</td>
-                      <td className="py-3 pe-4">
-                        <StatusBadge
-                          status={app.status}
-                          labels={reviewStatusLabels}
-                          variants={reviewStatusVariants}
-                        />
-                      </td>
-                      <td className="py-3 pe-4">{formatDate(app.createdAt)}</td>
-                      <td className="py-3 pe-4">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              reviewAppMutation.mutate({ id: app._id, status: 'approved' })
-                            }
-                            disabled={reviewAppMutation.isPending}
-                          >
-                            قبول
-                          </Button>
-                          <Input
-                            placeholder="سبب الرفض"
-                            value={rejectReasons[app._id] || ''}
-                            onChange={(e) =>
-                              setRejectReasons((r) => ({ ...r, [app._id]: e.target.value }))
-                            }
-                            wrapperClassName="min-w-[140px]"
-                          />
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() =>
-                              reviewAppMutation.mutate({
-                                id: app._id,
-                                status: 'rejected',
-                                rejectionReason: rejectReasons[app._id] || 'مرفوض',
-                              })
-                            }
-                            disabled={reviewAppMutation.isPending}
-                          >
-                            رفض
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            )}
-          </AsyncContent>
-        </Card>
-      </div>
+        <div className="p-comfortable">
+          {isLoading ? (
+            <SkeletonTable rows={5} cols={5} />
+          ) : error ? (
+            <Alert variant="error" title="حدث خطأ">{getErrorMessage(error)}</Alert>
+          ) : tab === 'reviews' ? (
+            <DataTable
+              columns={reviewColumns}
+              rows={reviews}
+              emptyLabel="لا توجد تقييمات معلّقة"
+            />
+          ) : (
+            <DataTable
+              columns={applicationColumns}
+              rows={applications}
+              emptyLabel="لا توجد طلبات معلّقة"
+            />
+          )}
+        </div>
+      </Card>
     </div>
   )
 }

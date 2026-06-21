@@ -1,12 +1,28 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { PageHeader, Card, AsyncContent, Badge, Button, Icon } from '@/components/ui'
+import {
+  PageHeader,
+  AsyncContent,
+  Badge,
+  Button,
+  Icon,
+  GovernorateSelect,
+  ImageCard,
+  PageSection,
+  SectionBlock,
+  Alert,
+} from '@/components/ui'
+import { SyriaSchoolsMap } from '@/features/schools/components/SyriaSchoolsMap'
 import { schoolService, locationService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { useAuthContext } from '@/app/providers/AuthProvider'
+import { DEFAULT_USER_COORDS } from '@/lib/constants/syriaMap'
+import { getGovernorateCoords } from '@/lib/constants/governorateCenters'
+import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
+import { HOME_IMAGES } from '@/lib/constants/homeVisuals'
 
-const formatDistance = (km) => (km < 1 ? `${Math.round(km * 1000)} م` : `${km.toFixed(1)} كم`)
+const formatDistance = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`)
 
 export const SchoolsNearbyPage = () => {
   const { isAuthenticated } = useAuthContext()
@@ -14,6 +30,8 @@ export const SchoolsNearbyPage = () => {
   const [coords, setCoords] = useState(null)
   const [geoError, setGeoError] = useState('')
   const [locating, setLocating] = useState(false)
+  const [highlightedSchoolId, setHighlightedSchoolId] = useState(null)
+  const [manualGovernorate, setManualGovernorate] = useState('')
 
   const persistLocation = (lat, lng) => {
     if (!isAuthenticated) return
@@ -23,9 +41,13 @@ export const SchoolsNearbyPage = () => {
   const category = searchParams.get('category') || ''
   const femaleCoach = searchParams.get('femaleCoach') === 'true'
 
+  const queryCoords = coords
+    ?? (manualGovernorate ? getGovernorateCoords(manualGovernorate) : null)
+    ?? DEFAULT_USER_COORDS
+
   useEffect(() => {
     if (!navigator.geolocation) {
-      setGeoError('المتصفح لا يدعم تحديد الموقع')
+      setGeoError('المتصفح لا يدعم تحديد الموقع — تُعرض المدارس من موقع افتراضي')
       return
     }
     setLocating(true)
@@ -39,28 +61,27 @@ export const SchoolsNearbyPage = () => {
         setLocating(false)
       },
       () => {
-        setGeoError('تعذّر الحصول على موقعك. اسمح بالوصول للموقع أو حاول مجدداً.')
+        setGeoError('تعذّر الحصول على موقعك — تُعرض المدارس من موقع افتراضي (دمشق)')
         setLocating(false)
       },
       { enableHighAccuracy: true, timeout: 10000 },
     )
   }, [])
 
-  const schoolsQuery = useQuery({
-    queryKey: ['schools', 'nearby', coords?.lat, coords?.lng, category, femaleCoach],
+  const mapQuery = useQuery({
+    queryKey: ['schools', 'map', queryCoords.lat, queryCoords.lng, category, femaleCoach],
     queryFn: async () =>
       unwrap(
-        await schoolService.getNearby({
-          lat: coords.lat,
-          lng: coords.lng,
+        await schoolService.getMap({
+          lat: queryCoords.lat,
+          lng: queryCoords.lng,
           category: category || undefined,
           femaleCoach: femaleCoach || undefined,
         }),
       ),
-    enabled: Boolean(coords?.lat && coords?.lng),
   })
 
-  const schools = Array.isArray(schoolsQuery.data) ? schoolsQuery.data : []
+  const schools = Array.isArray(mapQuery.data?.schools) ? mapQuery.data.schools : []
 
   const toggleFemaleCoach = () => {
     const next = new URLSearchParams(searchParams)
@@ -88,94 +109,151 @@ export const SchoolsNearbyPage = () => {
   }
 
   return (
-    <div dir="rtl">
-      <PageHeader
-        title="أقرب المدارس"
-        description="مدارس مرتّبة حسب المسافة من موقعك الحالي"
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={femaleCoach ? 'primary' : 'outline'}
-              size="sm"
-              onClick={toggleFemaleCoach}
-            >
-              مدربات إناث
-            </Button>
-            <Button variant="ghost" size="sm" onClick={retryLocation} disabled={locating}>
-              {locating ? 'جاري التحديد...' : 'تحديث الموقع'}
-            </Button>
-          </div>
-        }
-      />
-
-      {category && (
-        <div className="mb-comfortable">
-          <Badge variant="primary">فلتر: رخصة {category}</Badge>
+    <div dir="rtl" className="space-y-loose">
+      <section className="relative overflow-hidden rounded-3xl shadow-card">
+        <img
+          src={PUBLIC_HERO_IMAGES.schools}
+          alt="أقرب المدارس"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-primary/90 via-primary/50 to-transparent" />
+        <div className="relative px-6 py-12 md:px-10 md:py-16">
+          <PageHeader
+            title="أقرب المدارس"
+            description="خريطة تفاعلية لتوزيع مدارس المنصة في سوريا — مرتّبة حسب المسافة من موقعك"
+            className="!mb-0 [&_h1]:text-white [&_p]:text-white/90"
+          />
         </div>
-      )}
+      </section>
+
+      <PageSection variant="contained">
+        <div className="flex flex-wrap items-center gap-3">
+          {category && (
+            <Badge variant="primary" className="px-3 py-1.5">
+              <Icon name="filter_alt" size={16} className="me-1" />
+              رخصة {category}
+            </Badge>
+          )}
+          <Button
+            variant={femaleCoach ? 'primary' : 'outline'}
+            size="sm"
+            onClick={toggleFemaleCoach}
+            leftIcon={<Icon name="woman" size={18} />}
+          >
+            مدربات إناث
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={retryLocation}
+            disabled={locating}
+            leftIcon={<Icon name="my_location" size={18} />}
+          >
+            {locating ? 'جاري التحديد...' : 'تحديث الموقع'}
+          </Button>
+          <span className="ms-auto text-label-md text-on-surface-variant">
+            {schools.length} مدرسة
+          </span>
+        </div>
+      </PageSection>
+
+      <PageSection variant="elevated" className="!p-0 overflow-hidden">
+        <div className="border-b border-outline-variant bg-surface-container px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-body-md font-medium text-on-surface">خريطة المدارس في سوريا</p>
+            <div className="flex flex-wrap items-center gap-3 text-label-md text-on-surface-variant">
+              <span className="inline-flex items-center gap-1">
+                <span className="inline-block h-3 w-3 rounded-full bg-primary" />
+                مدرسة
+              </span>
+              {coords && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="inline-block h-3 w-3 rounded-full border-2 border-primary bg-primary-container" />
+                  موقعك
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <SyriaSchoolsMap
+          schools={schools}
+          userCoords={coords}
+          highlightedSchoolId={highlightedSchoolId}
+          onSelectSchool={setHighlightedSchoolId}
+        />
+      </PageSection>
 
       {geoError && (
-        <Card variant="tinted" className="mb-loose !bg-warning-container !text-on-warning-container">
-          <p className="text-body-md">{geoError}</p>
-          <Button variant="outline" className="mt-4" onClick={retryLocation}>
-            إعادة المحاولة
+        <Alert variant="warning" title="تعذّر تحديد الموقع">
+          <p>{geoError}</p>
+          <p className="mt-2">اختر محافظتك لعرض المدارس القريبة:</p>
+          <div className="mt-4 max-w-xs">
+            <GovernorateSelect
+              value={manualGovernorate}
+              onChange={(e) => setManualGovernorate(e.target.value)}
+              allowEmpty={false}
+              placeholder="اختر المحافظة"
+            />
+          </div>
+          <Button variant="outline" className="mt-4" size="sm" onClick={retryLocation}>
+            إعادة المحاولة (GPS)
           </Button>
-        </Card>
+        </Alert>
       )}
 
-      <AsyncContent
-        isLoading={locating || schoolsQuery.isLoading}
-        error={schoolsQuery.error}
-        isEmpty={!schools.length && Boolean(coords)}
-        emptyIcon="location_off"
-        emptyTitle="لا توجد مدارس قريبة"
-        emptyDescription="جرّب توسيع نطاق البحث أو إزالة الفلاتر."
-      >
-        {() => (
-<div className="space-y-comfortable">
-          {schools.map((school) => (
-            <Link key={school._id} to={`/schools/${school._id}`}>
-              <Card hoverable>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <h3 className="text-headline-sm text-primary">{school.name}</h3>
-                      {school.hasFemaleCoaches && (
-                        <Badge variant="secondary">مدربات</Badge>
-                      )}
-                    </div>
-                    <p className="flex items-start gap-2 text-body-md text-on-surface-variant">
-                      <Icon name="location_on" size={18} className="mt-0.5 shrink-0" />
-                      {school.address}
-                      {school.governorate && ` — ${school.governorate}`}
-                    </p>
-                    {school.licenses?.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {school.licenses.map((lic) => (
-                          <Badge key={lic}>{lic}</Badge>
+      <SectionBlock title="قائمة المدارس" description="مرّر على البطاقة لتمييزها على الخريطة">
+        <AsyncContent
+          isLoading={mapQuery.isLoading}
+          error={mapQuery.error}
+          isEmpty={!schools.length}
+          emptyIcon="location_off"
+          emptyTitle="لا توجد مدارس"
+          emptyDescription="جرّب إزالة الفلاتر أو تحقق لاحقاً."
+        >
+          {() => (
+            <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-3">
+              {schools.map((school) => (
+                <div
+                  key={school._id}
+                  onMouseEnter={() => setHighlightedSchoolId(school._id)}
+                  onFocus={() => setHighlightedSchoolId(school._id)}
+                  className={
+                    highlightedSchoolId === school._id
+                      ? 'rounded-2xl ring-2 ring-secondary ring-offset-2'
+                      : undefined
+                  }
+                >
+                  <ImageCard
+                    to={`/schools/${school._id}`}
+                    image={HOME_IMAGES.school}
+                    title={school.name}
+                    subtitle={
+                      [school.address, school.governorate].filter(Boolean).join(' — ') || undefined
+                    }
+                    aspect="landscape"
+                    badge={
+                      school.distanceKm != null ? formatDistance(school.distanceKm) : undefined
+                    }
+                    footer={
+                      <div className="flex flex-wrap items-center gap-2">
+                        {school.hasFemaleCoaches && (
+                          <Badge variant="secondary">مدربات</Badge>
+                        )}
+                        {school.licenses?.map((lic) => (
+                          <Badge key={lic} variant="default">
+                            {lic}
+                          </Badge>
                         ))}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    {school.distanceKm != null && (
-                      <span className="rounded-lg bg-primary-container px-3 py-1 text-label-md font-medium text-on-primary-container">
-                        {formatDistance(school.distanceKm)}
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-label-md text-primary">
-                      التفاصيل
-                      <Icon name="arrow_back" size={16} />
-                    </span>
-                  </div>
+                    }
+                  />
                 </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-
-        )}
-      </AsyncContent>
+              ))}
+            </div>
+          )}
+        </AsyncContent>
+      </SectionBlock>
     </div>
   )
 }

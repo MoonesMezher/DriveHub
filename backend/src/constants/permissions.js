@@ -53,6 +53,7 @@ const PERMISSIONS = {
 
     // المرور
     ACCESS_TRAFFIC_PORTAL: 'traffic:portal',
+    VIEW_TRAFFIC_DASHBOARD: 'traffic:dashboard',
     VIEW_TRAFFIC_ROSTERS: 'traffic:rosters',
     MANAGE_EXAM_SCHEDULES: 'traffic:schedules',
     ENTER_EXAM_RESULTS: 'traffic:results',

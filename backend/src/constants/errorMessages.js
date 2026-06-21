@@ -31,6 +31,7 @@ const ERR = {
 
     // School
     SCHOOL_NOT_FOUND: 'المدرسة غير موجودة أو غير نشطة',
+    SCHOOL_DELETE_BLOCKED: 'لا يمكن حذف المدرسة — توجد دورات أو اشتراكات نشطة',
     SCHOOL_APPLICATION_NOT_FOUND: 'طلب المدرسة غير موجود',
 
     // License
@@ -40,13 +41,37 @@ const ERR = {
     // Course
     COURSE_NOT_FOUND: 'الدورة غير موجودة',
     COURSE_LAUNCH_TOO_EARLY: 'لا يمكن إطلاق الدورة قبل مرور 15 يوماً من الدورة السابقة',
+    COURSE_LAUNCH_BEFORE_WINDOW: 'لا يمكن إطلاق الدورة قبل انقضاء فترة الانتظار بعد إغلاق التسجيل',
 
     // Enrollment
     ENROLLMENT_NOT_FOUND: 'طلب الاشتراك غير موجود',
     ENROLLMENT_PENDING_EXISTS: 'لديك طلب اشتراك معلّق بالفعل',
     ENROLLMENT_NO_SPOTS: 'لا توجد أماكن متاحة في هذه الدورة',
+    ENROLLMENT_UNDERAGE: 'عمرك لا يستوفي الحد الأدنى المطلوب لهذه الفئة',
+    ENROLLMENT_DOB_REQUIRED: 'أكمل تاريخ الميلاد في ملفك الشخصي قبل التقديم',
     ENROLLMENT_NOT_CANCELLABLE: 'لا يمكن إلغاء هذا الطلب في حالته الحالية',
     ENROLLMENT_NOT_OWNER: 'هذا الطلب لا يخصك',
+    ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
+    ENROLLMENT_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق الدورة المختارة',
+    ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
+    ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
+    ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
+    ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
+    ENROLLMENT_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق الدورة المختارة',
+    ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
+    ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
+    ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
+    ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
+    ENROLLMENT_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق الدورة المختارة',
+    ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
+    ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
+    ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
+    ENROLLMENT_NOT_RETAKEABLE: 'لا يمكن إعادة الاشتراك في حالة هذا الطلب',
+    ENROLLMENT_ALREADY_ARCHIVED: 'تم أرشفة هذا الاشتراك مسبقاً',
+    ENROLLMENT_RETAKE_SCOPE_MISMATCH: 'نطاق الإعادة لا يطابق حالة الرسوب',
+    ENROLLMENT_RETAKE_COURSE_UNAVAILABLE: 'لا توجد دورة مفتوحة لإعادة الاشتراك حالياً',
+    LESSON_NO_COACHES: 'لا يوجد مدربون مؤهلون لحجز درس',
+    LESSON_NO_SLOTS: 'لا توجد مواعيد متاحة للحجز التلقائي',
 
     // Payment
     PAYMENT_AMOUNT_MISMATCH: 'مبلغ الدفع لا يطابق المطلوب',
@@ -71,6 +96,11 @@ const ERR = {
     QUESTION_BANK_NOT_FOUND: 'بنك الأسئلة غير موجود',
     QUESTION_NOT_FOUND: 'السؤال غير موجود',
     NO_QUESTIONS_AVAILABLE: 'لا توجد أسئلة متاحة لهذه الفئة',
+    PRACTICE_ALREADY_PASSED: 'لقد نجحت في الاختبار التجريبي — لا يمكن إعادة المحاولة',
+    PRACTICE_SESSION_REQUIRED: 'يجب بدء جلسة اختبار قبل الإرسال',
+    PRACTICE_SESSION_NOT_FOUND: 'جلسة الاختبار غير موجودة أو منتهية',
+    PRACTICE_SESSION_EXPIRED: 'انتهت مدة الاختبار — تم إغلاق الجلسة',
+    ROSTER_VERIFY_NOT_FOUND: 'رمز التحقق غير صالح أو منتهي',
     EDIT_REQUEST_NOT_FOUND: 'طلب التعديل غير موجود',
     EDIT_ALREADY_REVIEWED: 'تمت مراجعة هذا الطلب مسبقاً',
 
@@ -98,6 +128,7 @@ const ERR = {
     APPLICATION_NOT_FOUND: 'طلب المدرسة غير موجود',
     APPLICATION_ALREADY_REVIEWED: 'تمت مراجعة هذا الطلب مسبقاً',
     APPLICATION_PENDING_EXISTS: 'لديك طلب مدرسة قيد المراجعة',
+    PLATFORM_REGISTRATION_PAUSED: 'التسجيل موقوف مؤقتاً على مستوى المنصة',
 
     // Traffic
     SCHEDULE_NOT_FOUND: 'موعد الامتحان غير موجود',

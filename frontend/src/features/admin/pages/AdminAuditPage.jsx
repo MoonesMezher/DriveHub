@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { PageHeader, AsyncContent, Card, DataTable, Badge } from '@/components/ui'
+import {
+  PageHeader, Card, DataTable, SkeletonTable, Alert, Pagination, Select, Badge,
+} from '@/components/ui'
 import { adminService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDateTime } from '@/lib/helpers/date'
+import { fullName } from '@/lib/helpers/format'
+import { getErrorMessage } from '@/lib/helpers/error'
 
 export const AdminAuditPage = () => {
   const [limit, setLimit] = useState(50)
+  const [page, setPage] = useState(1)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'audit', limit],
@@ -14,43 +19,75 @@ export const AdminAuditPage = () => {
   })
 
   const logs = data?.logs ?? []
+  const PAGE_SIZE = 25
+  const totalPages = Math.max(1, Math.ceil(logs.length / PAGE_SIZE))
+  const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns = [
     { key: 'at', label: 'التاريخ', render: (row) => formatDateTime(row.at) },
-    { key: 'action', label: 'الإجراء', render: (row) => (
-      <Badge variant="primary">{row.action}</Badge>
-    ) },
-    { key: 'actor', label: 'المستخدم', render: (row) => row.userId?.name || row.actorId || '—' },
-    { key: 'target', label: 'الهدف', render: (row) => row.targetType ? `${row.targetType}` : '—' },
-    { key: 'meta', label: 'تفاصيل', render: (row) => row.meta?.schoolId || row.ip || '—' },
+    {
+      key: 'action',
+      label: 'الإجراء',
+      render: (row) => <Badge variant="primary">{row.action}</Badge>,
+    },
+    {
+      key: 'actor',
+      label: 'المستخدم',
+      render: (row) => fullName(row.userId) || row.userId?.email || '—',
+    },
+    {
+      key: 'target',
+      label: 'الهدف',
+      render: (row) => (row.entityType ? `${row.entityType}` : '—'),
+    },
+    {
+      key: 'meta',
+      label: 'تفاصيل',
+      render: (row) =>
+        row.metadata?.schoolName
+        || row.metadata?.note
+        || row.path
+        || row.ip
+        || '—',
+    },
   ]
 
   return (
     <div dir="rtl">
       <PageHeader
+        variant="compact"
         title="سجل التدقيق"
-        description="تتبع عمليات النظام والتغييرات الحساسة — شاشة 24 من مركز التصميم"
+        description="تتبع عمليات النظام والتغييرات الحساسة"
         actions={
-          <select
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-label-md"
-          >
-            <option value={25}>25 سجل</option>
-            <option value={50}>50 سجل</option>
-            <option value={100}>100 سجل</option>
-          </select>
+          <Select
+            wrapperClassName="w-36"
+            value={String(limit)}
+            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1) }}
+            options={[
+              { value: '25', label: '25 سجل' },
+              { value: '50', label: '50 سجل' },
+              { value: '100', label: '100 سجل' },
+            ]}
+          />
         }
       />
 
-      <AsyncContent isLoading={isLoading} error={error}>
-        {() => (
-<Card title={`آخر ${logs.length} عملية`} padding="none">
-          <DataTable columns={columns} rows={logs} />
-        </Card>
-
+      <Card title={`آخر ${logs.length} عملية`} padding="none">
+        {isLoading ? (
+          <div className="p-comfortable"><SkeletonTable rows={8} cols={5} /></div>
+        ) : error ? (
+          <div className="p-comfortable">
+            <Alert variant="error" title="حدث خطأ">{getErrorMessage(error)}</Alert>
+          </div>
+        ) : (
+          <>
+            <DataTable columns={columns} rows={paginatedLogs} emptyLabel="لا توجد سجلات" />
+            <div className="border-t border-outline-variant/50 p-comfortable">
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
+          </>
         )}
-      </AsyncContent>
+      </Card>
     </div>
   )
 }

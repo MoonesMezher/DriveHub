@@ -23,15 +23,23 @@ class InstructorService {
         return instructor;
     }
 
-    async assign({ userId, schoolId, licenseCategories, gender, isFemaleCoach }) {
-        const user = await User.findById(userId);
+    async assign({ userId, email, schoolId, licenseCategories, gender, isFemaleCoach }) {
+        let resolvedUserId = userId;
+        if (email && !userId) {
+            const user = await User.findOne({ email: email.trim().toLowerCase() });
+            if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
+            resolvedUserId = user._id;
+        }
+        if (!resolvedUserId) throw new ApiError(400, ERR.VALIDATION_FAILED);
+
+        const user = await User.findById(resolvedUserId);
         if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
 
-        const existing = await Instructor.findOne({ userId, schoolId });
+        const existing = await Instructor.findOne({ userId: resolvedUserId, schoolId });
         if (existing) throw new ApiError(409, ERR.INSTRUCTOR_EXISTS);
 
         const instructor = await Instructor.create({
-            userId,
+            userId: resolvedUserId,
             schoolId,
             licenseCategories: licenseCategories.map((c) => c.toUpperCase()),
             gender,
@@ -39,8 +47,8 @@ class InstructorService {
         });
 
         await UserRole.findOneAndUpdate(
-            { userId, role: ROLES.COACH, schoolId },
-            { userId, role: ROLES.COACH, schoolId, licenseCategories: instructor.licenseCategories, status: 'active' },
+            { userId: resolvedUserId, role: ROLES.COACH, schoolId },
+            { userId: resolvedUserId, role: ROLES.COACH, schoolId, licenseCategories: instructor.licenseCategories, status: 'active' },
             { upsert: true, new: true },
         );
 

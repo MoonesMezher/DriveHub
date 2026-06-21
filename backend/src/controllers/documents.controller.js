@@ -13,7 +13,10 @@ const uploadDocument = asyncHandler(async (req, res) => {
 });
 
 const getDocument = asyncHandler(async (req, res) => {
-    const doc = await documentService.getById(req.params.id, req._user.userId);
+    const doc = await documentService.getById(req.params.id, req._user.userId, {
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+    });
     return success(res, { document: { id: doc._id, type: doc.type, mime: doc.mime, uploadedAt: doc.uploadedAt } });
 });
 

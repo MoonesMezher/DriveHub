@@ -16,9 +16,17 @@ const LESSONABLE_STATUSES = [
 ];
 
 class LessonService {
-    async _assertCoachInSchool(coachId, schoolId) {
-        const instructor = await Instructor.findOne({ userId: coachId, schoolId, status: 'active' });
+    async _resolveCoach(coachId, schoolId) {
+        let instructor = await Instructor.findOne({ userId: coachId, schoolId, status: 'active' });
+        if (!instructor) {
+            instructor = await Instructor.findOne({ _id: coachId, schoolId, status: 'active' });
+        }
         if (!instructor) throw new ApiError(400, ERR.COACH_NOT_IN_SCHOOL);
+        return { instructor, coachUserId: instructor.userId };
+    }
+
+    async _assertCoachInSchool(coachId, schoolId) {
+        const { instructor } = await this._resolveCoach(coachId, schoolId);
         return instructor;
     }
 
@@ -51,9 +59,9 @@ class LessonService {
         });
         if (!enrollment) throw new ApiError(400, ERR.ACTIVE_ENROLLMENT_REQUIRED);
 
-        await this._assertCoachInSchool(coachId, enrollment.schoolId);
+        const { coachUserId } = await this._resolveCoach(coachId, enrollment.schoolId);
         await this._checkConflict({
-            coachId,
+            coachId: coachUserId,
             studentId,
             scheduledAt,
             durationMinutes,
@@ -62,11 +70,79 @@ class LessonService {
         return PracticalLesson.create({
             enrollmentId,
             studentId,
-            coachId,
+            coachId: coachUserId,
             schoolId: enrollment.schoolId,
             scheduledAt,
             durationMinutes,
         });
+    }
+
+    async listEligibleCoaches(studentId, enrollmentId) {
+        const enrollment = await Enrollment.findOne({
+            _id: enrollmentId,
+            userId: studentId,
+            status: { $in: LESSONABLE_STATUSES },
+        });
+        if (!enrollment) throw new ApiError(400, ERR.ACTIVE_ENROLLMENT_REQUIRED);
+
+        const filter = {
+            schoolId: enrollment.schoolId,
+            status: 'active',
+            licenseCategories: enrollment.categoryCode,
+        };
+        if (enrollment.prefersFemaleCoach) filter.isFemaleCoach = true;
+
+        const instructors = await Instructor.find(filter)
+            .populate('userId', 'name email')
+            .lean();
+
+        return instructors.map((coach) => ({
+            _id: coach._id,
+            userId: coach.userId?._id || coach.userId,
+            name: coach.userId?.name || 'مدرب',
+            gender: coach.gender,
+            isFemaleCoach: coach.isFemaleCoach,
+            licenseCategories: coach.licenseCategories,
+        }));
+    }
+
+    async autoBookNextLesson(studentId, { enrollmentId, durationMinutes = 60 }) {
+        const coaches = await this.listEligibleCoaches(studentId, enrollmentId);
+        if (!coaches.length) throw new ApiError(400, ERR.LESSON_NO_COACHES);
+
+        const base = new Date();
+        base.setDate(base.getDate() + 1);
+        base.setHours(9, 0, 0, 0);
+
+        for (let day = 0; day < 14; day += 1) {
+            for (const coach of coaches) {
+                for (let hour = 9; hour <= 17; hour += 1) {
+                    const slot = new Date(base);
+                    slot.setDate(base.getDate() + day);
+                    slot.setHours(hour, 0, 0, 0);
+                    if (slot <= new Date()) continue;
+
+                    try {
+                        await this._checkConflict({
+                            coachId: coach.userId,
+                            studentId,
+                            scheduledAt: slot,
+                            durationMinutes,
+                        });
+                        return this.book(studentId, {
+                            enrollmentId,
+                            coachId: coach.userId,
+                            scheduledAt: slot,
+                            durationMinutes,
+                        });
+                    } catch (err) {
+                        if (err.statusCode !== 409) throw err;
+                    }
+                }
+            }
+        }
+
+        throw new ApiError(409, ERR.LESSON_NO_SLOTS);
     }
 
     async listStudentLessons(studentId, query = {}) {
@@ -89,6 +165,22 @@ class LessonService {
             .sort({ scheduledAt: 1 })
             .populate('studentId', 'name email')
             .limit(100)
+            .lean();
+    }
+
+    async listSchoolSchedule(schoolId, query = {}) {
+        const filter = { schoolId };
+        if (query.status) filter.status = query.status;
+        if (query.from) filter.scheduledAt = { $gte: new Date(query.from) };
+        if (query.to) {
+            filter.scheduledAt = { ...filter.scheduledAt, $lte: new Date(query.to) };
+        }
+        return PracticalLesson.find(filter)
+            .sort({ scheduledAt: 1 })
+            .populate('studentId', 'name email')
+            .populate('coachId', 'name')
+            .populate('enrollmentId', 'categoryCode subTypeCode')
+            .limit(200)
             .lean();
     }
 

@@ -10,7 +10,9 @@ describe('Button', () => {
 
   it('applies primary variant', () => {
     render(<Button variant="primary">حفظ</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-primary')
+    const btn = screen.getByRole('button')
+    expect(btn).toHaveClass('bg-primary')
+    expect(btn).toHaveClass('!text-white')
   })
 
   it('applies danger variant', () => {

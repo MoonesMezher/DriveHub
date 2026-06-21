@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { PageHeader, StatCard, AsyncContent } from '@/components/ui'
+import { PageHeader, StatCard, Card, AsyncContent, StatusBadge } from '@/components/ui'
 import { managerService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { COURSE_STATUS_LABELS } from '@/lib/constants/statusLabels'
@@ -27,6 +27,7 @@ export const ManagerHomePage = () => {
   return (
     <div>
       <PageHeader
+        variant="compact"
         title="لوحة مدير المدرسة"
         description="نظرة عامة على الدورات والمدربين وطلبات الالتحاق"
       />
@@ -44,18 +45,24 @@ export const ManagerHomePage = () => {
             {courses.length > 0 && (
               <div className="grid gap-comfortable lg:grid-cols-2">
                 {courses.slice(0, 4).map((course) => (
-                  <div
-                    key={course._id}
-                    className="rounded-xl border border-outline-variant bg-surface-container-lowest p-comfortable shadow-card"
-                  >
+                  <Card key={course._id} hoverable>
                     <p className="text-label-sm text-on-surface-variant">فئة {course.categoryCode}</p>
-                    <p className="mt-1 text-headline-sm text-on-surface">
-                      {COURSE_STATUS_LABELS[course.status] || course.status}
-                    </p>
+                    <div className="mt-2">
+                      <StatusBadge
+                        status={course.status}
+                        labels={COURSE_STATUS_LABELS}
+                        variants={{
+                          registration_open: 'success',
+                          registration_closed: 'warning',
+                          active: 'primary',
+                          completed: 'default',
+                        }}
+                      />
+                    </div>
                     <p className="mt-2 text-body-md text-on-surface-variant">
                       {course.paidCount ?? 0} / {course.maxStudents} طالب
                     </p>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}

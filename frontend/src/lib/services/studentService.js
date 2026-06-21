@@ -19,4 +19,7 @@ export const studentService = {
   certificates: () => apiClient.get(ENDPOINTS.student.certificates),
   listLessons: () => apiClient.get(ENDPOINTS.student.lessons),
   bookLesson: (data) => apiClient.post(ENDPOINTS.student.lessons, data),
+  autoBookLesson: (data) => apiClient.post(ENDPOINTS.student.autoBookLesson, data),
+  eligibleCoaches: (enrollmentId) =>
+    apiClient.get(`${ENDPOINTS.student.eligibleCoaches}?enrollmentId=${enrollmentId}`),
 }

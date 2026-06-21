@@ -2,15 +2,17 @@ import { cn } from '@/lib/cn'
 
 const variants = {
   primary:
-    'bg-primary text-on-primary hover:bg-primary-container active:scale-[0.98] shadow-sm',
+    'bg-primary !text-white hover:bg-primary/90 hover:!text-white active:scale-[0.98] shadow-sm',
   secondary:
     'bg-secondary-container text-on-secondary-container hover:brightness-105 active:scale-[0.98] shadow-sm',
   outline:
     'border border-primary text-primary bg-transparent hover:bg-surface-container-low active:scale-[0.98]',
   ghost:
     'bg-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-primary',
-  danger: 'bg-error text-on-error hover:brightness-110 active:scale-[0.98]',
-  ultra: 'bg-ultra-secondary text-ultra-on-secondary hover:brightness-105 active:scale-[0.98] shadow-sm',
+  danger:
+    'bg-error !text-white hover:bg-error hover:!text-white active:scale-[0.98]',
+  ultra:
+    'bg-ultra-secondary !text-white hover:bg-ultra-secondary hover:!text-white active:scale-[0.98] shadow-sm',
 }
 
 const sizes = {
@@ -33,7 +35,7 @@ export const Button = ({
   <button
     type={type}
     className={cn(
-      'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200',
+      'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-standard',
       'focus-ring disabled:pointer-events-none disabled:opacity-50',
       variants[variant],
       sizes[size],

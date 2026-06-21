@@ -109,7 +109,15 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
   --radius-full: 9999px;
+
+  /* ── Motion ── */
+  --duration-fast: 150ms;
+  --duration-standard: 250ms;
+  --duration-slow: 500ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ── Shadows (elevation) ── */
   --shadow-card: 0 2px 4px rgb(15 23 42 / 0.05);

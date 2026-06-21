@@ -5,6 +5,7 @@ module.exports = {
     RefreshToken: require('./RefreshToken'),
     UserLocation: require('./UserLocation'),
     DocumentUpload: require('./DocumentUpload'),
+    DocumentAccessLog: require('./DocumentAccessLog'),
 
     // Schools & applications
     DrivingSchool: require('./DrivingSchool'),
@@ -35,6 +36,7 @@ module.exports = {
     PracticalVideo: require('./PracticalVideo'),
     ContentUnlockMode: require('./ContentUnlockMode'),
     PracticeExam: require('./PracticeExam'),
+    PracticeExamSession: require('./PracticeExamSession'),
 
     // Lessons & coaching
     PracticalLesson: require('./PracticalLesson'),
@@ -52,4 +54,5 @@ module.exports = {
     Notification: require('./Notification'),
     AuditLog: require('./AuditLog'),
     Ad: require('./Ad'),
+    PlatformSetting: require('./PlatformSetting'),
 };

@@ -11,6 +11,7 @@ const {
     PlatformPricing,
     Enrollment,
     Notification,
+    LicenseCategory,
 } = require('../../src/models');
 const passwordService = require('../../src/utils/passwordService');
 const { ROLES } = require('../../src/constants/roles');
@@ -40,6 +41,10 @@ beforeAll(async () => {
         activeContext: { role: ROLES.REGISTERED },
     });
     await UserRole.create({ userId: user._id, role: ROLES.REGISTERED });
+
+    await User.findByIdAndUpdate(user._id, {
+        profileData: { dateOfBirth: '2000-01-01' },
+    });
 
     const login = await request(app).post('/api/v1/auth/login').send({
         email: 'phase1@drivehub.local',
@@ -73,6 +78,8 @@ beforeAll(async () => {
         fixedPrice: 500000,
         isActive: true,
     });
+
+    await LicenseCategory.create({ code: 'B', name: 'خصوصي', minAge: 18, order: 1 });
 });
 
 afterEach(async () => {
@@ -90,6 +97,7 @@ afterAll(async () => {
         DrivingSchool.deleteMany({}),
         TrainingCourse.deleteMany({}),
         PlatformPricing.deleteMany({}),
+        LicenseCategory.deleteMany({}),
     ]);
     await mongoose.disconnect();
     await mongoServer.stop();

@@ -21,8 +21,8 @@ const createCourseRules = [
 ];
 
 const launchCourseRules = [
+    optionalDate('previousLaunchDate', 'تاريخ إطلاق الدورة السابقة'),
     optionalMongoIdBody('previousCourseId', 'الدورة السابقة'),
-    optionalDate('launchDate', 'تاريخ الانطلاق'),
 ];
 
 const updateCourseRules = [

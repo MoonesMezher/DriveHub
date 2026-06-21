@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom'
-import { PageHeader, Card, Accordion, Button } from '@/components/ui'
+import { useState } from 'react'
+import { PageHeader, Badge } from '@/components/ui'
+import { FaqAccordion, CtaBanner } from '@/components/sections'
 import { ROUTES } from '@/lib/constants/routes'
+import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
 
 const faqItems = [
   {
@@ -47,32 +49,46 @@ const faqItems = [
   },
 ]
 
-export const FaqPage = () => (
-  <div dir="rtl">
-    <PageHeader
-      title="الأسئلة الشائعة"
-      description="إجابات سريعة عن التسجيل والرخص والمدارس"
-    />
+export const FaqPage = () => {
+  const [searchQuery, setSearchQuery] = useState('')
 
-    <Card padding="lg">
-      <Accordion items={faqItems} />
-    </Card>
+  return (
+    <div dir="rtl" className="space-y-loose">
+      <section className="relative overflow-hidden rounded-3xl shadow-card">
+        <img
+          src={PUBLIC_HERO_IMAGES.faq}
+          alt="الأسئلة الشائعة"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-primary/90 via-primary/50 to-transparent" />
+        <div className="relative px-6 py-12 md:px-10 md:py-16">
+          <Badge variant="secondary" className="mb-4 bg-white/20 text-white backdrop-blur">
+            مساعدة
+          </Badge>
+          <PageHeader
+            title="الأسئلة الشائعة"
+            description="إجابات سريعة عن التسجيل والرخص والمدارس"
+            className="!mb-0 [&_h1]:text-white [&_p]:text-white/90"
+          />
+        </div>
+      </section>
 
-    <Card className="mt-loose" variant="tinted">
-      <p className="text-body-lg">لم تجد إجابتك؟</p>
-      <p className="mt-2 text-body-md opacity-90">
-        تواصل معنا أو راجع متطلبات التسجيل للخطوات التفصيلية.
-      </p>
-      <div className="mt-comfortable flex flex-wrap gap-3">
-        <Link to={ROUTES.REQUIREMENTS}>
-          <Button variant="secondary">متطلبات التسجيل</Button>
-        </Link>
-        <Link to={ROUTES.ADD_SCHOOL}>
-          <Button variant="outline" className="border-white/40 text-inherit hover:bg-white/10">
-            أضف مدرستك
-          </Button>
-        </Link>
-      </div>
-    </Card>
-  </div>
-)
+      <FaqAccordion
+        items={faqItems}
+        title="كل الأسئلة"
+        showMoreLink={false}
+        searchable
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
+      <CtaBanner
+        title="لم تجد إجابتك؟"
+        description="راجع متطلبات التسجيل أو قدّم طلب انضمام لمدرستك"
+        primaryAction={{ label: 'متطلبات التسجيل', to: ROUTES.REQUIREMENTS }}
+        secondaryAction={{ label: 'أضف مدرستك', to: ROUTES.ADD_SCHOOL }}
+      />
+    </div>
+  )
+}

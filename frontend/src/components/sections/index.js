@@ -1,0 +1,6 @@
+export { TrustStrip } from './TrustStrip'
+export { JourneySteps } from './JourneySteps'
+export { TestimonialsRow } from './TestimonialsRow'
+export { FaqAccordion } from './FaqAccordion'
+export { CtaBanner } from './CtaBanner'
+export { BenefitsZigzag } from './BenefitsZigzag'

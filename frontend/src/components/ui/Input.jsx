@@ -44,7 +44,7 @@ export const Input = ({
           id={inputId}
           type={resolvedType}
           className={cn(
-            'h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4',
+            'h-12 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4',
             'text-body-md text-on-surface placeholder:text-outline',
             'transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none',
             hasStartIcon && 'ps-12',

@@ -11,6 +11,8 @@ const studentRosterSchema = new mongoose.Schema(
         status: { type: String, enum: ['draft', 'submitted', 'distributed'], default: 'draft' },
         trafficBatchId: { type: String, default: null },
         qrCode: { type: String, default: null },
+        verificationToken: { type: String, default: null, index: true },
+        qrPayload: { type: mongoose.Schema.Types.Mixed, default: null },
     },
     { timestamps: true }
 );

@@ -8,6 +8,9 @@ const {
     createAdRules,
     assignRoleRules,
     suspendUserRules,
+    updatePrivacyRules,
+    updateRegistrationRules,
+    createTrafficAccountRules,
 } = require('../../validators/admin.validator');
 const { upsertCategoryRules, upsertSubTypeRules } = require('../../validators/license.validator');
 const { createSchoolRules, updateSchoolRules } = require('../../validators/school.validator');
@@ -35,6 +38,7 @@ router.put('/licenses/sub-types', requirePermission(PERMISSIONS.MANAGE_PLATFORM_
 router.get('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), attachPagination, paginationQuery, validate, adminController.listSchools);
 router.post('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), createSchoolRules, validate, audit('admin.school.create'), adminController.createSchool);
 router.patch('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), updateSchoolRules, validate, adminController.updateSchool);
+router.delete('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), audit('admin.school.delete'), adminController.deleteSchool);
 
 // School applications
 router.get('/school-applications', requirePermission(PERMISSIONS.APPROVE_SCHOOL_APPLICATIONS), adminController.listApplications);
@@ -43,7 +47,14 @@ router.post('/school-applications/:id/review', ...idParam('id', 'الطلب'), r
 // Users & roles
 router.get('/users', requirePermission(PERMISSIONS.MANAGE_USERS), attachPagination, paginationQuery, validate, adminController.listUsers);
 router.post('/users/roles', requirePermission(PERMISSIONS.MANAGE_USERS), assignRoleRules, validate, audit('admin.user.assignRole'), adminController.assignRole);
+router.post('/users/traffic-accounts', requirePermission(PERMISSIONS.MANAGE_USERS), createTrafficAccountRules, validate, audit('admin.user.createTraffic'), adminController.createTrafficAccount);
 router.patch('/users/:id/status', ...idParam('id', 'المستخدم'), requirePermission(PERMISSIONS.MANAGE_USERS), suspendUserRules, validate, adminController.suspendUser);
+
+// Platform settings
+router.get('/settings/privacy', requirePermission(PERMISSIONS.ACCESS_ADMIN_PORTAL), adminController.getPrivacy);
+router.put('/settings/privacy', requirePermission(PERMISSIONS.ACCESS_ADMIN_PORTAL), updatePrivacyRules, validate, audit('admin.settings.privacy'), adminController.updatePrivacy);
+router.get('/settings/registration', requirePermission(PERMISSIONS.ACCESS_ADMIN_PORTAL), adminController.getRegistrationSettings);
+router.put('/settings/registration', requirePermission(PERMISSIONS.ACCESS_ADMIN_PORTAL), updateRegistrationRules, validate, audit('admin.settings.registration'), adminController.updateRegistrationSettings);
 
 // Reviews moderation
 router.get('/reviews/pending', adminController.listPendingReviews);

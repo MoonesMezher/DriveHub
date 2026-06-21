@@ -36,7 +36,7 @@ export const RoleSwitcher = ({ className = '' }) => {
             className={cn(
               'rounded-lg px-3 py-1.5 text-label-sm transition-all',
               opt.role === activeRole
-                ? 'bg-primary text-on-primary'
+                ? 'bg-primary !text-white'
                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high',
             )}
           >

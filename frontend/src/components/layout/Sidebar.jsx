@@ -3,34 +3,36 @@ import { cn } from '@/lib/cn'
 import { Icon } from '@/components/ui/Icon'
 import { Button } from '@/components/ui/Button'
 import { SidebarNavItem } from './SidebarNavItem'
+import { ROUTES } from '@/lib/constants/routes'
 
 export const Sidebar = ({
   title = 'DriveHub',
   subtitle,
-  logoIcon = 'drive_eta',
   items = [],
   footerItems = [],
   cta,
   variant = 'default',
   className = '',
+  mobile = false,
 }) => (
   <aside
     className={cn(
-      'fixed end-0 top-0 z-40 hidden h-screen w-64 flex-col border-s border-outline-variant bg-surface-container-lowest shadow-sm md:flex',
+      'flex h-full flex-col border-s border-outline-variant bg-surface-container-lowest',
+      mobile ? 'w-full' : 'fixed end-0 top-0 z-50 hidden h-screen w-[var(--width-sidebar)] shadow-sm md:flex',
       className,
     )}
   >
     <div className="flex items-center gap-3 px-6 py-stack-lg">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-        <Icon name={logoIcon} className="text-on-primary" size={22} />
-      </div>
+      <Link to={ROUTES.HOME}>
+        <img src="/drivehub.png" alt="DriveHub" className="h-10 w-10 rounded-xl object-contain" />
+      </Link>
       <div>
         <h1 className="text-headline-sm tracking-tight text-primary">{title}</h1>
         {subtitle && <p className="text-label-sm text-on-surface-variant">{subtitle}</p>}
       </div>
     </div>
 
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto custom-scrollbar">
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto custom-scrollbar px-2">
       {items.map((item) => (
         <SidebarNavItem key={item.to || item.label} {...item} variant={variant} />
       ))}

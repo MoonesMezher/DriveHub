@@ -10,9 +10,10 @@ const userHasRole = (req, ...roles) => {
 };
 
 const userHasPermission = (req, permission) => {
-    const perms = req._user?.permissions || getEffectivePermissions(
-        [req._user?.role, ...(req._user?.roles?.map((r) => r.role) || [])].filter(Boolean),
-    );
+    const roles = [req._user?.role, ...(req._user?.roles?.map((r) => r.role) || [])].filter(Boolean);
+    const perms = req._user?.permissions?.length
+        ? req._user.permissions
+        : getEffectivePermissions([...new Set(roles)]);
     return perms.includes(permission);
 };
 

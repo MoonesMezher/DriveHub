@@ -1,16 +1,23 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PageHeader, Card, Button, Input, AsyncContent } from '@/components/ui'
+import {
+  PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
+  Alert, FormSection,
+} from '@/components/ui'
 import { adminService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatCurrency } from '@/lib/helpers/format'
 import { formatDate } from '@/lib/helpers/date'
+import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
+
+const PAGE_SIZE = 10
 
 export const AdminPricingPage = () => {
   const toast = useToast()
   const queryClient = useQueryClient()
 
+  const [page, setPage] = useState(1)
   const [form, setForm] = useState({
     categoryCode: '',
     subTypeCode: '',
@@ -25,6 +32,8 @@ export const AdminPricingPage = () => {
   })
 
   const pricing = pricingQuery.data?.pricing ?? []
+  const totalPages = Math.max(1, Math.ceil(pricing.length / PAGE_SIZE))
+  const paginatedPricing = pricing.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'pricing'] })
 
@@ -59,95 +68,100 @@ export const AdminPricingPage = () => {
     commissionMutation.mutate(Number(commission))
   }
 
+  const columns = useMemo(() => [
+    { key: 'categoryCode', label: 'الفئة' },
+    { key: 'subTypeCode', label: 'النوع الفرعي', render: (row) => row.subTypeCode || '—' },
+    {
+      key: 'fixedPrice',
+      label: 'السعر',
+      render: (row) => formatCurrency(row.fixedPrice, row.currency),
+    },
+    {
+      key: 'effectiveFrom',
+      label: 'ساري من',
+      render: (row) => formatDate(row.effectiveFrom),
+    },
+  ], [])
+
   return (
     <div>
-      <PageHeader title="التسعير" description="إدارة أسعار الفئات ونسبة عمولة المنصة" />
+      <PageHeader
+        variant="compact"
+        title="التسعير"
+        description="إدارة أسعار الفئات ونسبة عمولة المنصة"
+      />
 
-      <div className="grid gap-loose xl:grid-cols-[1fr_340px]">
-        <Card title="جدول الأسعار">
-          <AsyncContent
-            isLoading={pricingQuery.isLoading}
-            error={pricingQuery.error}
-            isEmpty={pricing.length === 0}
-            emptyTitle="لا توجد أسعار"
-          >
-            {() => (
-<div className="overflow-x-auto">
-              <table className="w-full text-body-md">
-                <thead>
-                  <tr className="border-b border-outline-variant text-label-md text-on-surface-variant">
-                    <th className="py-3 pe-4 text-start">الفئة</th>
-                    <th className="py-3 pe-4 text-start">النوع الفرعي</th>
-                    <th className="py-3 pe-4 text-start">السعر</th>
-                    <th className="py-3 pe-4 text-start">ساري من</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pricing.map((row) => (
-                    <tr key={row._id} className="border-b border-outline-variant/50 last:border-0">
-                      <td className="py-3 pe-4">{row.categoryCode}</td>
-                      <td className="py-3 pe-4">{row.subTypeCode || '—'}</td>
-                      <td className="py-3 pe-4">{formatCurrency(row.fixedPrice, row.currency)}</td>
-                      <td className="py-3 pe-4">{formatDate(row.effectiveFrom)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="grid gap-loose xl:grid-cols-[1fr_380px]">
+        <Card title="جدول الأسعار" padding="none">
+          {pricingQuery.isLoading ? (
+            <div className="p-comfortable"><SkeletonTable rows={5} cols={4} /></div>
+          ) : pricingQuery.error ? (
+            <div className="p-comfortable">
+              <Alert variant="error" title="حدث خطأ">{getErrorMessage(pricingQuery.error)}</Alert>
             </div>
-
-            )}
-          </AsyncContent>
+          ) : (
+            <>
+              <DataTable columns={columns} rows={paginatedPricing} emptyLabel="لا توجد أسعار" />
+              <div className="border-t border-outline-variant/50 p-comfortable">
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
+            </>
+          )}
         </Card>
 
-        <div className="space-y-loose">
+        <div className="space-y-loose xl:sticky xl:top-24 xl:self-start">
           <Card title="إضافة / تحديث سعر">
-            <form onSubmit={handleUpsert} className="space-y-4">
-              <Input
-                label="رمز الفئة"
-                value={form.categoryCode}
-                onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
-                required
-              />
-              <Input
-                label="النوع الفرعي (اختياري)"
-                value={form.subTypeCode}
-                onChange={(e) => setForm((f) => ({ ...f, subTypeCode: e.target.value }))}
-              />
-              <Input
-                label="السعر الثابت"
-                type="number"
-                min={0}
-                value={form.fixedPrice}
-                onChange={(e) => setForm((f) => ({ ...f, fixedPrice: e.target.value }))}
-                required
-              />
-              <Input
-                label="العملة"
-                value={form.currency}
-                onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-                maxLength={3}
-              />
-              <Button type="submit" className="w-full" disabled={upsertMutation.isPending}>
-                حفظ
-              </Button>
+            <form onSubmit={handleUpsert}>
+              <FormSection>
+                <Input
+                  label="رمز الفئة"
+                  value={form.categoryCode}
+                  onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
+                  required
+                />
+                <Input
+                  label="النوع الفرعي (اختياري)"
+                  value={form.subTypeCode}
+                  onChange={(e) => setForm((f) => ({ ...f, subTypeCode: e.target.value }))}
+                />
+                <Input
+                  label="السعر الثابت"
+                  type="number"
+                  min={0}
+                  value={form.fixedPrice}
+                  onChange={(e) => setForm((f) => ({ ...f, fixedPrice: e.target.value }))}
+                  required
+                />
+                <Input
+                  label="العملة"
+                  value={form.currency}
+                  onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+                  maxLength={3}
+                />
+                <Button type="submit" className="w-full" disabled={upsertMutation.isPending}>
+                  حفظ
+                </Button>
+              </FormSection>
             </form>
           </Card>
 
           <Card title="نسبة العمولة">
-            <form onSubmit={handleCommission} className="space-y-4">
-              <Input
-                label="النسبة (0–1، مثال: 0.02 = 2%)"
-                type="number"
-                step="0.001"
-                min={0}
-                max={1}
-                value={commission}
-                onChange={(e) => setCommission(e.target.value)}
-                required
-              />
-              <Button type="submit" className="w-full" disabled={commissionMutation.isPending}>
-                تحديث العمولة
-              </Button>
+            <form onSubmit={handleCommission}>
+              <FormSection>
+                <Input
+                  label="النسبة (0–1، مثال: 0.02 = 2%)"
+                  type="number"
+                  step="0.001"
+                  min={0}
+                  max={1}
+                  value={commission}
+                  onChange={(e) => setCommission(e.target.value)}
+                  required
+                />
+                <Button type="submit" className="w-full" disabled={commissionMutation.isPending}>
+                  تحديث العمولة
+                </Button>
+              </FormSection>
             </form>
           </Card>
         </div>

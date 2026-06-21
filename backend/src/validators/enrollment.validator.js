@@ -9,6 +9,7 @@ const {
     optionalBoolean,
     optionalInt,
     requiredEnumBody,
+    optionalEnumBody,
 } = require('./chains');
 
 const MANAGER_REVIEW_STATUSES = [
@@ -62,7 +63,8 @@ const waitlistPromoteRules = [
 ];
 
 const retakeEnrollmentRules = [
-    requiredEnumBody('retakeScope', 'نطاق الإعادة', Object.values(RETAKE_SCOPE)),
+    mongoIdBody('priorEnrollmentId', 'الاشتراك السابق'),
+    optionalEnumBody('retakeScope', 'نطاق الإعادة', Object.values(RETAKE_SCOPE)),
 ];
 
 module.exports = {

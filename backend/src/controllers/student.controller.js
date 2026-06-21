@@ -30,5 +30,10 @@ module.exports = {
     getExamInfo: makeHandler((req) => examService.getExamInfo(req._user.userId), { wrap: (d) => ({ exam: d }) }),
     listCertificates: makeHandler((req) => examService.listCertificates(req._user.userId), { wrap: (d) => ({ certificates: d }) }),
     bookLesson: makeHandler((req) => lessonService.book(req._user.userId, req.body), { status: 201 }),
+    autoBookLesson: makeHandler((req) => lessonService.autoBookNextLesson(req._user.userId, req.body), { status: 201, wrap: (d) => ({ lesson: d }) }),
+    listEligibleCoaches: makeHandler(
+        (req) => lessonService.listEligibleCoaches(req._user.userId, req.query.enrollmentId),
+        { wrap: (d) => ({ coaches: d }) },
+    ),
     listLessons: makeHandler((req) => lessonService.listStudentLessons(req._user.userId, req.query), { wrap: (d) => ({ lessons: d }) }),
 };

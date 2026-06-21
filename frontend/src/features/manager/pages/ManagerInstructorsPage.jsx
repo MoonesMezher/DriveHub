@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PageHeader, Card, Button, Input, AsyncContent, StatusBadge } from '@/components/ui'
+import {
+  PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
+  Alert, FormSection, SearchInput, Select, Checkbox, StatusBadge,
+} from '@/components/ui'
 import { managerService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
+import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/hooks/useAuth'
+
+const PAGE_SIZE = 10
 
 const instructorStatusLabels = {
   active: 'نشط',
@@ -16,14 +22,21 @@ const instructorStatusVariants = {
   suspended: 'error',
 }
 
+const GENDER_OPTIONS = [
+  { value: 'male', label: 'ذكر' },
+  { value: 'female', label: 'أنثى' },
+]
+
 export const ManagerInstructorsPage = () => {
   const toast = useToast()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const schoolId = user?.activeContext?.schoolId
 
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [form, setForm] = useState({
-    userId: '',
+    email: '',
     licenseCategories: '',
     gender: 'male',
     isFemaleCoach: false,
@@ -36,11 +49,25 @@ export const ManagerInstructorsPage = () => {
 
   const instructors = instructorsQuery.data?.instructors ?? []
 
+  const filteredInstructors = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return instructors
+    return instructors.filter(
+      (i) =>
+        i.userId?.name?.toLowerCase().includes(q)
+        || i.userId?.email?.toLowerCase().includes(q)
+        || (i.licenseCategories || []).some((c) => c.toLowerCase().includes(q)),
+    )
+  }, [instructors, search])
+
+  const totalPages = Math.max(1, Math.ceil(filteredInstructors.length / PAGE_SIZE))
+  const paginatedInstructors = filteredInstructors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   const assignMutation = useMutation({
     mutationFn: (data) => managerService.assignInstructor(data).then(unwrap),
     onSuccess: () => {
       toast.success('تم تعيين المدرب')
-      setForm({ userId: '', licenseCategories: '', gender: 'male', isFemaleCoach: false })
+      setForm({ email: '', licenseCategories: '', gender: 'male', isFemaleCoach: false })
       queryClient.invalidateQueries({ queryKey: ['manager', 'instructors'] })
     },
     onError: (err) => toast.error(err, 'فشل تعيين المدرب'),
@@ -49,7 +76,7 @@ export const ManagerInstructorsPage = () => {
   const handleAssign = (e) => {
     e.preventDefault()
     assignMutation.mutate({
-      userId: form.userId.trim(),
+      email: form.email.trim(),
       schoolId,
       licenseCategories: form.licenseCategories
         .split(',')
@@ -60,103 +87,114 @@ export const ManagerInstructorsPage = () => {
     })
   }
 
+  const columns = [
+    {
+      key: 'name',
+      label: 'الاسم',
+      render: (instructor) => instructor.userId?.name || '—',
+    },
+    {
+      key: 'email',
+      label: 'البريد',
+      render: (instructor) => instructor.userId?.email || '—',
+    },
+    {
+      key: 'categories',
+      label: 'الفئات',
+      render: (instructor) => (instructor.licenseCategories || []).join(', ') || '—',
+    },
+    {
+      key: 'gender',
+      label: 'الجنس',
+      render: (instructor) =>
+        instructor.gender === 'female' ? 'أنثى' : instructor.gender === 'male' ? 'ذكر' : '—',
+    },
+    {
+      key: 'status',
+      label: 'الحالة',
+      render: (instructor) => (
+        <StatusBadge
+          status={instructor.status}
+          labels={instructorStatusLabels}
+          variants={instructorStatusVariants}
+        />
+      ),
+    },
+  ]
+
   return (
     <div>
-      <PageHeader title="المدربون" description="عرض المدربين وتعيين مدرب جديد للمدرسة" />
+      <PageHeader
+        variant="compact"
+        title="المدربون"
+        description="عرض المدربين وتعيين مدرب جديد للمدرسة"
+      />
 
-      <div className="grid gap-loose xl:grid-cols-[1fr_360px]">
-        <Card title="قائمة المدربين">
-          <AsyncContent
-            isLoading={instructorsQuery.isLoading}
-            error={instructorsQuery.error}
-            isEmpty={instructors.length === 0}
-            emptyTitle="لا يوجد مدربون"
-          >
-            {() => (
-<div className="overflow-x-auto">
-              <table className="w-full text-body-md">
-                <thead>
-                  <tr className="border-b border-outline-variant text-label-md text-on-surface-variant">
-                    <th className="py-3 pe-4 text-start">الاسم</th>
-                    <th className="py-3 pe-4 text-start">البريد</th>
-                    <th className="py-3 pe-4 text-start">الفئات</th>
-                    <th className="py-3 pe-4 text-start">الجنس</th>
-                    <th className="py-3 pe-4 text-start">الحالة</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {instructors.map((instructor) => (
-                    <tr key={instructor._id} className="border-b border-outline-variant/50 last:border-0">
-                      <td className="py-3 pe-4">{instructor.userId?.name || '—'}</td>
-                      <td className="py-3 pe-4">{instructor.userId?.email || '—'}</td>
-                      <td className="py-3 pe-4">
-                        {(instructor.licenseCategories || []).join(', ') || '—'}
-                      </td>
-                      <td className="py-3 pe-4">
-                        {instructor.gender === 'female' ? 'أنثى' : instructor.gender === 'male' ? 'ذكر' : '—'}
-                      </td>
-                      <td className="py-3 pe-4">
-                        <StatusBadge
-                          status={instructor.status}
-                          labels={instructorStatusLabels}
-                          variants={instructorStatusVariants}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="mb-comfortable">
+        <SearchInput
+          placeholder="بحث بالاسم أو البريد..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+        />
+      </div>
+
+      <div className="grid gap-loose xl:grid-cols-[1fr_380px]">
+        <Card title="قائمة المدربين" padding="none">
+          {instructorsQuery.isLoading ? (
+            <div className="p-comfortable"><SkeletonTable rows={5} cols={5} /></div>
+          ) : instructorsQuery.error ? (
+            <div className="p-comfortable">
+              <Alert variant="error" title="حدث خطأ">{getErrorMessage(instructorsQuery.error)}</Alert>
             </div>
-
-            )}
-          </AsyncContent>
+          ) : (
+            <>
+              <DataTable
+                columns={columns}
+                rows={paginatedInstructors}
+                emptyLabel="لا يوجد مدربون"
+              />
+              <div className="border-t border-outline-variant/50 p-comfortable">
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
+            </>
+          )}
         </Card>
 
-        <Card title="تعيين مدرب">
-          <form onSubmit={handleAssign} className="space-y-4">
-            <Input
-              label="معرّف المستخدم"
-              name="userId"
-              value={form.userId}
-              onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))}
-              placeholder="MongoDB ObjectId"
-              required
-            />
-            <Input
-              label="فئات الرخص (مفصولة بفاصلة)"
-              name="licenseCategories"
-              value={form.licenseCategories}
-              onChange={(e) => setForm((f) => ({ ...f, licenseCategories: e.target.value }))}
-              placeholder="B, C"
-              required
-            />
-            <div className="space-y-2">
-              <label htmlFor="gender" className="block text-label-md text-on-surface">
-                الجنس
-              </label>
-              <select
-                id="gender"
+        <Card title="تعيين مدرب" className="xl:sticky xl:top-24 xl:self-start">
+          <form onSubmit={handleAssign}>
+            <FormSection>
+              <Input
+                label="البريد الإلكتروني للمدرب"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="coach@drivehub.local"
+                required
+              />
+              <Input
+                label="فئات الرخص (مفصولة بفاصلة)"
+                name="licenseCategories"
+                value={form.licenseCategories}
+                onChange={(e) => setForm((f) => ({ ...f, licenseCategories: e.target.value }))}
+                placeholder="B, C"
+                required
+              />
+              <Select
+                label="الجنس"
                 value={form.gender}
                 onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                className="h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-body-md"
-              >
-                <option value="male">ذكر</option>
-                <option value="female">أنثى</option>
-                <option value="other">أخرى</option>
-              </select>
-            </div>
-            <label className="flex items-center gap-2 text-body-md">
-              <input
-                type="checkbox"
+                options={GENDER_OPTIONS}
+              />
+              <Checkbox
+                label="مدربة (للطلاب الإناث)"
                 checked={form.isFemaleCoach}
                 onChange={(e) => setForm((f) => ({ ...f, isFemaleCoach: e.target.checked }))}
-                className="h-4 w-4 rounded border-outline-variant"
               />
-              مدربة (للطلاب الإناث)
-            </label>
-            <Button type="submit" className="w-full" disabled={assignMutation.isPending}>
-              تعيين
-            </Button>
+              <Button type="submit" className="w-full" disabled={assignMutation.isPending}>
+                تعيين
+              </Button>
+            </FormSection>
           </form>
         </Card>
       </div>

@@ -43,6 +43,33 @@ const confirmPayment = asyncHandler(async (req, res) => {
     return success(res, result, { message: 'تم تأكيد الدفع بنجاح' });
 });
 
+const createRetake = asyncHandler(async (req, res) => {
+    const enrollment = await enrollmentService.createRetake({
+        userId: req._user.userId,
+        priorEnrollmentId: req.body.priorEnrollmentId,
+        retakeScope: req.body.retakeScope,
+    });
+    return created(res, { enrollment }, 'تم إنشاء طلب إعادة الاشتراك');
+});
+
+const initiateRetakePayment = asyncHandler(async (req, res) => {
+    const result = await paymentService.initiateRetake({
+        enrollmentId: req.params.id,
+        userId: req._user.userId,
+    });
+    return success(res, result);
+});
+
+const confirmRetakePayment = asyncHandler(async (req, res) => {
+    const result = await paymentService.confirmRetake({
+        enrollmentId: req.params.id,
+        userId: req._user.userId,
+        amount: req.body.amount,
+        gatewayRef: req.body.gatewayRef,
+    });
+    return success(res, result, { message: 'تم تأكيد دفع الإعادة بنجاح' });
+});
+
 module.exports = {
     create,
     listMine,
@@ -50,4 +77,7 @@ module.exports = {
     cancel,
     initiatePayment,
     confirmPayment,
+    createRetake,
+    initiateRetakePayment,
+    confirmRetakePayment,
 };

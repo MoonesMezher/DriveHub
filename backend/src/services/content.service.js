@@ -277,6 +277,27 @@ class ContentService {
             .sort({ order: 1 })
             .lean();
 
+        const articles = items.map((item) => ({
+            _id: item._id,
+            title: item.title,
+            body: item.body,
+            imageUrl: item.imageUrl,
+            videoUrl: item.videoUrl,
+        }));
+
+        const sampleVideos = await PracticalVideo.find({
+            isSample: true,
+            isActive: true,
+            categoryCode: code,
+        })
+            .sort({ order: 1 })
+            .select('title url thumbnailUrl durationSeconds')
+            .lean();
+
+        const videos = tier === 'full'
+            ? sampleVideos
+            : sampleVideos.slice(0, 1);
+
         const questions = [];
         for (const item of items) {
             for (const q of item.interactiveQuestions || []) {
@@ -298,6 +319,8 @@ class ContentService {
         return {
             tier,
             categoryCode: code,
+            articles,
+            videos,
             questions: questions.slice(0, limit),
         };
     }

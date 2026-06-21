@@ -7,6 +7,8 @@ const {
     requiredInt,
     requiredString,
     optionalString,
+    requiredEmail,
+    requiredPhone,
     mongoIdBody,
     optionalMongoIdBody,
     requiredEnumBody,
@@ -61,10 +63,36 @@ const suspendUserRules = [
     body('reason').optional().trim().isLength({ max: 500 }).withMessage('سبب الإيقاف طويل جداً'),
 ];
 
+const updatePrivacyRules = [
+    body('content')
+        .notEmpty()
+        .withMessage(msg.required('محتوى سياسة الخصوصية'))
+        .isLength({ min: 50, max: 50000 })
+        .withMessage('محتوى سياسة الخصوصية غير صالح'),
+];
+
+const updateRegistrationRules = [
+    body('registrationPaused').isBoolean().withMessage(msg.mustBeBoolean('إيقاف التسجيل')),
+];
+
+const createTrafficAccountRules = [
+    requiredString('name', 'الاسم', { min: 2, max: 100 }),
+    requiredEmail('email'),
+    requiredPhone('phone'),
+    body('password')
+        .notEmpty()
+        .withMessage(msg.required('كلمة المرور'))
+        .isLength({ min: 8, max: 128 })
+        .withMessage('كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
+];
+
 module.exports = {
     upsertPricingRules,
     updateCommissionRules,
     createAdRules,
     assignRoleRules,
     suspendUserRules,
+    updatePrivacyRules,
+    updateRegistrationRules,
+    createTrafficAccountRules,
 };

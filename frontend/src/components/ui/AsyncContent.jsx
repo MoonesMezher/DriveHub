@@ -1,12 +1,12 @@
 import { LoadingState } from './LoadingState'
 import { EmptyState } from './EmptyState'
 import { Card } from './Card'
+import { Alert } from './Alert'
+import { SkeletonCard } from './Skeleton'
 import { getErrorMessage } from '@/lib/helpers/error'
 
 /**
  * يعرض حالات التحميل / الخطأ / الفراغ قبل المحتوى.
- * عند الوصول لبيانات غير مضمونة، مرّر الأبناء كدالة لتأجيل التقييم:
- *   <AsyncContent data={user}>{(user) => <div>{user.name}</div>}</AsyncContent>
  */
 export const AsyncContent = ({
   isLoading,
@@ -17,15 +17,20 @@ export const AsyncContent = ({
   emptyTitle = 'لا توجد بيانات',
   emptyDescription,
   emptyAction,
+  emptyPreset = 'no-data',
+  skeleton = false,
   children,
   render,
 }) => {
-  if (isLoading) return <LoadingState />
+  if (isLoading) {
+    if (skeleton) return <SkeletonCard />
+    return <LoadingState />
+  }
   if (error) {
     return (
-      <Card variant="tinted" className="!bg-error-container !text-on-error-container">
-        <p className="text-body-md">{getErrorMessage(error)}</p>
-      </Card>
+      <Alert variant="error" title="حدث خطأ">
+        {getErrorMessage(error)}
+      </Alert>
     )
   }
 
@@ -39,11 +44,13 @@ export const AsyncContent = ({
     return (
       <Card>
         <EmptyState
+          preset={emptyPreset}
           icon={emptyIcon}
           title={emptyTitle}
           description={emptyDescription}
           actionLabel={emptyAction?.label}
           onAction={emptyAction?.onClick}
+          variant="card"
         />
       </Card>
     )

@@ -1,18 +1,43 @@
 const { Notification } = require('../models');
 const logger = require('../utils/logger');
+const channels = require('./notificationChannels');
 
 class NotificationService {
-    async send({ userId, type, title, message, body, data = {}, suggestions = [] }) {
-        const notification = await Notification.create({
-            userId,
-            type,
-            title,
-            message,
-            body: body || message,
-            data,
-            suggestions,
-        });
-        logger.info('notification.sent', { userId, type, title });
+    async send({
+        userId,
+        type,
+        title,
+        message,
+        body,
+        data = {},
+        suggestions = [],
+        channels: channelList = ['in_app'],
+        email = null,
+        phone = null,
+    }) {
+        let notification = null;
+
+        if (channelList.includes('in_app')) {
+            notification = await Notification.create({
+                userId,
+                type,
+                title,
+                message,
+                body: body || message,
+                data,
+                suggestions,
+            });
+        }
+
+        const externalChannels = channelList.filter((c) => c !== 'in_app');
+        for (const channel of externalChannels) {
+            const payload = channel === 'email'
+                ? { to: email, subject: title, text: message }
+                : { to: phone, message };
+            await channels.dispatch(channel, payload);
+        }
+
+        logger.info('notification.sent', { userId, type, title, channels: channelList });
         return notification;
     }
 
