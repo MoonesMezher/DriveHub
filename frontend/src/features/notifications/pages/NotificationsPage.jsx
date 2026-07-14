@@ -12,9 +12,13 @@ import { cn } from '@/lib/cn'
 const TYPE_ICONS = {
   enrollment_accepted: 'check_circle',
   enrollment_rejected: 'cancel',
+  enrollment_waitlist: 'hourglass_top',
+  enrollment_request: 'person_add',
+  payment_reminder: 'schedule',
   payment_expired: 'schedule',
   course_launch: 'school',
   exam_scheduled: 'event',
+  exam_reminder: 'event',
   exam_result: 'fact_check',
   waitlist_promoted: 'trending_up',
   content_approved: 'verified',
@@ -32,7 +36,10 @@ export const NotificationsPage = () => {
 
   const markRead = useMutation({
     mutationFn: (id) => notificationService.markRead(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] })
+    },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
@@ -40,12 +47,13 @@ export const NotificationsPage = () => {
     mutationFn: () => notificationService.markAllRead(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] })
       toast.success('تم تعليم جميع الإشعارات كمقروءة')
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
-  const items = data?.items || []
+  const items = data?.notifications ?? data?.items ?? []
   const unread = items.filter((n) => !n.read).length
 
   return (

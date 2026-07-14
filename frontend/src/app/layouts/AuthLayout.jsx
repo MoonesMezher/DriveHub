@@ -35,8 +35,13 @@ export const AuthLayout = () => (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 items-center justify-center p-margin-mobile">
         <div className="w-full max-w-[480px]">
-          <div className="mb-loose lg:hidden">
-            <BrandLogo subtitle="تقدم آمن ومنهجي نحو مستقبلك في القيادة" />
+          <div className="mb-loose flex justify-center">
+            <div className="lg:hidden">
+              <BrandLogo subtitle="تقدم آمن ومنهجي نحو مستقبلك في القيادة" />
+            </div>
+            <div className="hidden lg:block">
+              <BrandLogo compact />
+            </div>
           </div>
           <Card variant="elevated" padding="none" size="lg" className="overflow-hidden">
             <Outlet />

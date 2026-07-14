@@ -16,8 +16,9 @@ import { studentService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDateTime } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
+import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
-const PASS_THRESHOLD = 70
+import { PRACTICE_PASS_THRESHOLD } from '@/lib/constants/examThresholds'
 
 const formatCountdown = (seconds) => {
   const m = Math.floor(seconds / 60)
@@ -72,7 +73,7 @@ export const StudentPracticePage = () => {
   })
 
   const exams = historyQuery.data?.exams ?? []
-  const passThreshold = session?.passThreshold ?? PASS_THRESHOLD
+  const passThreshold = session?.passThreshold ?? PRACTICE_PASS_THRESHOLD
   const alreadyPassed = exams.some((e) => e.passed)
   const questions = session?.questions ?? []
   const currentQuestion = questions[currentIndex]
@@ -102,7 +103,7 @@ export const StudentPracticePage = () => {
   submitRef.current = handleSubmit
 
   useEffect(() => {
-    if (!session || secondsLeft == null) return undefined
+    if (!session) return undefined
 
     const tick = setInterval(() => {
       setSecondsLeft((prev) => {
@@ -117,7 +118,7 @@ export const StudentPracticePage = () => {
     }, 1000)
 
     return () => clearInterval(tick)
-  }, [session, secondsLeft])
+  }, [session?.sessionId])
 
   const handleExit = () => {
     if (!session) return
@@ -161,7 +162,9 @@ export const StudentPracticePage = () => {
                 <Badge variant={item.isCorrect ? 'success' : 'error'}>
                   {item.isCorrect ? 'إجابة صحيحة' : 'إجابة خاطئة'}
                 </Badge>
-                {item.selectedAnswer && (
+                {item.unanswered ? (
+                  <Badge variant="warning">لم تُجب</Badge>
+                ) : item.selectedAnswer && (
                   <Badge variant="secondary">اختيارك: {item.selectedAnswer}</Badge>
                 )}
                 {item.correctAnswer && (
@@ -238,7 +241,7 @@ export const StudentPracticePage = () => {
             <p className="mb-4 text-body-lg text-on-surface">{currentQuestion.text}</p>
             {currentQuestion.imageUrl && (
               <img
-                src={currentQuestion.imageUrl}
+                src={resolveMediaUrl(currentQuestion.imageUrl)}
                 alt=""
                 className="mb-4 max-h-48 rounded-lg object-contain"
               />

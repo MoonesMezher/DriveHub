@@ -2,6 +2,7 @@ const { Instructor, User, UserRole } = require('../models');
 const { ROLES } = require('../constants/roles');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
+const passwordService = require('../utils/passwordService');
 
 class InstructorService {
     async list(schoolId, query = {}) {
@@ -23,11 +24,23 @@ class InstructorService {
         return instructor;
     }
 
-    async assign({ userId, email, schoolId, licenseCategories, gender, isFemaleCoach }) {
+    async assign({ userId, email, schoolId, licenseCategories, gender, isFemaleCoach, name, phone, password }) {
         let resolvedUserId = userId;
         if (email && !userId) {
-            const user = await User.findOne({ email: email.trim().toLowerCase() });
-            if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
+            const normalizedEmail = email.trim().toLowerCase();
+            let user = await User.findOne({ email: normalizedEmail });
+            if (!user) {
+                if (!name || !password) {
+                    throw new ApiError(400, 'يجب إدخال الاسم وكلمة المرور لإنشاء حساب مدرب جديد');
+                }
+                user = await User.create({
+                    name: name.trim(),
+                    email: normalizedEmail,
+                    phone: phone?.trim() || undefined,
+                    password: await passwordService.hashPassword(password),
+                    activeContext: { role: ROLES.COACH, schoolId },
+                });
+            }
             resolvedUserId = user._id;
         }
         if (!resolvedUserId) throw new ApiError(400, ERR.VALIDATION_FAILED);

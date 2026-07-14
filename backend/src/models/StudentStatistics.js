@@ -20,6 +20,8 @@ const studentStatisticsSchema = new mongoose.Schema(
         lessonsCompleted: { type: Number, default: 0 },
         lessonsTotal: { type: Number, default: 0 },
         averageLessonRating: { type: Number, default: null },
+        verificationToken: { type: String, default: null, index: true },
+        qrPayload: { type: mongoose.Schema.Types.Mixed, default: null },
     },
     { timestamps: true }
 );

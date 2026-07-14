@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { PageHeader, AsyncContent, StatCard, Card, Button, ProgressRing, StatusBadge, Badge, Icon } from '@/components/ui'
+import { PageHeader, AsyncContent, StatCard, Card, Button, ProgressRing, StatusBadge, Badge, Icon, Alert } from '@/components/ui'
+import { AdsBanner } from '@/components/ui/AdsBanner'
 import { studentService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
-import { formatDateTime } from '@/lib/helpers/date'
+import { formatDateTime, formatDate } from '@/lib/helpers/date'
+import { EXAM_TYPE_LABELS } from '@/lib/constants/statusLabels'
 import { ROUTES } from '@/lib/constants/routes'
 import { LESSON_STATUS_LABELS } from '@/lib/constants/lessonLabels'
 
@@ -88,6 +90,38 @@ export const StudentHomePage = () => {
             </Card>
           )}
 
+          <AdsBanner placement="student" />
+
+          {dashboard?.upcomingExam && (
+            <Alert variant="info" title="موعد امتحان المرور">
+              <p className="text-headline-sm">
+                {EXAM_TYPE_LABELS[dashboard.upcomingExam.examType] ?? dashboard.upcomingExam.examType}
+                {' — '}
+                {formatDateTime(dashboard.upcomingExam.examDate)}
+              </p>
+              <p className="mt-1 text-body-md opacity-90">
+                {dashboard.upcomingExam.branch}
+                {dashboard.upcomingExam.governorate ? ` · ${dashboard.upcomingExam.governorate}` : ''}
+              </p>
+              <Link to={`${ROUTES.STUDENT}/exam`} className="mt-2 inline-block text-label-md underline">
+                تفاصيل الامتحان
+              </Link>
+            </Alert>
+          )}
+
+          {dashboard?.courseLaunch?.launchDate && ['paid', 'active'].includes(dashboard?.enrollment?.status) && (
+            <Card variant="tinted" title="انطلاق الدورة">
+              <p className="text-body-md">
+                {dashboard.enrollment.status === 'paid'
+                  ? 'تم تأكيد دفعك — الدورة ستنطلق في:'
+                  : 'انطلقت دورتك في:'}
+              </p>
+              <p className="mt-2 text-headline-sm text-primary">
+                {formatDate(dashboard.courseLaunch.launchDate)}
+              </p>
+            </Card>
+          )}
+
           <Card variant="elevated" padding="lg" className="overflow-hidden">
             <div className="flex flex-col items-center gap-loose sm:flex-row sm:items-center sm:justify-between">
               <ProgressRing
@@ -98,15 +132,23 @@ export const StudentHomePage = () => {
                 sublabel={stats?.lessonsTotal ? `${stats.lessonsCompleted ?? 0} / ${stats.lessonsTotal} درس` : `${progress}% مكتمل`}
                 className="justify-center sm:justify-start"
               />
-              <div className="flex flex-col items-center text-center sm:items-end sm:text-end">
+              <div className="flex flex-col items-center gap-3 text-center sm:items-end sm:text-end">
                 <p className="text-label-md text-on-surface-variant">الخطوة التالية</p>
-                <p className="mt-1 max-w-xs text-body-md text-on-surface-variant">{nextAction.description}</p>
-                <Link to={nextAction.to} className="mt-4">
-                  <Button>
-                    <Icon name={nextAction.icon} size={20} className="me-2" />
-                    {nextAction.label}
-                  </Button>
-                </Link>
+                <p className="max-w-xs text-body-md text-on-surface-variant">{nextAction.description}</p>
+                <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
+                  <Link to={nextAction.to}>
+                    <Button>
+                      <Icon name={nextAction.icon} size={20} className="me-2" />
+                      {nextAction.label}
+                    </Button>
+                  </Link>
+                  <Link to={`${ROUTES.STUDENT}/statistics`}>
+                    <Button variant="outline">
+                      <Icon name="monitoring" size={20} className="me-2" />
+                      إحصائياتي
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </Card>
@@ -130,14 +172,18 @@ export const StudentHomePage = () => {
               icon="check_circle"
             />
             <StatCard
-              label="آخر اختبار تجريبي"
-              value={
-                dashboard?.lastPractice?.score != null
-                  ? `${dashboard.lastPractice.score}%`
-                  : '—'
-              }
-              icon="quiz"
+              label="نسبة الحضور"
+              value={`${stats?.attendancePercent ?? 0}%`}
+              icon="event_available"
             />
+            <Link to={`${ROUTES.STUDENT}/statistics`} className="block">
+              <StatCard
+                label="عرض الإحصائيات"
+                value="التفاصيل"
+                icon="monitoring"
+                className="cursor-pointer transition-shadow hover:shadow-md"
+              />
+            </Link>
           </div>
 
           <Card title="الموعد القادم">

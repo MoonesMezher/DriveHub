@@ -1,8 +1,12 @@
 const { requiredInt, optionalString, requiredEnumBody, mongoIdBody } = require('./chains');
 
+const claimPaymentRules = [
+    optionalString('studentReference', 'مرجع التحويل أو الإيصال', { max: 200 }),
+];
+
 const confirmPaymentRules = [
     requiredInt('amount', 'المبلغ', { min: 1 }),
-    optionalString('gatewayRef', 'مرجع الدفع', { max: 200 }),
+    optionalString('gatewayRef', 'مرجع الدفع الداخلي', { max: 200 }),
 ];
 
 const retakePaymentRules = [
@@ -11,7 +15,14 @@ const retakePaymentRules = [
     requiredEnumBody('type', 'نوع الدفع', ['initial', 'retake']),
 ];
 
+const walletCreditRules = [
+    requiredInt('amount', 'المبلغ', { min: 1 }),
+    optionalString('note', 'ملاحظة أو مرجع إيصال', { max: 500 }),
+];
+
 module.exports = {
+    claimPaymentRules,
     confirmPaymentRules,
     retakePaymentRules,
+    walletCreditRules,
 };

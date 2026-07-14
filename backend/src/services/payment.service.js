@@ -1,4 +1,4 @@
-const { Payment, Enrollment, PlatformPricing, TrainingCourse, User, UserRole } = require('../models');
+const { Payment, Enrollment, PlatformPricing, TrainingCourse, User, UserRole, DrivingSchool, WalletTransaction } = require('../models');
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const { ROLES } = require('../constants/roles');
 const { splitPayment } = require('../helpers/payment.helper');
@@ -60,66 +60,222 @@ class PaymentService {
         }
     }
 
-    async initiate({ enrollmentId, userId }) {
-        const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
-        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+    isRetakeEnrollment(enrollment) {
+        return (enrollment.retakeAttempt ?? 0) >= 1;
+    }
 
-        if (enrollment.status !== ENROLLMENT_STATUS.AWAITING_PAYMENT) {
+    paymentTypeFor(enrollment) {
+        return this.isRetakeEnrollment(enrollment) ? 'retake' : 'initial';
+    }
+
+    async assertAwaitingPayment(enrollment) {
+        const allowed = [ENROLLMENT_STATUS.ACCEPTED, ENROLLMENT_STATUS.AWAITING_PAYMENT];
+        if (!allowed.includes(enrollment.status)) {
             throw new ApiError(400, 'الطلب ليس في مرحلة انتظار الدفع');
         }
-
         if (enrollment.paymentDeadline && enrollment.paymentDeadline < new Date()) {
             throw new ApiError(400, ERR.PAYMENT_DEADLINE_EXPIRED);
         }
+    }
 
-        const existing = await Payment.findOne({
-            enrollmentId,
+    async transitionToAwaitingPayment(enrollment) {
+        if (enrollment.status === ENROLLMENT_STATUS.ACCEPTED) {
+            enrollment.status = ENROLLMENT_STATUS.AWAITING_PAYMENT;
+            await enrollment.save();
+        }
+    }
+
+    async getSchoolPaymentInfo(schoolId) {
+        return DrivingSchool.findById(schoolId)
+            .select('+bankAccount name phone address governorate')
+            .lean();
+    }
+
+    async findOrCreatePending(enrollment) {
+        const type = this.paymentTypeFor(enrollment);
+        const retakeFilter = type === 'retake'
+            ? { retakeAttempt: enrollment.retakeAttempt }
+            : {};
+
+        const existingCompleted = await Payment.findOne({
+            enrollmentId: enrollment._id,
             status: 'completed',
-            type: 'initial',
+            type,
+            ...retakeFilter,
         });
-        if (existing) throw new ApiError(409, ERR.PAYMENT_ALREADY_COMPLETED);
+        if (existingCompleted) {
+            throw new ApiError(409, ERR.PAYMENT_ALREADY_COMPLETED);
+        }
+
+        let pending = await Payment.findOne({
+            enrollmentId: enrollment._id,
+            status: 'pending',
+            type,
+            ...retakeFilter,
+        }).sort({ createdAt: -1 });
+
+        if (pending) {
+            const pricing = await this.getPricing(enrollment.categoryCode, enrollment.subTypeCode);
+            const breakdown = type === 'retake'
+                ? this.calculateRetake(pricing.fixedPrice, enrollment.retakeAttempt)
+                : this.calculateInitial(pricing.fixedPrice);
+            return { payment: pending, pricing, breakdown };
+        }
 
         const pricing = await this.getPricing(enrollment.categoryCode, enrollment.subTypeCode);
-        const calc = this.calculateInitial(pricing.fixedPrice);
+        const calc = type === 'retake'
+            ? this.calculateRetake(pricing.fixedPrice, enrollment.retakeAttempt)
+            : this.calculateInitial(pricing.fixedPrice);
 
-        const payment = await Payment.create({
-            enrollmentId,
-            userId,
+        pending = await Payment.create({
+            enrollmentId: enrollment._id,
+            userId: enrollment.userId,
             schoolId: enrollment.schoolId,
             amount: calc.amount,
             schoolShare: calc.schoolShare,
             platformShare: calc.platformShare,
             commissionRate: calc.commissionRate,
-            type: 'initial',
+            type,
+            retakeAttempt: type === 'retake' ? enrollment.retakeAttempt : 0,
+            retakePercentage: type === 'retake' ? calc.percentage : null,
             status: 'pending',
         });
 
-        return { payment, pricing, breakdown: calc };
+        return { payment: pending, pricing, breakdown: calc };
     }
 
-    async confirm({ enrollmentId, userId, amount, gatewayRef = null }) {
+    async initiate({ enrollmentId, userId }) {
         const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
         if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
 
-        const pending = await Payment.findOne({
-            enrollmentId: enrollment._id,
-            userId: enrollment.userId,
-            status: 'pending',
-            type: 'initial',
-        }).sort({ createdAt: -1 });
+        await this.assertAwaitingPayment(enrollment);
+        await this.transitionToAwaitingPayment(enrollment);
 
-        if (!pending) throw new ApiError(404, ERR.PAYMENT_NOT_FOUND);
+        const result = await this.findOrCreatePending(enrollment);
+        const school = await this.getSchoolPaymentInfo(enrollment.schoolId);
+        const walletBalance = await User.findById(userId).select('walletBalance').lean();
+
+        return {
+            ...result,
+            school,
+            walletBalance: walletBalance?.walletBalance ?? 0,
+        };
+    }
+
+    async payFromWallet({ enrollmentId, userId }) {
+        const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
+        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+
+        await this.assertAwaitingPayment(enrollment);
+        await this.transitionToAwaitingPayment(enrollment);
+
+        const result = await this.findOrCreatePending(enrollment);
+        const pending = result.payment;
+        const amount = pending.amount;
+
+        const user = await User.findOneAndUpdate(
+            { _id: userId, walletBalance: { $gte: amount } },
+            { $inc: { walletBalance: -amount } },
+            { new: true, runValidators: true },
+        );
+
+        if (!user) {
+            const current = await User.findById(userId).select('walletBalance').lean();
+            throw new ApiError(400, ERR.WALLET_INSUFFICIENT_BALANCE(current?.walletBalance ?? 0));
+        }
+
+        await WalletTransaction.create({
+            userId,
+            type: 'enrollment_payment',
+            amount,
+            balanceAfter: user.walletBalance,
+            enrollmentId: enrollment._id,
+            paymentId: pending._id,
+            note: `دفع اشتراك فئة ${enrollment.categoryCode}`,
+        });
+
+        pending.status = 'completed';
+        pending.paidAt = new Date();
+        pending.gateway = 'wallet';
+        pending.gatewayRef = `WALLET-${pending._id}`;
+        await pending.save();
+
+        enrollment.status = ENROLLMENT_STATUS.PAID;
+        enrollment.paidAt = new Date();
+        await enrollment.save();
+
+        if (this.isRetakeEnrollment(enrollment)) {
+            await this._afterRetakePaid(enrollment, pending);
+        } else {
+            await this._afterInitialPaid(enrollment, pending);
+        }
+
+        return { payment: pending, enrollment, walletBalance: user.walletBalance };
+    }
+
+    async claim({ enrollmentId, userId, studentReference = null }) {
+        const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
+        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+
+        await this.assertAwaitingPayment(enrollment);
+        await this.transitionToAwaitingPayment(enrollment);
+
+        const result = await this.findOrCreatePending(enrollment);
+        result.payment.studentReference = studentReference || null;
+        result.payment.studentClaimedAt = new Date();
+        await result.payment.save();
+
+        const school = await this.getSchoolPaymentInfo(enrollment.schoolId);
+
+        return { ...result, enrollment, school };
+    }
+
+    async assertStaffCanConfirm(enrollment, schoolScope) {
+        if (schoolScope && String(enrollment.schoolId) !== String(schoolScope)) {
+            throw new ApiError(403, ERR.ACTION_DENIED);
+        }
+    }
+
+    async confirmByStaff({
+        enrollmentId,
+        confirmedByUserId,
+        schoolScope = null,
+        amount,
+        gatewayRef = null,
+    }) {
+        const enrollment = await Enrollment.findById(enrollmentId);
+        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+
+        await this.assertAwaitingPayment(enrollment);
+        await this.transitionToAwaitingPayment(enrollment);
+        await this.assertStaffCanConfirm(enrollment, schoolScope);
+
+        const result = await this.findOrCreatePending(enrollment);
+        const pending = result.payment;
 
         this.validateAmount(pending.amount, Number(amount));
 
         pending.status = 'completed';
         pending.paidAt = new Date();
         pending.gatewayRef = gatewayRef;
+        pending.confirmedBy = confirmedByUserId;
         await pending.save();
 
         enrollment.status = ENROLLMENT_STATUS.PAID;
         enrollment.paidAt = new Date();
         await enrollment.save();
+
+        if (this.isRetakeEnrollment(enrollment)) {
+            await this._afterRetakePaid(enrollment, pending);
+        } else {
+            await this._afterInitialPaid(enrollment, pending);
+        }
+
+        return { payment: pending, enrollment };
+    }
+
+    async _afterInitialPaid(enrollment, pending) {
+        const userId = enrollment.userId;
 
         const course = await TrainingCourse.findByIdAndUpdate(
             enrollment.courseId,
@@ -141,7 +297,6 @@ class PaymentService {
                 await enrollmentService.promoteNextFromWaitlist(course._id);
                 break;
             }
-            const { DrivingSchool } = require('../models');
             const school = await DrivingSchool.findById(enrollment.schoolId).select('governorate lat lng').lean();
             const suggestions = await buildAlternateSchoolSuggestions({
                 categoryCode: enrollment.categoryCode,
@@ -183,94 +338,63 @@ class PaymentService {
             },
         );
 
-        await sendInstant(userId, {
-            type: NOTIFICATION_TYPES.GENERAL,
-            title: 'تم استلام الدفع',
-            message: 'تم تأكيد دفعتك بنجاح. انتظر انطلاق الدورة.',
-            data: { enrollmentId, paymentId: pending._id },
-        });
-
-        return { payment: pending, enrollment };
-    }
-
-    async initiateRetake({ enrollmentId, userId }) {
-        const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
-        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
-
-        if (enrollment.status !== ENROLLMENT_STATUS.AWAITING_PAYMENT) {
-            throw new ApiError(400, 'الطلب ليس في مرحلة انتظار الدفع');
-        }
-        if (!enrollment.retakeAttempt || enrollment.retakeAttempt < 1) {
-            throw new ApiError(400, ERR.ENROLLMENT_NOT_RETAKEABLE);
-        }
-        if (enrollment.paymentDeadline && enrollment.paymentDeadline < new Date()) {
-            throw new ApiError(400, ERR.PAYMENT_DEADLINE_EXPIRED);
-        }
-
-        const existing = await Payment.findOne({
-            enrollmentId,
-            status: 'completed',
-            type: 'retake',
-            retakeAttempt: enrollment.retakeAttempt,
-        });
-        if (existing) throw new ApiError(409, ERR.PAYMENT_ALREADY_COMPLETED);
-
-        const pricing = await this.getPricing(enrollment.categoryCode, enrollment.subTypeCode);
-        const calc = this.calculateRetake(pricing.fixedPrice, enrollment.retakeAttempt);
-
-        const payment = await Payment.create({
-            enrollmentId,
+        const contentService = require('./content.service');
+        await contentService.grantFullContentAccess(
             userId,
-            schoolId: enrollment.schoolId,
-            amount: calc.amount,
-            schoolShare: calc.schoolShare,
-            platformShare: calc.platformShare,
-            commissionRate: calc.commissionRate,
-            type: 'retake',
-            retakeAttempt: enrollment.retakeAttempt,
-            retakePercentage: calc.percentage,
-            status: 'pending',
-        });
-
-        return { payment, pricing, breakdown: calc };
-    }
-
-    async confirmRetake({ enrollmentId, userId, amount, gatewayRef = null }) {
-        const enrollment = await Enrollment.findOne({ _id: enrollmentId, userId });
-        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
-
-        const pending = await Payment.findOne({
-            enrollmentId: enrollment._id,
-            userId: enrollment.userId,
-            status: 'pending',
-            type: 'retake',
-            retakeAttempt: enrollment.retakeAttempt,
-        }).sort({ createdAt: -1 });
-
-        if (!pending) throw new ApiError(404, ERR.PAYMENT_NOT_FOUND);
-
-        this.validateAmount(pending.amount, Number(amount));
-
-        pending.status = 'completed';
-        pending.paidAt = new Date();
-        pending.gatewayRef = gatewayRef;
-        await pending.save();
-
-        enrollment.status = ENROLLMENT_STATUS.PAID;
-        enrollment.paidAt = new Date();
-        await enrollment.save();
-
-        const { resetStudentProgress } = require('../helpers/studentProgress.helper');
-        await resetStudentProgress(enrollment._id, userId, enrollment.retakeScope || 'full');
+            enrollment.categoryCode,
+            enrollment._id,
+        );
 
         await sendInstant(userId, {
             type: NOTIFICATION_TYPES.GENERAL,
-            title: 'تم استلام دفع الإعادة',
-            message: 'تم تأكيد دفع إعادة الاشتراك. يمكنك متابعة التدريب حسب نطاق الإعادة.',
-            data: { enrollmentId, paymentId: pending._id, retakeScope: enrollment.retakeScope },
+            title: pending.gateway === 'wallet' ? 'تم الدفع من الرصيد' : 'تم تأكيد الدفع',
+            message: pending.gateway === 'wallet'
+                ? 'تم خصم المبلغ من رصيدك وحجز مقعدك. انتظر انطلاق الدورة.'
+                : 'أكّدت المدرسة/الإدارة استلام دفعتك. انتظر انطلاق الدورة.',
+            data: { enrollmentId: enrollment._id, paymentId: pending._id },
         });
+    }
 
-        return { payment: pending, enrollment };
+    async _afterRetakePaid(enrollment, pending) {
+        const { resetStudentProgress } = require('../helpers/studentProgress.helper');
+        await resetStudentProgress(enrollment._id, enrollment.userId, enrollment.retakeScope || 'full');
+
+        const contentService = require('./content.service');
+        await contentService.grantFullContentAccess(
+            enrollment.userId,
+            enrollment.categoryCode,
+            enrollment._id,
+        );
+
+        await sendInstant(enrollment.userId, {
+            type: NOTIFICATION_TYPES.GENERAL,
+            title: pending.gateway === 'wallet' ? 'تم دفع الإعادة من الرصيد' : 'تم تأكيد دفع الإعادة',
+            message: pending.gateway === 'wallet'
+                ? 'تم خصم مبلغ إعادة الاشتراك من رصيدك. يمكنك متابعة التدريب حسب نطاق الإعادة.'
+                : 'أكّدت المدرسة/الإدارة استلام دفع إعادة الاشتراك. يمكنك متابعة التدريب حسب نطاق الإعادة.',
+            data: {
+                enrollmentId: enrollment._id,
+                paymentId: pending._id,
+                retakeScope: enrollment.retakeScope,
+            },
+        });
+    }
+
+    // Backward-compatible aliases for retake-specific callers
+    async initiateRetake(params) {
+        return this.initiate(params);
+    }
+
+    async claimRetake(params) {
+        return this.claim(params);
+    }
+
+    async confirmRetakeByStaff(params) {
+        return this.confirmByStaff(params);
+    }
+
+    async payRetakeFromWallet(params) {
+        return this.payFromWallet(params);
     }
 }
 

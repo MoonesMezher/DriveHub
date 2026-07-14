@@ -7,6 +7,14 @@ module.exports = {
     completeLesson: makeHandler((req) => lessonService.complete(req.params.id, req._user.userId, req.body)),
     addNote: makeHandler((req) => lessonService.addCoachNote(req._user.userId, req.body), { status: 201 }),
     listNotes: makeHandler((req) => lessonService.listCoachNotes(req._user.userId, req.query), { wrap: (d) => ({ notes: d }) }),
+    listQuestionBanks: makeHandler(
+        (req) => contentService.listCoachQuestionBanks(req._user.userId),
+        { wrap: (d) => ({ banks: d }) },
+    ),
+    listContent: makeHandler(
+        (req) => contentService.listCoachContent(req.query.contentType),
+        { wrap: (d) => ({ items: d }) },
+    ),
     requestQuestionEdit: makeHandler((req) => contentService.requestQuestionEdit(req._user.userId, req.body), { status: 201 }),
     requestContentEdit: makeHandler((req) => contentService.requestContentEdit(req._user.userId, req.body), { status: 201 }),
 };

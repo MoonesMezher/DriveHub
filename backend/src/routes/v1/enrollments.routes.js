@@ -5,13 +5,15 @@ const {
     getById,
     cancel,
     initiatePayment,
-    confirmPayment,
+    claimPayment,
     createRetake,
     initiateRetakePayment,
-    confirmRetakePayment,
+    claimRetakePayment,
+    payFromWallet,
+    payRetakeFromWallet,
 } = require('../../controllers/enrollments.controller');
 const { createEnrollmentRules, retakeEnrollmentRules } = require('../../validators/enrollment.validator');
-const { confirmPaymentRules } = require('../../validators/payment.validator');
+const { claimPaymentRules } = require('../../validators/payment.validator');
 const handleValidationErrors = require('../../middlewares/validate');
 const auth = require('../../middlewares/auth');
 const { requirePermission } = require('../../policies/authorize');
@@ -29,8 +31,10 @@ router.post('/retake', requirePermission(PERMISSIONS.SUBMIT_ENROLLMENT), retakeE
 router.get('/:id', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, getById);
 router.delete('/:id', requirePermission(PERMISSIONS.CANCEL_PENDING_ENROLLMENT), mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, cancel);
 router.post('/:id/payment/initiate', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, initiatePayment);
-router.post('/:id/payment/confirm', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, confirmPaymentRules, handleValidationErrors, confirmPayment);
+router.post('/:id/payment/claim', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, claimPaymentRules, handleValidationErrors, claimPayment);
+router.post('/:id/pay-from-wallet', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, payFromWallet);
 router.post('/:id/payment/retake/initiate', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, initiateRetakePayment);
-router.post('/:id/payment/retake/confirm', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, confirmPaymentRules, handleValidationErrors, confirmRetakePayment);
+router.post('/:id/payment/retake/claim', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, claimPaymentRules, handleValidationErrors, claimRetakePayment);
+router.post('/:id/payment/retake/pay-from-wallet', mongoIdParam('id', 'طلب الاشتراك'), handleValidationErrors, id, payRetakeFromWallet);
 
 module.exports = router;

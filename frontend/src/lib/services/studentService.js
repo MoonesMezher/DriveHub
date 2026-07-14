@@ -7,6 +7,7 @@ export const studentService = {
   statistics: () => apiClient.get(ENDPOINTS.student.statistics),
   listTheory: (params) => apiClient.get(`${ENDPOINTS.student.theory}${buildQueryString(params)}`),
   getTheory: (id) => apiClient.get(ENDPOINTS.student.theoryDetail(id)),
+  completeTheory: (id) => apiClient.post(ENDPOINTS.student.theoryComplete(id)),
   listShared: (params) => apiClient.get(`${ENDPOINTS.student.shared}${buildQueryString(params)}`),
   listSpecific: (params) => apiClient.get(`${ENDPOINTS.student.specific}${buildQueryString(params)}`),
   listVideos: (params) => apiClient.get(`${ENDPOINTS.student.videos}${buildQueryString(params)}`),

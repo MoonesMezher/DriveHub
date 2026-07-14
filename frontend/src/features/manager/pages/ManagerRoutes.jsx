@@ -5,6 +5,7 @@ import { ManagerEnrollmentsPage } from './ManagerEnrollmentsPage'
 import { ManagerInstructorsPage } from './ManagerInstructorsPage'
 import { ManagerRosterPage } from './ManagerRosterPage'
 import { ManagerQuestionBanksPage } from './ManagerQuestionBanksPage'
+import { ManagerContentPage } from './ManagerContentPage'
 import { ManagerContentEditsPage } from './ManagerContentEditsPage'
 import { ManagerSchedulePage } from './ManagerSchedulePage'
 
@@ -16,6 +17,7 @@ export const ManagerRoutes = () => (
     <Route path="enrollments" element={<ManagerEnrollmentsPage />} />
     <Route path="instructors" element={<ManagerInstructorsPage />} />
     <Route path="question-banks" element={<ManagerQuestionBanksPage />} />
+    <Route path="content" element={<ManagerContentPage />} />
     <Route path="content-edits" element={<ManagerContentEditsPage />} />
     <Route path="roster" element={<ManagerRosterPage />} />
     <Route path="*" element={<Navigate to="" replace />} />

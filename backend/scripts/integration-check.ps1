@@ -131,16 +131,17 @@ Test-Step "Create enrollment" {
 Test-Step "Manager login + accept" {
     $body = @{ email = "manager@drivehub.local"; password = $pass; portal = "school" } | ConvertTo-Json
     $r = Invoke-RestMethod "$base/auth/login" -Method POST -Body $body -ContentType "application/json"
-    $mgrHeaders = @{ Authorization = "Bearer $($r.data.accessToken)" }
-    $accept = Invoke-RestMethod "$base/manager/enrollments/$enrollmentId/accept" -Method POST -Headers $mgrHeaders -Body "{}" -ContentType "application/json"
+    $script:mgrHeaders = @{ Authorization = "Bearer $($r.data.accessToken)" }
+    $accept = Invoke-RestMethod "$base/manager/enrollments/$enrollmentId/accept" -Method POST -Headers $script:mgrHeaders -Body "{}" -ContentType "application/json"
     if ($accept.data.enrollment.status -ne "awaiting_payment") { throw "not awaiting payment" }
     "accepted"
 } | Out-Null
 
 Test-Step "Payment flow + student role" {
     Invoke-RestMethod "$base/enrollments/$enrollmentId/payment/initiate" -Method POST -Headers $studentHeaders -Body "{}" -ContentType "application/json" | Out-Null
-    $payBody = @{ amount = 500000; gatewayRef = "INTEGRATION-MOCK" } | ConvertTo-Json
-    $confirm = Invoke-RestMethod "$base/enrollments/$enrollmentId/payment/confirm" -Method POST -Headers $studentHeaders -Body $payBody -ContentType "application/json"
+    Invoke-RestMethod "$base/enrollments/$enrollmentId/payment/claim" -Method POST -Headers $studentHeaders -Body '{"studentReference":"INTEGRATION-REF"}' -ContentType "application/json" | Out-Null
+    $payBody = @{ amount = 500000; gatewayRef = "INTEGRATION-MANUAL" } | ConvertTo-Json
+    $confirm = Invoke-RestMethod "$base/manager/enrollments/$enrollmentId/payment/confirm" -Method POST -Headers $script:mgrHeaders -Body $payBody -ContentType "application/json"
     if ($confirm.data.enrollment.status -ne "paid") { throw "payment not confirmed" }
     $me = Invoke-RestMethod "$base/auth/me" -Headers $studentHeaders
     $hasStudent = $me.data.user.roles | Where-Object { $_.role -eq "student" }

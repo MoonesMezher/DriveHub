@@ -12,21 +12,45 @@ const {
     Enrollment,
     Notification,
     LicenseCategory,
+    Payment,
+    DocumentUpload,
 } = require('../../src/models');
 const passwordService = require('../../src/utils/passwordService');
+const { encrypt } = require('../../src/utils/encryption');
 const { ROLES } = require('../../src/constants/roles');
 const { COURSE_STATUS } = require('../../src/constants/courseStatus');
 const { ENROLLMENT_STATUS } = require('../../src/constants/enrollmentStatus');
 const { paymentDeadlineFromNow } = require('../../src/utils/dateUtils');
 const enrollmentService = require('../../src/services/enrollment.service');
+const walletService = require('../../src/services/wallet.service');
 
 let mongoServer;
 let app;
 let accessToken;
 let schoolId;
 let courseId;
+let userId;
 
 const strongPassword = 'SecurePass1!';
+
+const TEST_PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+);
+
+const seedEncryptedDoc = (uid, type, name) => DocumentUpload.create({
+    userId: uid,
+    type,
+    encryptedPath: encrypt(TEST_PNG.toString('base64')),
+    mime: 'image/png',
+    originalName: name,
+    size: TEST_PNG.length,
+});
+
+const seedRequiredDocuments = async (uid) => {
+    await seedEncryptedDoc(uid, 'national_id', 'id.png');
+    await seedEncryptedDoc(uid, 'medical_report', 'medical.png');
+};
 
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -41,10 +65,13 @@ beforeAll(async () => {
         activeContext: { role: ROLES.REGISTERED },
     });
     await UserRole.create({ userId: user._id, role: ROLES.REGISTERED });
+    userId = user._id;
 
     await User.findByIdAndUpdate(user._id, {
         profileData: { dateOfBirth: '2000-01-01' },
     });
+
+    await seedRequiredDocuments(user._id);
 
     const login = await request(app).post('/api/v1/auth/login').send({
         email: 'phase1@drivehub.local',
@@ -86,7 +113,10 @@ afterEach(async () => {
     await Promise.all([
         Enrollment.deleteMany({}),
         Notification.deleteMany({}),
+        Payment.deleteMany({}),
+        DocumentUpload.deleteMany({ userId: { $ne: userId } }),
     ]);
+    await seedRequiredDocuments(userId);
 });
 
 afterAll(async () => {
@@ -98,6 +128,7 @@ afterAll(async () => {
         TrainingCourse.deleteMany({}),
         PlatformPricing.deleteMany({}),
         LicenseCategory.deleteMany({}),
+        DocumentUpload.deleteMany({}),
     ]);
     await mongoose.disconnect();
     await mongoServer.stop();
@@ -138,7 +169,38 @@ describe('Phase 1 APIs', () => {
             }),
         );
         expect(res.status).toBe(201);
-        expect(res.body.data.enrollment.status).toBe(ENROLLMENT_STATUS.SUBMITTED);
+        expect(res.body.data.enrollment.status).toBe(ENROLLMENT_STATUS.UNDER_REVIEW);
+    });
+
+    it('POST /enrollments rejects when required documents are missing', async () => {
+        await DocumentUpload.deleteMany({ userId });
+
+        const res = await auth(
+            request(app).post('/api/v1/enrollments').send({
+                courseId: courseId.toString(),
+                schoolId: schoolId.toString(),
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+            }),
+        );
+        expect(res.status).toBe(400);
+        expect(res.body.message).toMatch(/الهوية|التوثيق الطبي|المستندات/);
+    });
+
+    it('POST /enrollments rejects when only national_id is uploaded', async () => {
+        await DocumentUpload.deleteMany({ userId });
+        await seedEncryptedDoc(userId, 'national_id', 'id.png');
+
+        const res = await auth(
+            request(app).post('/api/v1/enrollments').send({
+                courseId: courseId.toString(),
+                schoolId: schoolId.toString(),
+                categoryCode: 'B',
+                subTypeCode: 'B1',
+            }),
+        );
+        expect(res.status).toBe(400);
+        expect(res.body.message).toMatch(/التوثيق الطبي/);
     });
 
     it('POST /enrollments rejects duplicate pending', async () => {
@@ -160,7 +222,23 @@ describe('Phase 1 APIs', () => {
         expect(res.body.message).toMatch(/طلب اشتراك معلّق/);
     });
 
-    it('payment flow: initiate and confirm', async () => {
+    it('payment flow: initiate and pay from wallet', async () => {
+        const admin = await User.create({
+            name: 'Phase1 Admin',
+            email: 'phase1-admin@drivehub.local',
+            phone: '0944000099',
+            password: await passwordService.hashPassword(strongPassword),
+            activeContext: { role: ROLES.ADMIN },
+        });
+        await UserRole.create({ userId: admin._id, role: ROLES.ADMIN });
+
+        await walletService.creditUser({
+            userId,
+            amount: 500000,
+            adminId: admin._id,
+            note: 'TEST-CREDIT',
+        });
+
         const createRes = await auth(
             request(app).post('/api/v1/enrollments').send({
                 courseId: courseId.toString(),
@@ -180,14 +258,14 @@ describe('Phase 1 APIs', () => {
         );
         expect(initRes.status).toBe(200);
         expect(initRes.body.data.payment.amount).toBe(500000);
+        expect(initRes.body.data.walletBalance).toBe(500000);
 
-        const confirmRes = await auth(
-            request(app).post(`/api/v1/enrollments/${enrollmentId}/payment/confirm`).send({
-                amount: 500000,
-            }),
+        const payRes = await auth(
+            request(app).post(`/api/v1/enrollments/${enrollmentId}/pay-from-wallet`),
         );
-        expect(confirmRes.status).toBe(200);
-        expect(confirmRes.body.data.enrollment.status).toBe(ENROLLMENT_STATUS.PAID);
+        expect(payRes.status).toBe(200);
+        expect(payRes.body.data.enrollment.status).toBe(ENROLLMENT_STATUS.PAID);
+        expect(payRes.body.data.walletBalance).toBe(0);
     });
 
     it('GET /notifications lists user notifications', async () => {

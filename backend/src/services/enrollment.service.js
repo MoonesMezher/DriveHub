@@ -4,11 +4,13 @@ const {
     TrainingCourse,
     DrivingSchool,
     WaitingList,
+    PreRegistration,
     LicenseCategory,
     DrivingLicenseRecord,
     FinalExamResult,
     StudentStatistics,
     User,
+    Payment,
 } = require('../models');
 const dayjs = require('dayjs');
 const { ENROLLMENT_STATUS, RETAKE_SCOPE } = require('../constants/enrollmentStatus');
@@ -17,8 +19,13 @@ const { ERR } = require('../constants/errorMessages');
 const { paymentDeadlineFromNow } = require('../utils/dateUtils');
 const enrollmentHelper = require('../helpers/enrollment.helper');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
-const { sendInstant } = require('../helpers/notificationDelivery.helper');
+const { sendInstant, notifySchoolManagers } = require('../helpers/notificationDelivery.helper');
 const { buildAlternateSchoolSuggestions } = require('../helpers/enrollmentSuggestions.helper');
+
+const QUEUE_STATUSES = [
+    ENROLLMENT_STATUS.SUBMITTED,
+    ENROLLMENT_STATUS.UNDER_REVIEW,
+];
 
 const CANCELLABLE = new Set([
     ENROLLMENT_STATUS.SUBMITTED,
@@ -147,7 +154,7 @@ class EnrollmentService {
         await sendInstant(userId, {
             type: NOTIFICATION_TYPES.GENERAL,
             title: 'طلب إعادة اشتراك',
-            message: `تم إنشاء طلب إعادة اشتراك (${scope === RETAKE_SCOPE.FULL ? 'شقين' : 'عملي فقط'}). أكمل الدفع خلال ${paymentDeadlineDays} أيام.`,
+            message: `تم إنشاء طلب إعادة اشتراك (${scope === RETAKE_SCOPE.FULL ? 'شقين' : 'عملي فقط'}). ادفع من رصيدك في صفحة الاشتراك خلال ${paymentDeadlineDays} أيام. إذا كان رصيدك غير كافٍ، تواصل مع إدارة المنصة لشحنه.`,
             data: { enrollmentId: enrollment._id, priorEnrollmentId: prior._id, retakeScope: scope },
         });
 
@@ -172,12 +179,14 @@ class EnrollmentService {
         const visibleCount = await Enrollment.countDocuments({
             courseId,
             managerVisible: true,
-            status: { $in: [ENROLLMENT_STATUS.SUBMITTED, ENROLLMENT_STATUS.UNDER_REVIEW] },
+            status: { $in: QUEUE_STATUSES },
+            _id: { $ne: enrollment._id },
         });
 
         if (visibleCount >= spots) {
             enrollment.managerVisible = false;
             await enrollment.save();
+            const position = visibleCount + 1;
             await WaitingList.findOneAndUpdate(
                 { courseId, userId: enrollment.userId },
                 {
@@ -187,11 +196,41 @@ class EnrollmentService {
                     categoryCode: enrollment.categoryCode,
                     subTypeCode: enrollment.subTypeCode,
                     status: 'waiting',
-                    position: visibleCount + 1,
+                    position,
                 },
                 { upsert: true, new: true },
             );
+
+            const school = await DrivingSchool.findById(enrollment.schoolId).select('governorate lat lng').lean();
+            const suggestions = await buildAlternateSchoolSuggestions({
+                categoryCode: enrollment.categoryCode,
+                subTypeCode: enrollment.subTypeCode,
+                governorate: school?.governorate,
+                excludeSchoolId: enrollment.schoolId,
+                lat: school?.lat,
+                lng: school?.lng,
+            });
+
+            await sendInstant(enrollment.userId, {
+                type: NOTIFICATION_TYPES.ENROLLMENT_WAITLIST,
+                title: 'أنت في قائمة الانتظار',
+                message: `تم استلام طلبك. موقعك في قائمة الانتظار: ${position}. سنُبلغك عند توفر مكان للمراجعة — يمكنك أيضاً التقديم لمدارس أخرى.`,
+                data: { enrollmentId: enrollment._id, courseId, position },
+                suggestions,
+            });
+
+            return enrollment;
         }
+
+        enrollment.status = ENROLLMENT_STATUS.UNDER_REVIEW;
+        await enrollment.save();
+
+        await notifySchoolManagers(enrollment.schoolId, {
+            type: NOTIFICATION_TYPES.ENROLLMENT_REQUEST,
+            title: 'طلب اشتراك جديد',
+            message: `طلب جديد لفئة ${enrollment.categoryCode} بانتظار مراجعتك.`,
+            data: { enrollmentId: enrollment._id, courseId },
+        });
 
         return enrollment;
     }
@@ -223,7 +262,8 @@ class EnrollmentService {
         if (!license?.prerequisites?.length) return;
 
         for (const prereq of license.prerequisites) {
-            const code = prereq.toUpperCase();
+            const code = (typeof prereq === 'string' ? prereq : prereq?.code)?.toUpperCase?.();
+            if (!code) continue;
             const hasRecord = await DrivingLicenseRecord.findOne({ userId, categoryCode: code });
             const hasPassed = await Enrollment.findOne({
                 userId,
@@ -249,6 +289,21 @@ class EnrollmentService {
         }
         if (!subTypeCode || active.subTypeCode === subTypeCode?.toUpperCase()) {
             throw new ApiError(409, ERR.ENROLLMENT_ACTIVE_CATEGORY_EXISTS);
+        }
+    }
+
+    async assertSubTypeLocked(userId, categoryCode, subTypeCode) {
+        if (categoryCode.toUpperCase() !== 'B' || !subTypeCode) return;
+
+        const prior = await Enrollment.findOne({
+            userId,
+            categoryCode: 'B',
+            subTypeCode: { $ne: null },
+            status: { $nin: [ENROLLMENT_STATUS.CANCELLED, ENROLLMENT_STATUS.REJECTED, ENROLLMENT_STATUS.EXPIRED] },
+        }).sort({ createdAt: 1 });
+
+        if (prior && prior.subTypeCode !== subTypeCode.toUpperCase()) {
+            throw new ApiError(409, ERR.ENROLLMENT_SUBTYPE_LOCKED);
         }
     }
 
@@ -291,8 +346,33 @@ class EnrollmentService {
 
         await this.assertPrerequisites(userId, normalizedCategory);
         await this.assertCategoryNotActive(userId, normalizedCategory, resolvedSubType);
+        await this.assertSubTypeLocked(userId, normalizedCategory, resolvedSubType);
+
+        const documentService = require('./document.service');
+        await documentService.assertRequiredForEnrollment(userId);
 
         if (!enrollmentHelper.getAvailableSpots(course)) {
+            let preRegistration = null;
+            if (school.preRegistrationEnabled) {
+                preRegistration = await PreRegistration.findOneAndUpdate(
+                    {
+                        userId,
+                        schoolId,
+                        categoryCode: normalizedCategory,
+                        subTypeCode: resolvedSubType,
+                        status: 'reserved',
+                    },
+                    {
+                        userId,
+                        schoolId,
+                        categoryCode: normalizedCategory,
+                        subTypeCode: resolvedSubType,
+                        status: 'reserved',
+                        reservedAt: new Date(),
+                    },
+                    { upsert: true, new: true, setDefaultsOnInsert: true },
+                );
+            }
             const suggestions = await buildAlternateSchoolSuggestions({
                 categoryCode: normalizedCategory,
                 subTypeCode: resolvedSubType,
@@ -301,7 +381,12 @@ class EnrollmentService {
                 lat: school.lat,
                 lng: school.lng,
             });
-            throw new ApiError(400, ERR.ENROLLMENT_NO_SPOTS, { suggestions });
+            throw new ApiError(400, ERR.ENROLLMENT_NO_SPOTS, {
+                suggestions,
+                preRegistrationEnabled: Boolean(school.preRegistrationEnabled),
+                preRegistrationCreated: Boolean(preRegistration),
+                preRegistrationId: preRegistration?._id || null,
+            });
         }
 
         const enrollment = await Enrollment.create({
@@ -319,11 +404,40 @@ class EnrollmentService {
     }
 
     async listMine(userId) {
-        return Enrollment.find({ userId })
+        const enrollments = await Enrollment.find({ userId })
             .sort({ createdAt: -1 })
             .populate('schoolId', 'name address governorate')
             .populate('courseId', 'categoryCode subTypeCode status launchDate')
             .lean();
+
+        const waitlistIds = enrollments
+            .filter((e) => !e.managerVisible && e.status === ENROLLMENT_STATUS.SUBMITTED)
+            .map((e) => e._id);
+
+        let positionByEnrollment = {};
+        if (waitlistIds.length) {
+            const waitlistRows = await WaitingList.find({
+                enrollmentId: { $in: waitlistIds },
+                status: 'waiting',
+            })
+                .select('enrollmentId position')
+                .lean();
+            positionByEnrollment = Object.fromEntries(
+                waitlistRows.map((row) => [String(row.enrollmentId), row.position]),
+            );
+        }
+
+        return enrollments.map((enrollment) => {
+            const isOnWaitlist = !enrollment.managerVisible
+                && enrollment.status === ENROLLMENT_STATUS.SUBMITTED;
+            return {
+                ...enrollment,
+                isOnWaitlist,
+                waitlistPosition: isOnWaitlist
+                    ? (positionByEnrollment[String(enrollment._id)] ?? null)
+                    : null,
+            };
+        });
     }
 
     async getById(id, userId = null) {
@@ -363,10 +477,43 @@ class EnrollmentService {
         const requests = await Enrollment.find({
             courseId,
             managerVisible: true,
-            status: ENROLLMENT_STATUS.SUBMITTED,
-        }).sort({ createdAt: 1 });
+            status: { $in: QUEUE_STATUSES },
+        })
+            .populate('userId', 'name email')
+            .sort({ createdAt: 1 });
 
         return enrollmentHelper.filterRequestsForManager(requests, spots);
+    }
+
+    async getManagerPaymentQueue(courseId, schoolId) {
+        const course = await TrainingCourse.findOne({ _id: courseId, schoolId });
+        if (!course) throw new ApiError(404, ERR.COURSE_NOT_FOUND);
+
+        const enrollments = await Enrollment.find({
+            courseId,
+            schoolId,
+            status: ENROLLMENT_STATUS.AWAITING_PAYMENT,
+        })
+            .populate('userId', 'name email phone')
+            .sort({ createdAt: 1 })
+            .lean();
+
+        const enrollmentIds = enrollments.map((e) => e._id);
+        const payments = enrollmentIds.length
+            ? await Payment.find({
+                enrollmentId: { $in: enrollmentIds },
+                status: 'pending',
+            }).lean()
+            : [];
+
+        const paymentByEnrollment = new Map(
+            payments.map((p) => [String(p.enrollmentId), p]),
+        );
+
+        return enrollments.map((enrollment) => ({
+            ...enrollment,
+            pendingPayment: paymentByEnrollment.get(String(enrollment._id)) || null,
+        }));
     }
 
     async listRosterCandidates(courseId, schoolId) {
@@ -391,19 +538,29 @@ class EnrollmentService {
             .lean();
     }
 
-    async accept(enrollmentId, paymentDeadlineDays = 3) {
+    async accept(enrollmentId, paymentDeadlineDays = null) {
         const enrollment = await Enrollment.findById(enrollmentId);
         if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+        if (!QUEUE_STATUSES.includes(enrollment.status)) {
+            throw new ApiError(400, 'الطلب ليس في مرحلة المراجعة');
+        }
 
-        enrollment.status = ENROLLMENT_STATUS.AWAITING_PAYMENT;
-        enrollment.paymentDeadline = paymentDeadlineFromNow(paymentDeadlineDays);
+        const course = await TrainingCourse.findById(enrollment.courseId);
+        const days = paymentDeadlineDays ?? course?.paymentDeadlineDays ?? 3;
+
+        enrollment.status = ENROLLMENT_STATUS.ACCEPTED;
+        enrollment.paymentDeadline = paymentDeadlineFromNow(days);
         await enrollment.save();
 
         await sendInstant(enrollment.userId, {
             type: NOTIFICATION_TYPES.ENROLLMENT_ACCEPTED,
             title: 'تم قبول طلبك',
-            message: `تم قبول طلب الاشتراك. أكمل الدفع خلال ${paymentDeadlineDays} أيام.`,
-            data: { enrollmentId: enrollment._id },
+            message: `تم قبول طلب الاشتراك. ادفع من رصيدك في صفحة الاشتراك خلال ${days} أيام. بعد الدفع يُحجز مقعدك وتنتظر إشعار انطلاق الدورة. إذا كان رصيدك غير كافٍ، تواصل مع إدارة المنصة لشحنه بعد الدفع النقدي أو التحويل البنكي.`,
+            data: {
+                enrollmentId: enrollment._id,
+                paymentDeadline: enrollment.paymentDeadline,
+                paymentDeadlineDays: days,
+            },
         });
 
         return enrollment;
@@ -435,13 +592,15 @@ class EnrollmentService {
             suggestions,
         });
 
+        await this.promoteNextFromWaitlist(enrollment.courseId);
+
         return enrollment;
     }
 
     async expireAwaitingPayment() {
         const now = new Date();
         const expired = await Enrollment.find({
-            status: ENROLLMENT_STATUS.AWAITING_PAYMENT,
+            status: { $in: [ENROLLMENT_STATUS.ACCEPTED, ENROLLMENT_STATUS.AWAITING_PAYMENT] },
             paymentDeadline: { $lt: now },
         });
 
@@ -474,6 +633,7 @@ class EnrollmentService {
         }
 
         enrollment.managerVisible = true;
+        enrollment.status = ENROLLMENT_STATUS.UNDER_REVIEW;
         await enrollment.save();
         next.status = 'promoted';
         next.promotedAt = new Date();

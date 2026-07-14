@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { formatDateTime } from '@/lib/helpers/date'
 import { ROUTES } from '@/lib/constants/routes'
+import { PRACTICE_PASS_THRESHOLD } from '@/lib/constants/examThresholds'
 import {
   EXAM_SCHEDULE_STATUS_LABELS,
   EXAM_SCHEDULE_STATUS_VARIANT,
@@ -25,11 +26,6 @@ export const StudentExamPage = () => {
     queryFn: async () => unwrap(await studentService.examInfo()),
   })
 
-  const certsQuery = useQuery({
-    queryKey: ['student', 'certificates'],
-    queryFn: async () => unwrap(await studentService.certificates()),
-  })
-
   const dashboardQuery = useQuery({
     queryKey: ['student', 'dashboard'],
     queryFn: async () => unwrap(await studentService.dashboard()),
@@ -39,7 +35,7 @@ export const StudentExamPage = () => {
     mutationFn: (priorEnrollmentId) =>
       enrollmentService.createRetake({ priorEnrollmentId }),
     onSuccess: () => {
-      toast.success('تم إنشاء طلب إعادة الاشتراك — أكمل الدفع من صفحة الاشتراك')
+      toast.success('تم إنشاء طلب إعادة الاشتراك — أكمل الدفع اليدوي من صفحة الاشتراك')
       queryClient.invalidateQueries({ queryKey: ['student', 'exam-info'] })
       queryClient.invalidateQueries({ queryKey: ['enrollments'] })
     },
@@ -50,11 +46,10 @@ export const StudentExamPage = () => {
   const schedules = exam?.schedules ?? []
   const nextSchedule = schedules.find((s) => s.status === 'scheduled' && new Date(s.examDate) >= new Date())
     ?? schedules.find((s) => s.status === 'scheduled')
-  const certificates = certsQuery.data?.certificates ?? []
   const stats = dashboardQuery.data?.dashboard?.statistics
   const lastPractice = dashboardQuery.data?.dashboard?.lastPractice
-  const isLoading = examQuery.isLoading || certsQuery.isLoading
-  const error = examQuery.error || certsQuery.error
+  const isLoading = examQuery.isLoading
+  const error = examQuery.error
 
   const readinessChecklist = [
     {
@@ -95,7 +90,7 @@ export const StudentExamPage = () => {
     <div dir="rtl">
       <PageHeader
         title="امتحان المرور"
-        description="مواعيد الامتحان، النتائج، والشهادات"
+        description="مواعيد الامتحان والنتائج"
       />
 
       <AsyncContent isLoading={isLoading} error={error}>
@@ -166,12 +161,12 @@ export const StudentExamPage = () => {
           )}
 
           {exam?.pendingRetakePayment && (
-            <Alert variant="warning" title="دفع إعادة الاشتراك">
-              لديك طلب إعادة اشتراك بانتظار الدفع.
+            <Alert variant="warning" title="دفع إعادة الاشتراك (يدوي)">
+              لديك طلب إعادة اشتراك بانتظار الدفع خارج المنصة.
               <Link to={ROUTES.ENROLL} className="mt-3 inline-flex">
                 <Button type="button" size="sm" className="mt-3">
                   <Icon name="payments" size={18} className="me-1" />
-                  إكمال الدفع
+                  تعليمات الدفع اليدوي
                 </Button>
               </Link>
             </Alert>
@@ -191,21 +186,16 @@ export const StudentExamPage = () => {
             </Card>
           )}
 
-          <div className="grid gap-comfortable sm:grid-cols-3">
+          <div className="grid gap-comfortable sm:grid-cols-2">
             <StatCard
-              label="حد النجاح"
-              value={`${exam?.passThreshold ?? 70}%`}
+              label="حد النجاح التجريبي"
+              value={`${exam?.passThreshold ?? PRACTICE_PASS_THRESHOLD}%`}
               icon="fact_check"
             />
             <StatCard
               label="مواعيد الامتحان"
               value={schedules.length}
               icon="event"
-            />
-            <StatCard
-              label="الشهادات"
-              value={certificates.length}
-              icon="workspace_premium"
             />
           </div>
 
@@ -274,32 +264,15 @@ export const StudentExamPage = () => {
           </div>
 
           <Card title="الشهادات">
-            {certificates.length === 0 ? (
-              <p className="text-body-md text-on-surface-variant">لا توجد شهادات بعد</p>
-            ) : (
-              <div className="grid gap-comfortable sm:grid-cols-2">
-                {certificates.map((cert) => (
-                  <div key={cert._id} className="flex items-center gap-3 rounded-xl bg-surface-container-low p-comfortable">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-success-container">
-                      <Icon name="workspace_premium" size={26} className="text-on-success-container" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-headline-sm text-on-surface">
-                        {cert.licenseNumber ?? cert.certificateNumber ?? 'شهادة'}
-                      </p>
-                      {cert.issuedAt && (
-                        <p className="mt-1 text-body-md text-on-surface-variant">
-                          {formatDateTime(cert.issuedAt)}
-                        </p>
-                      )}
-                    </div>
-                    {cert.categoryCode && (
-                      <Badge variant="success">فئة {cert.categoryCode}</Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <p className="text-body-md text-on-surface-variant">
+              عرض الرخص والشهادات الصادرة مع رمز التحقق QR.
+            </p>
+            <Link to={`${ROUTES.STUDENT}/certificates`} className="mt-4 inline-flex">
+              <Button type="button" size="sm">
+                <Icon name="workspace_premium" size={18} className="me-1" />
+                الانتقال إلى شهاداتي
+              </Button>
+            </Link>
           </Card>
         </div>
         )}

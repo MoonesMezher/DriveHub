@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
-  Alert, FormSection, Select, Badge,
+  Alert, FormSection, Select, Badge, ImageUploadField,
 } from '@/components/ui'
-import { adminService } from '@/lib/services'
+import { adminService, mediaService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { toast } from 'sonner'
@@ -33,6 +33,7 @@ export const AdminAdsPage = () => {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [form, setForm] = useState(emptyForm)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const adsQuery = useQuery({
     queryKey: ['admin', 'ads'],
@@ -53,6 +54,17 @@ export const AdminAdsPage = () => {
   const totalPages = Math.max(1, Math.ceil(ads.length / PAGE_SIZE))
   const paginatedAds = ads.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const handleImageUpload = async (file) => {
+    setUploadingImage(true)
+    try {
+      const result = await mediaService.upload(file, { category: 'ad' })
+      setForm((f) => ({ ...f, imageUrl: result.media.url }))
+      toast.success('تم رفع صورة الإعلان')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     createAd.mutate({
@@ -60,6 +72,7 @@ export const AdminAdsPage = () => {
       order: Number(form.order) || 0,
       startDate: form.startDate || null,
       endDate: form.endDate || null,
+      imageUrl: form.imageUrl || undefined,
     })
   }
 
@@ -123,8 +136,14 @@ export const AdminAdsPage = () => {
           <form onSubmit={handleSubmit}>
             <FormSection>
               <Input label="العنوان" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-              <Input label="رابط الصورة" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
-              <Input label="رابط الإعلان" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} />
+              <ImageUploadField
+                label="صورة الإعلان"
+                value={form.imageUrl}
+                onUpload={handleImageUpload}
+                uploading={uploadingImage}
+                category="ad"
+              />
+              <Input label="رابط الإعلان (اختياري)" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} />
               <Select
                 label="الموضع"
                 value={form.placement}

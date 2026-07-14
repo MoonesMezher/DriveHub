@@ -5,6 +5,29 @@ const { ERR } = require('../constants/errorMessages');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 
 class SchoolApplicationService {
+    _toComplianceSummary(application) {
+        const owner = application.applicantUserId || {};
+        return {
+            id: application._id,
+            type: 'school_onboarding',
+            status: application.status,
+            schoolName: application.schoolName,
+            city: application.governorate || null,
+            ownerName: owner.name || null,
+            createdAt: application.createdAt,
+            updatedAt: application.updatedAt,
+        };
+    }
+
+    _extractNationalId(profileData = {}) {
+        return profileData.nationalId
+            || profileData.nationalID
+            || profileData.national_id
+            || profileData.idNumber
+            || profileData.nationalNumber
+            || null;
+    }
+
     async submit(applicantUserId, data) {
         const settingsService = require('./settings.service');
         if (await settingsService.isRegistrationPaused()) {
@@ -45,6 +68,85 @@ class SchoolApplicationService {
             .populate('applicantUserId', 'name email phone')
             .sort({ createdAt: 1 })
             .lean();
+    }
+
+    async listComplianceRequests(query = {}) {
+        const statuses = ['pending'];
+        if (query.includeHistory === 'true') {
+            statuses.push('approved', 'rejected');
+        }
+
+        const filter = { status: { $in: statuses } };
+        if (query.governorate) filter.governorate = query.governorate;
+
+        const applications = await SchoolApplication.find(filter)
+            .populate('applicantUserId', 'name email phone')
+            .sort({ createdAt: 1 })
+            .lean();
+
+        return applications.map((application) => this._toComplianceSummary(application));
+    }
+
+    async getComplianceRequestById(id) {
+        const application = await SchoolApplication.findById(id)
+            .select('+bankAccount')
+            .populate('applicantUserId', 'name email phone profileData')
+            .populate('documents', 'type mime originalName size uploadedAt createdAt')
+            .populate('reviewedBy', 'name email')
+            .populate('createdSchoolId', 'name governorate status createdAt')
+            .lean();
+
+        if (!application) throw new ApiError(404, ERR.APPLICATION_NOT_FOUND);
+
+        const owner = application.applicantUserId || {};
+        const ownerNationalId = this._extractNationalId(owner.profileData);
+
+        return {
+            id: application._id,
+            type: 'school_onboarding',
+            status: application.status,
+            rejectionReason: application.rejectionReason,
+            createdAt: application.createdAt,
+            updatedAt: application.updatedAt,
+            reviewedAt: application.reviewedAt,
+            school: {
+                name: application.schoolName,
+                legalName: application.schoolName,
+                address: application.address,
+                city: application.governorate || null,
+                licenseNumber: application.licenses?.join(', ') || null,
+                vehiclesCount: null,
+                categories: application.licenses || [],
+                phone: application.phone || null,
+                email: application.email || null,
+                lat: application.lat,
+                lng: application.lng,
+            },
+            owner: {
+                userId: owner._id || null,
+                name: owner.name || null,
+                nationalId: ownerNationalId,
+                phone: owner.phone || null,
+                email: owner.email || null,
+            },
+            bank: {
+                accountName: owner.name || null,
+                iban: application.bankAccount || null,
+                accountNumber: application.bankAccount || null,
+                bankName: null,
+            },
+            documents: application.documents || [],
+            reviewer: application.reviewedBy || null,
+            createdSchool: application.createdSchoolId || null,
+        };
+    }
+
+    async approveComplianceRequest(applicationId, reviewerId) {
+        return this.review(applicationId, reviewerId, { status: 'approved' });
+    }
+
+    async rejectComplianceRequest(applicationId, reviewerId, rejectionReason) {
+        return this.review(applicationId, reviewerId, { status: 'rejected', rejectionReason });
     }
 
     async review(applicationId, reviewerId, { status, rejectionReason = null }) {

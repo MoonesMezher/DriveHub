@@ -29,12 +29,9 @@ class NotificationService {
             });
         }
 
-        const externalChannels = channelList.filter((c) => c !== 'in_app');
+        const externalChannels = channelList.filter((c) => c === 'email');
         for (const channel of externalChannels) {
-            const payload = channel === 'email'
-                ? { to: email, subject: title, text: message }
-                : { to: phone, message };
-            await channels.dispatch(channel, payload);
+            await channels.dispatch(channel, { to: email, subject: title, text: message });
         }
 
         logger.info('notification.sent', { userId, type, title, channels: channelList });

@@ -12,7 +12,7 @@ const bookLessonRules = [
     mongoIdBody('enrollmentId', 'طلب الاشتراك'),
     mongoIdBody('coachId', 'المدرب'),
     requiredDate('scheduledAt', 'موعد الدرس'),
-    optionalInt('durationMinutes', 'مدة الدرس', { min: 30, max: 120 }),
+    optionalInt('durationMinutes', 'مدة الدرس', { min: 60, max: 60 }),
 ];
 
 const completeLessonRules = [
@@ -35,7 +35,7 @@ const coachNoteRules = [
 
 const autoBookLessonRules = [
     mongoIdBody('enrollmentId', 'طلب الاشتراك'),
-    optionalInt('durationMinutes', 'مدة الدرس', { min: 30, max: 120 }),
+    optionalInt('durationMinutes', 'مدة الدرس', { min: 60, max: 60 }),
 ];
 
 module.exports = {

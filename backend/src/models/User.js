@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
         phone: { type: String, trim: true },
         password: { type: String, required: true, select: false },
         status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+        walletBalance: { type: Number, default: 0, min: 0 },
         profileData: { type: mongoose.Schema.Types.Mixed, default: {} },
         activeContext: { type: activeContextSchema, default: () => ({ role: ROLES.REGISTERED }) },
     },

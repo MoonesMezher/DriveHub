@@ -7,6 +7,7 @@ const {
 const {
     questionEditRequestRules,
     trainingDataEditRules,
+    coachContentListRules,
 } = require('../../validators/content.validator');
 const { paginationQuery } = require('../../validators/common.validator');
 const {
@@ -23,6 +24,8 @@ router.get('/students', requirePermission(PERMISSIONS.MANAGE_COACH_STUDENTS), co
 router.patch('/lessons/:id/complete', ...idParam('id', 'الدرس'), requirePermission(PERMISSIONS.RATE_LESSONS), completeLessonRules, validate, coachController.completeLesson);
 router.post('/notes', requirePermission(PERMISSIONS.RATE_LESSONS), coachNoteRules, validate, coachController.addNote);
 router.get('/notes', coachController.listNotes);
+router.get('/question-banks', requirePermission(PERMISSIONS.EDIT_TRAINING_CONTENT), coachController.listQuestionBanks);
+router.get('/content', requirePermission(PERMISSIONS.EDIT_TRAINING_CONTENT), coachContentListRules, validate, coachController.listContent);
 router.post('/edits/questions', requirePermission(PERMISSIONS.EDIT_TRAINING_CONTENT), questionEditRequestRules, validate, coachController.requestQuestionEdit);
 router.post('/edits/content', requirePermission(PERMISSIONS.EDIT_TRAINING_CONTENT), trainingDataEditRules, validate, coachController.requestContentEdit);
 

@@ -13,7 +13,8 @@ import {
   SectionBlock,
   Alert,
 } from '@/components/ui'
-import { SyriaSchoolsMap } from '@/features/schools/components/SyriaSchoolsMap'
+import { SchoolsMap } from '@/features/schools/components/SchoolsMap'
+import { mapProviderLabel } from '@/lib/config/maps'
 import { schoolService, locationService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { useAuthContext } from '@/app/providers/AuthProvider'
@@ -163,6 +164,7 @@ export const SchoolsNearbyPage = () => {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-body-md font-medium text-on-surface">خريطة المدارس في سوريا</p>
             <div className="flex flex-wrap items-center gap-3 text-label-md text-on-surface-variant">
+              <span className="text-label-sm opacity-70">{mapProviderLabel()}</span>
               <span className="inline-flex items-center gap-1">
                 <span className="inline-block h-3 w-3 rounded-full bg-primary" />
                 مدرسة
@@ -176,7 +178,7 @@ export const SchoolsNearbyPage = () => {
             </div>
           </div>
         </div>
-        <SyriaSchoolsMap
+        <SchoolsMap
           schools={schools}
           userCoords={coords}
           highlightedSchoolId={highlightedSchoolId}

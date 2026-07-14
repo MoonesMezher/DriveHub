@@ -19,6 +19,7 @@ import { unwrap } from '@/lib/helpers/api'
 import { ROUTES } from '@/lib/constants/routes'
 import { useAuthContext } from '@/app/providers/AuthProvider'
 import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
+import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
 export const SamplePage = () => {
   const { isAuthenticated } = useAuthContext()
@@ -103,7 +104,7 @@ export const SamplePage = () => {
                       <Card key={article._id} title={article.title}>
                         {article.imageUrl && (
                           <img
-                            src={article.imageUrl}
+                            src={resolveMediaUrl(article.imageUrl)}
                             alt={article.title}
                             className="mb-4 max-h-64 w-full rounded-xl object-cover"
                             loading="lazy"
@@ -130,7 +131,7 @@ export const SamplePage = () => {
                       <Card key={video._id} title={video.title}>
                         {video.thumbnailUrl && !video.url?.includes('embed') && (
                           <img
-                            src={video.thumbnailUrl}
+                            src={resolveMediaUrl(video.thumbnailUrl)}
                             alt={video.title}
                             className="mb-3 max-h-40 w-full rounded-lg object-cover"
                             loading="lazy"
@@ -160,7 +161,7 @@ export const SamplePage = () => {
                         <Card key={q._id} title={`سؤال ${index + 1}`}>
                           {q.imageUrl && (
                             <img
-                              src={q.imageUrl}
+                              src={resolveMediaUrl(q.imageUrl)}
                               alt=""
                               className="mb-4 max-h-48 w-full max-w-md rounded-lg object-cover"
                               loading="lazy"

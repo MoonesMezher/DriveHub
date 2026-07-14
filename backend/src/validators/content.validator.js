@@ -11,6 +11,7 @@ const {
     optionalInt,
     requiredEnumBody,
     optionalEnumBody,
+    optionalMediaRef,
 } = require('./chains');
 
 const questionOptionRules = [
@@ -26,6 +27,7 @@ const createQuestionRules = [
     requiredString('correctAnswer', 'الإجابة الصحيحة', { min: 1, max: 500 }),
     optionalString('explanation', 'التفسير', { max: 2000 }),
     optionalEnumBody('difficulty', 'الصعوبة', ['easy', 'medium', 'hard']),
+    optionalMediaRef('imageUrl', 'صورة السؤال'),
 ];
 
 const createQuestionBankRules = [
@@ -48,6 +50,10 @@ const trainingDataEditRules = [
     body('proposedChanges').isObject().withMessage('التعديلات المقترحة غير صالحة'),
 ];
 
+const coachContentListRules = [
+    requiredEnumBody('contentType', 'نوع المحتوى', ['theory', 'shared', 'specific', 'video']),
+];
+
 const reviewEditRequestRules = [
     requiredEnumBody('status', 'قرار المراجعة', ['approved', 'rejected']),
     optionalString('reviewNote', 'ملاحظة المراجعة', { max: 500 }),
@@ -63,6 +69,7 @@ const createTheoryContentRules = [
     body('isSample').optional().isBoolean().withMessage(msg.mustBeBoolean('عينة مجانية')),
     body('sampleTier').optional().isIn(['partial', 'full']).withMessage(msg.mustBeIn('مستوى العينة', ['partial', 'full'])),
     optionalEnumBody('unlockMode', 'وضع الفتح', ['progressive', 'full']),
+    optionalMediaRef('imageUrl', 'صورة المقال'),
 ];
 
 const createSharedContentRules = [
@@ -70,7 +77,7 @@ const createSharedContentRules = [
     requiredString('title', 'العنوان', { min: 2, max: 300 }),
     requiredString('body', 'المحتوى', { min: 10, max: 50000 }),
     optionalInt('order', 'الترتيب', { min: 0, max: 1000 }),
-    optionalString('mediaUrl', 'رابط الوسائط', { max: 500 }),
+    optionalMediaRef('mediaUrl', 'صورة المحتوى'),
 ];
 
 const createSpecificContentRules = [
@@ -80,6 +87,7 @@ const createSpecificContentRules = [
     requiredString('title', 'العنوان', { min: 2, max: 300 }),
     requiredString('body', 'المحتوى', { min: 10, max: 50000 }),
     optionalInt('order', 'الترتيب', { min: 0, max: 1000 }),
+    optionalMediaRef('mediaUrl', 'صورة المحتوى'),
 ];
 
 const createPracticalVideoRules = [
@@ -90,6 +98,7 @@ const createPracticalVideoRules = [
     requiredString('url', 'رابط الفيديو', { min: 5, max: 500 }),
     requiredInt('durationSeconds', 'مدة الفيديو بالثواني', { min: 1, max: 7200 }),
     optionalInt('order', 'الترتيب', { min: 0, max: 1000 }),
+    optionalMediaRef('thumbnailUrl', 'صورة مصغّرة للفيديو'),
 ];
 
 const contentUnlockRules = [
@@ -103,6 +112,7 @@ module.exports = {
     createQuestionBankRules,
     questionEditRequestRules,
     trainingDataEditRules,
+    coachContentListRules,
     reviewEditRequestRules,
     createTheoryContentRules,
     createSharedContentRules,

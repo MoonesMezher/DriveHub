@@ -6,6 +6,8 @@ const {
     stringArrayBody,
     requiredEnumBody,
     optionalBoolean,
+    requiredString,
+    requiredPhone,
 } = require('./chains');
 
 const assignInstructorRules = [
@@ -21,6 +23,12 @@ const assignInstructorRules = [
     stringArrayBody('licenseCategories', 'فئات الرخص', { min: 1, max: 10 }),
     requiredEnumBody('gender', 'الجنس', ['male', 'female']),
     optionalBoolean('isFemaleCoach', 'مدربة'),
+    requiredString('name', 'الاسم', { min: 2, max: 100 }).optional({ values: 'null' }),
+    requiredPhone('phone').optional({ values: 'null' }),
+    body('password')
+        .optional({ values: 'null' })
+        .isLength({ min: 8, max: 128 })
+        .withMessage('كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
 ];
 
 const updateInstructorRules = [

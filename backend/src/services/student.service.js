@@ -6,6 +6,7 @@ const {
     Notification,
     PracticeExam,
     TrainingCourse,
+    TrafficExamSchedule,
 } = require('../models');
 const { getActiveEnrollment } = require('../helpers/enrollment.helper');
 
@@ -27,12 +28,22 @@ class StudentService {
 
         let statistics = null;
         let courseDaysRemaining = null;
+        let courseLaunch = null;
+        let upcomingExam = null;
+
         if (enrollment) {
             statistics = await StudentStatistics.findOne({ enrollmentId: enrollment._id }).lean();
             const course = enrollment.courseId
-                ? await TrainingCourse.findById(enrollment.courseId).select('endDate launchDate durationDays').lean()
+                ? await TrainingCourse.findById(enrollment.courseId).select('endDate launchDate durationDays status categoryCode').lean()
                 : null;
             if (course) {
+                if (course.launchDate) {
+                    courseLaunch = {
+                        launchDate: course.launchDate,
+                        categoryCode: course.categoryCode,
+                        status: course.status,
+                    };
+                }
                 const endDate = course.endDate
                     || (course.launchDate
                         ? new Date(new Date(course.launchDate).getTime() + (course.durationDays || 0) * 86400000)
@@ -42,6 +53,15 @@ class StudentService {
                     courseDaysRemaining = Math.max(0, Math.ceil(diffMs / 86400000));
                 }
             }
+
+            upcomingExam = await TrafficExamSchedule.findOne({
+                studentId: userId,
+                status: 'scheduled',
+                visibleToStudent: true,
+                examDate: { $gte: new Date(Date.now() - 86400000) },
+            })
+                .sort({ examDate: 1 })
+                .lean();
         }
 
         return {
@@ -53,10 +73,13 @@ class StudentService {
                     subTypeCode: enrollment.subTypeCode,
                     school: enrollment.schoolId,
                     course: enrollment.courseId,
+                    paymentDeadline: enrollment.paymentDeadline,
                 }
                 : null,
             statistics,
             courseDaysRemaining,
+            courseLaunch,
+            upcomingExam,
             unreadNotifications: unreadCount,
             upcomingLesson,
             lastPractice: recentPractice,
@@ -80,13 +103,30 @@ class StudentService {
             };
         }
 
-        const statistics = await StudentStatistics.findOne({ enrollmentId: enrollment._id }).lean();
-        const practiceCount = await PracticeExam.countDocuments({ userId, enrollmentId: enrollment._id });
         const lessonsCompleted = await PracticalLesson.countDocuments({
             studentId: userId,
             enrollmentId: enrollment._id,
             status: 'completed',
         });
+
+        const verificationService = require('./verification.service');
+        let statsDoc = await StudentStatistics.findOne({ enrollmentId: enrollment._id });
+        if (!statsDoc) {
+            statsDoc = await StudentStatistics.create({
+                userId,
+                enrollmentId: enrollment._id,
+                progressPercent: 0,
+                lessonsCompleted,
+            });
+        } else if (!statsDoc.userId) {
+            statsDoc.userId = userId;
+            await statsDoc.save();
+        }
+
+        const statistics = statsDoc.toObject();
+        const practiceCount = await PracticeExam.countDocuments({ userId, enrollmentId: enrollment._id });
+
+        const verification = await verificationService.ensureStatisticsToken(enrollment._id);
 
         return {
             enrollment: {
@@ -94,14 +134,17 @@ class StudentService {
                 status: enrollment.status,
                 categoryCode: enrollment.categoryCode,
             },
-            statistics: statistics || {
-                progressPercent: 0,
-                practiceScores: [],
-                lessonsCompleted,
-                lessonsTotal: 0,
+            statistics: {
+                progressPercent: statistics.progressPercent ?? 0,
+                practiceScores: statistics.practiceScores ?? [],
+                lessonsCompleted: statistics.lessonsCompleted ?? lessonsCompleted,
+                lessonsTotal: statistics.lessonsTotal ?? 0,
+                attendancePercent: statistics.attendancePercent ?? 0,
+                averageLessonRating: statistics.averageLessonRating ?? null,
             },
             practiceCount,
             lessonsCompleted,
+            verification: verification || null,
         };
     }
 }

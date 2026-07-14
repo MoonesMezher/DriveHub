@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader, AsyncContent, Card, Badge, Icon } from '@/components/ui'
 import { VideoEmbed } from '@/components/ui/ContentMedia'
 import { studentService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
+import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
 const formatDuration = (seconds) => {
   if (!seconds) return '—'
@@ -12,30 +12,24 @@ const formatDuration = (seconds) => {
   return secs ? `${mins}:${String(secs).padStart(2, '0')}` : `${mins} د`
 }
 
-const isVideoWatched = (video, progressPercent, maxPhase) => {
-  if (maxPhase <= 0) return false
-  const watchedThroughPhase = Math.ceil((progressPercent / 100) * maxPhase)
-  return (video.phase ?? 0) < watchedThroughPhase
-}
-
 export const StudentVideosPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['student', 'videos'],
     queryFn: async () => unwrap(await studentService.listVideos()),
   })
 
-  const dashboardQuery = useQuery({
-    queryKey: ['student', 'dashboard'],
-    queryFn: async () => unwrap(await studentService.dashboard()),
+  const unlockQuery = useQuery({
+    queryKey: ['student', 'unlock'],
+    queryFn: async () => unwrap(await studentService.getUnlock()),
   })
 
   const items = data?.items ?? []
-  const progressPercent = dashboardQuery.data?.dashboard?.statistics?.progressPercent ?? 0
-
-  const maxPhase = useMemo(
-    () => Math.max(...items.map((v) => v.phase ?? 0), 0),
-    [items],
-  )
+  const unlockMode = unlockQuery.data?.mode || 'progressive'
+  const maxUnlockedPhase = unlockQuery.data?.maxUnlockedPhase ?? 1
+  const totalPhases = unlockQuery.data?.totalPhases ?? maxUnlockedPhase
+  const lockedPhaseCount = unlockMode === 'progressive' && totalPhases > maxUnlockedPhase
+    ? totalPhases - maxUnlockedPhase
+    : 0
 
   return (
     <div dir="rtl">
@@ -45,20 +39,24 @@ export const StudentVideosPage = () => {
         description="شاهد دروس القيادة العملية المرئية"
       />
 
+      {unlockMode === 'progressive' && totalPhases > 0 && (
+        <p className="mb-loose text-body-md text-on-surface-variant">
+          الفيديوهات المتاحة حسب تقدّمك النظري — مفتوح حتى المرحلة {maxUnlockedPhase} من {totalPhases}
+        </p>
+      )}
+
       <AsyncContent
         isLoading={isLoading}
         error={error}
-        isEmpty={!items.length}
+        isEmpty={!items.length && !lockedPhaseCount}
         emptyIcon="play_circle"
         emptyTitle="لا توجد فيديوهات"
         emptyDescription="ستظهر الفيديوهات التدريبية هنا عند توفرها"
       >
         {() => (
-        <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((video) => {
-            const watched = isVideoWatched(video, progressPercent, maxPhase)
-
-            return (
+        <div className="space-y-comfortable">
+          <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((video) => (
               <Card key={video._id} hoverable padding="none" className="overflow-hidden">
                 <div className="relative">
                   {video.url ? (
@@ -66,7 +64,7 @@ export const StudentVideosPage = () => {
                   ) : video.thumbnailUrl ? (
                     <div className="relative aspect-video bg-surface-container">
                       <img
-                        src={video.thumbnailUrl}
+                        src={resolveMediaUrl(video.thumbnailUrl)}
                         alt={video.title}
                         className="h-full w-full object-cover"
                         loading="lazy"
@@ -79,12 +77,6 @@ export const StudentVideosPage = () => {
                     <div className="flex aspect-video items-center justify-center bg-surface-container">
                       <Icon name="videocam" size={40} className="text-on-surface-variant" />
                     </div>
-                  )}
-                  {watched && (
-                    <Badge variant="success" className="absolute start-3 top-3">
-                      <Icon name="check_circle" size={14} className="me-1" />
-                      مشاهد
-                    </Badge>
                   )}
                 </div>
                 <div className="space-y-3 p-comfortable">
@@ -111,8 +103,19 @@ export const StudentVideosPage = () => {
                   )}
                 </div>
               </Card>
-            )
-          })}
+            ))}
+          </div>
+
+          {lockedPhaseCount > 0 && (
+            <Card className="border-dashed border-outline-variant bg-surface-container-low">
+              <div className="flex items-center gap-3 text-on-surface-variant">
+                <Icon name="lock" size={24} />
+                <p className="text-body-md">
+                  فيديوهات المراحل التالية مقفلة — أكمل الفصل النظري الحالي لفتحها
+                </p>
+              </div>
+            </Card>
+          )}
         </div>
         )}
       </AsyncContent>

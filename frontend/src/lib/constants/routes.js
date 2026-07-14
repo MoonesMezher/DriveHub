@@ -10,6 +10,7 @@ export const ROUTES = {
   PRIVACY: '/privacy',
   ADD_SCHOOL: '/add-school',
   LOGIN: '/login',
+  FORGOT_PASSWORD: '/forgot-password',
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',

@@ -1,15 +1,99 @@
 const config = require('../config');
 const { connectDatabase, disconnectDatabase } = require('../config/database');
 const { LicenseCategory, LicenseSubType } = require('../models');
+const { normalizePrerequisites } = require('../helpers/licensePrerequisite.helper');
+
+const LICENSE_PREREQ = (items) => normalizePrerequisites(items);
 
 const CATEGORIES = [
-    { code: 'B', name: 'خصوصي', briefDesc: 'سيارات خاصة', minAge: 18, order: 1 },
-    { code: 'C', name: 'عمومي صغير', briefDesc: 'حتى 10 ركاب', minAge: 21, prerequisites: ['B'], order: 2 },
-    { code: 'D1', name: 'عمومي متوسط', briefDesc: 'حتى 24 راكب', minAge: 23, prerequisites: ['C'], order: 3 },
-    { code: 'D2', name: 'عمومي كبير', briefDesc: 'باصات وشاحنات', minAge: 25, prerequisites: ['D1'], order: 4 },
-    { code: 'A', name: 'دراجة نارية', briefDesc: 'دراجات نارية', minAge: 18, order: 5 },
-    { code: 'H', name: 'آليات زراعية', briefDesc: 'آليات زراعية', minAge: 18, order: 6 },
-    { code: 'W', name: 'ذوي احتياجات', briefDesc: 'تقرير طبي مطلوب', minAge: 18, order: 7 },
+    {
+        code: 'B',
+        name: 'غير تجاري',
+        briefDesc: 'غير تجاري — حتى 8 ركاب',
+        fullDesc: 'رخصة غير تجارية مخصصة لقيادة السيارات الخاصة والكرافانات بعدد ركاب لا يتجاوز 8 ركاب.',
+        requirementsIntro: 'متطلبات رخصة B (غير تجارية)',
+        minAge: 18,
+        vehicleTypes: 'سيارات خاصة وكرافان حتى 8 ركاب',
+        order: 1,
+    },
+    {
+        code: 'C',
+        name: 'فئة C',
+        briefDesc: 'بعد B لثلاث سنوات',
+        fullDesc: 'فئة C تتطلب امتلاك رخصة B لمدة 3 سنوات على الأقل، وتغطي مركبات حتى 10 ركاب أو حمولة حتى 4 أطنان.',
+        requirementsIntro: 'متطلبات رخصة C',
+        minAge: 21,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'امتلاك رخصة B لمدة 3 سنوات', code: 'B', isRequired: true, type: 'license' },
+        ]),
+        vehicleTypes: 'مركبات حتى 10 ركاب أو حمولة حتى 4 أطنان',
+        order: 2,
+    },
+    {
+        code: 'D1',
+        name: 'فئة D1',
+        briefDesc: 'بعد C لسنتين',
+        fullDesc: 'فئة D1 تتطلب امتلاك رخصة C لمدة سنتين على الأقل، وتغطي مركبات حتى 24 راكباً أو حمولة حتى 11 طناً.',
+        requirementsIntro: 'متطلبات رخصة D1',
+        minAge: 23,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'امتلاك رخصة C لمدة سنتين', code: 'C', isRequired: true, type: 'license' },
+        ]),
+        vehicleTypes: 'مركبات حتى 24 راكباً أو حمولة حتى 11 طناً',
+        order: 3,
+    },
+    {
+        code: 'D2',
+        name: 'فئة D2',
+        briefDesc: 'باصات وشاحنات',
+        fullDesc: 'فئة D2 تتطلب امتلاك رخصة D1 لمدة سنتين على الأقل، وتغطي قيادة الباصات والشاحنات.',
+        requirementsIntro: 'متطلبات رخصة D2',
+        minAge: 25,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'امتلاك رخصة D1 لمدة سنتين', code: 'D1', isRequired: true, type: 'license' },
+        ]),
+        vehicleTypes: 'باصات وشاحنات',
+        order: 4,
+    },
+    {
+        code: 'A',
+        name: 'فئة A',
+        briefDesc: 'دراجات نارية — فحص خاص',
+        fullDesc: 'فئة A مخصصة للدراجات النارية وتتطلب اجتياز فحص خاص للدراجات النارية.',
+        requirementsIntro: 'متطلبات رخصة A',
+        minAge: 18,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'اجتياز فحص خاص بالدراجات النارية', type: 'basic', isRequired: true },
+        ]),
+        vehicleTypes: 'دراجات نارية',
+        order: 5,
+    },
+    {
+        code: 'H',
+        name: 'فئة H',
+        briefDesc: 'للأغراض المخصصة',
+        fullDesc: 'فئة H مخصصة للأغراض الخاصة بقيادة الآليات الزراعية.',
+        requirementsIntro: 'متطلبات رخصة H',
+        minAge: 18,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'ترخيص لغرض مخصص (آليات زراعية)', type: 'basic', isRequired: true },
+        ]),
+        vehicleTypes: 'الآليات الزراعية',
+        order: 6,
+    },
+    {
+        code: 'W',
+        name: 'فئة W',
+        briefDesc: 'ذوو الاحتياجات الخاصة',
+        fullDesc: 'فئة W مخصصة لقيادة مركبات ذوي الاحتياجات الخاصة وتتطلب تقريراً طبياً معتمداً.',
+        requirementsIntro: 'متطلبات رخصة W',
+        minAge: 18,
+        prerequisites: LICENSE_PREREQ([
+            { label: 'تقرير طبي معتمد', type: 'medical', isRequired: true },
+        ]),
+        vehicleTypes: 'مركبات ذوي الاحتياجات الخاصة',
+        order: 7,
+    },
 ];
 
 const SUB_TYPES = [
@@ -43,4 +127,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { licenseSeed };
+module.exports = { licenseSeed, CATEGORIES };

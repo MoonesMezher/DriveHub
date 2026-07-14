@@ -7,7 +7,7 @@ class UserService {
     async getProfile(userId) {
         const user = await User.findById(userId);
         if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
-        return pick(user.toObject(), ['_id', 'name', 'email', 'phone', 'status', 'profileData', 'activeContext']);
+        return pick(user.toObject(), ['_id', 'name', 'email', 'phone', 'status', 'walletBalance', 'profileData', 'activeContext']);
     }
 
     async updateProfile(userId, payload) {

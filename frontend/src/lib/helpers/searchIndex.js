@@ -18,7 +18,7 @@ export const buildLocalSearchIndex = (activeRole) => {
   const roleConfig = SIDEBAR_BY_ROLE[activeRole]
   const pages = [...SHARED_PAGES]
 
-  if (activeRole !== ROLES.TRAFFIC && activeRole !== ROLES.MANAGER) {
+  if (activeRole !== ROLES.TRAFFIC && activeRole !== ROLES.MANAGER && activeRole !== ROLES.COACH) {
     pages.push({ to: ROUTES.ENROLL, label: 'اشتراكي', icon: 'school' })
   }
 

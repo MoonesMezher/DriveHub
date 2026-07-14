@@ -9,6 +9,8 @@ export const DataTable = ({
   emptyPreset = 'no-data',
   className = '',
   mobileCardRender,
+  onRowClick,
+  rowClassName,
 }) => {
   if (!rows?.length) {
     return (
@@ -39,11 +41,19 @@ export const DataTable = ({
           <tbody>
             {rows.map((row, idx) => (
               <tr
-                key={row.id ?? idx}
-                className="border-b border-outline-variant/60 transition-colors last:border-0 hover:bg-surface-container-low"
+                key={row.id ?? row._id ?? idx}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={cn(
+                  'border-b border-outline-variant/60 transition-colors last:border-0 hover:bg-surface-container-low',
+                  onRowClick && 'cursor-pointer',
+                  typeof rowClassName === 'function' ? rowClassName(row) : rowClassName,
+                )}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className="px-comfortable py-3 text-on-surface">
+                  <td
+                    key={col.key}
+                    className={cn('px-comfortable py-3 text-on-surface', col.className)}
+                  >
                     {col.render ? col.render(row) : row[col.key]}
                   </td>
                 ))}

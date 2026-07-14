@@ -14,11 +14,24 @@ module.exports = {
         (req) => studentService.getStatistics(req._user.userId),
         { wrap: (d) => ({ statistics: d }) },
     ),
-    listTheory: makeHandler((req) => contentService.listTheory(req.query), { wrap: (d) => ({ items: d }) }),
-    getTheory: makeHandler((req) => contentService.getTheoryById(req.params.id), { wrap: (d) => ({ content: d }) }),
+    listTheory: makeHandler(
+        (req) => contentService.listTheory(req.query, req._user.userId),
+        { wrap: (d) => ({ items: d }) },
+    ),
+    getTheory: makeHandler(
+        (req) => contentService.getTheoryById(req.params.id, req._user.userId),
+        { wrap: (d) => ({ content: d }) },
+    ),
     listShared: makeHandler((req) => contentService.listShared(req.query), { wrap: (d) => ({ items: d }) }),
     listSpecific: makeHandler((req) => contentService.listSpecific(req.query), { wrap: (d) => ({ items: d }) }),
-    listVideos: makeHandler((req) => contentService.listVideos(req.query), { wrap: (d) => ({ items: d }) }),
+    listVideos: makeHandler(
+        (req) => contentService.listVideos(req.query, req._user.userId),
+        { wrap: (d) => ({ items: d }) },
+    ),
+    completeTheory: makeHandler(
+        (req) => contentService.completeTheoryContent(req._user.userId, req.params.id),
+        { wrap: (d) => d },
+    ),
     getUnlockMode: makeHandler((req) => contentService.getUnlockMode(req._user.userId, req.query)),
     setUnlockMode: makeHandler((req) => contentService.setUnlockMode(req._user.userId, req.body), { status: 201 }),
     startPractice: makeHandler((req) => examService.startPractice(req._user.userId, req.body), { status: 201 }),

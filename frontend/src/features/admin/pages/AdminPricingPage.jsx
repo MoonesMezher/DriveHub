@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
-  Alert, FormSection,
+  Alert, FormSection, LicenseCategorySelect,
 } from '@/components/ui'
 import { adminService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
@@ -113,8 +113,7 @@ export const AdminPricingPage = () => {
           <Card title="إضافة / تحديث سعر">
             <form onSubmit={handleUpsert}>
               <FormSection>
-                <Input
-                  label="رمز الفئة"
+                <LicenseCategorySelect
                   value={form.categoryCode}
                   onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
                   required

@@ -34,10 +34,19 @@ const emptyTrafficForm = {
   password: '',
 }
 
+const emptyWalletForm = {
+  userId: '',
+  userName: '',
+  amount: '',
+  note: '',
+}
+
 export const AdminUsersPage = () => {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [showTrafficForm, setShowTrafficForm] = useState(false)
+  const [walletTarget, setWalletTarget] = useState(null)
+  const [walletForm, setWalletForm] = useState(emptyWalletForm)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [trafficForm, setTrafficForm] = useState(emptyTrafficForm)
@@ -74,6 +83,24 @@ export const AdminUsersPage = () => {
     onError: (err) => toast.error(err, 'فشل تحديث المستخدم'),
   })
 
+  const walletQuery = useQuery({
+    queryKey: ['admin', 'wallet', walletTarget?._id],
+    queryFn: () => adminService.getUserWallet(walletTarget._id).then(unwrap),
+    enabled: Boolean(walletTarget?._id),
+  })
+
+  const creditWalletMutation = useMutation({
+    mutationFn: ({ userId, amount, note }) =>
+      adminService.creditUserWallet(userId, { amount: Number(amount), note: note.trim() || undefined }).then(unwrap),
+    onSuccess: () => {
+      toast.success('تم شحن الرصيد')
+      setWalletForm(emptyWalletForm)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'wallet', walletTarget?._id] })
+    },
+    onError: (err) => toast.error(err, 'فشل شحن الرصيد'),
+  })
+
   const createTrafficMutation = useMutation({
     mutationFn: (data) => adminService.createTrafficAccount(data).then(unwrap),
     onSuccess: (data, variables) => {
@@ -96,6 +123,21 @@ export const AdminUsersPage = () => {
     })
   }
 
+  const handleCreditWallet = (e) => {
+    e.preventDefault()
+    if (!walletTarget) return
+    creditWalletMutation.mutate({
+      userId: walletTarget._id,
+      amount: walletForm.amount,
+      note: walletForm.note,
+    })
+  }
+
+  const openWalletPanel = (user) => {
+    setWalletTarget(user)
+    setWalletForm({ userId: user._id, userName: user.name, amount: '', note: '' })
+  }
+
   const columns = [
     {
       key: 'name',
@@ -104,6 +146,11 @@ export const AdminUsersPage = () => {
     },
     { key: 'email', label: 'البريد' },
     { key: 'phone', label: 'الهاتف', render: (user) => user.phone || '—' },
+    {
+      key: 'walletBalance',
+      label: 'الرصيد',
+      render: (user) => `${user.walletBalance ?? 0} د.أ`,
+    },
     {
       key: 'roles',
       label: 'الأدوار',
@@ -128,26 +175,32 @@ export const AdminUsersPage = () => {
     {
       key: 'actions',
       label: 'إجراءات',
-      render: (user) =>
-        user.status === 'active' ? (
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => suspendMutation.mutate({ id: user._id, status: 'suspended' })}
-            disabled={suspendMutation.isPending}
-          >
-            إيقاف
+      render: (user) => (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => openWalletPanel(user)}>
+            شحن رصيد
           </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => suspendMutation.mutate({ id: user._id, status: 'active' })}
-            disabled={suspendMutation.isPending}
-          >
-            تفعيل
-          </Button>
-        ),
+          {user.status === 'active' ? (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => suspendMutation.mutate({ id: user._id, status: 'suspended' })}
+              disabled={suspendMutation.isPending}
+            >
+              إيقاف
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => suspendMutation.mutate({ id: user._id, status: 'active' })}
+              disabled={suspendMutation.isPending}
+            >
+              تفعيل
+            </Button>
+          )}
+        </div>
+      ),
     },
   ]
 
@@ -188,6 +241,53 @@ export const AdminUsersPage = () => {
                 <Button type="submit" variant="ultra" disabled={createTrafficMutation.isPending}>إنشاء الحساب</Button>
               </div>
             </form>
+          </FormSection>
+        </Card>
+      )}
+
+      {walletTarget && (
+        <Card title={`شحن رصيد — ${walletTarget.name}`} className="mb-loose">
+          <FormSection description="أضف رصيداً بعد استلام الدفع النقدي أو التحويل البنكي خارج المنصة.">
+            <p className="mb-4 text-body-md text-on-surface-variant">
+              الرصيد الحالي: <span className="font-bold text-primary">{walletQuery.data?.balance ?? walletTarget.walletBalance ?? 0} د.أ</span>
+            </p>
+            <form onSubmit={handleCreditWallet} className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="المبلغ (د.أ)"
+                type="number"
+                min="1"
+                value={walletForm.amount}
+                onChange={(e) => setWalletForm((f) => ({ ...f, amount: e.target.value }))}
+                required
+              />
+              <Input
+                label="ملاحظة أو مرجع إيصال"
+                value={walletForm.note}
+                onChange={(e) => setWalletForm((f) => ({ ...f, note: e.target.value }))}
+                placeholder="رقم إيصال أو ملاحظة"
+              />
+              <div className="flex flex-wrap gap-2 sm:col-span-2">
+                <Button type="submit" variant="ultra" disabled={creditWalletMutation.isPending}>
+                  إضافة الرصيد
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setWalletTarget(null)}>
+                  إغلاق
+                </Button>
+              </div>
+            </form>
+            {walletQuery.data?.transactions?.length > 0 && (
+              <div className="mt-6 border-t border-outline-variant pt-4">
+                <p className="mb-2 text-label-sm font-medium text-on-surface">آخر المعاملات</p>
+                <ul className="space-y-2 text-label-sm text-on-surface-variant">
+                  {walletQuery.data.transactions.slice(0, 5).map((tx) => (
+                    <li key={tx._id} className="flex justify-between gap-2">
+                      <span>{tx.type === 'admin_credit' ? 'شحن إداري' : tx.type === 'enrollment_payment' ? 'دفع اشتراك' : tx.type}</span>
+                      <span>{tx.amount} د.أ — {formatDate(tx.createdAt)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </FormSection>
         </Card>
       )}

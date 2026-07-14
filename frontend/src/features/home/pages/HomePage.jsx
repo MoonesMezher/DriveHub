@@ -1,4 +1,5 @@
 import { HomeHero } from '@/features/home/components/HomeHero'
+import { AdsBanner } from '@/components/ui/AdsBanner'
 import {
   TrustStrip,
   TestimonialsRow,
@@ -13,6 +14,7 @@ import {
 export const HomePage = () => (
   <div className="page-container space-y-loose py-8">
     <HomeHero />
+    <AdsBanner placement="home" />
     <TrustStrip />
     <JourneySteps />
     <PopularLicenses />

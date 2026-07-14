@@ -426,7 +426,7 @@ export const TrafficResultsPage = () => {
           {tab === 'import' && (
             <FormSection
               title="رفع نتائج من Excel"
-              description="ارفع ملف Excel (.xlsx / .xls) يحوي نتائج عدة طلاب دفعة واحدة."
+              description="ارفع ملف Excel (.xlsx / .xls) يحوي نتائج عدة طلاب دفعة واحدة. يُطابق كل صف اشتراكاً عبر البريد الإلكتروني وفئة الرخصة — راجع دليل الأعمدة. نموذج جاهز: docs/traffic-results-import-sample.xlsx"
             >
               <FileUpload
                 accept=".xlsx,.xls,.csv"

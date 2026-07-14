@@ -316,7 +316,8 @@ const userFolder = folder('04 - User (Authenticated)', [
     }),
     request({ name: 'Get Enrollment by ID', method: 'GET', path: 'enrollments/{{enrollmentId}}', tests: successTests() }),
     request({ name: 'Initiate Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/initiate', tests: successTests() }),
-    request({ name: 'Confirm Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/confirm', body: jsonBody({ amount: 500000, gatewayRef: 'POSTMAN-MOCK-001' }), tests: successTests() }),
+    request({ name: 'Claim Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/claim', body: jsonBody({ studentReference: 'POSTMAN-REF-001' }), tests: successTests() }),
+    request({ name: 'Confirm Payment (Manager)', method: 'POST', path: 'manager/enrollments/{{enrollmentId}}/payment/confirm', body: jsonBody({ amount: 500000, gatewayRef: 'POSTMAN-MANUAL-001' }), tests: successTests() }),
     request({ name: 'Cancel Pending Enrollment', method: 'DELETE', path: 'enrollments/{{enrollmentId}}', tests: successTests(), description: 'Only works for pending enrollments.' }),
     request({ name: 'Create Retake Enrollment', method: 'POST', path: 'enrollments/retake', body: jsonBody({ priorEnrollmentId: '{{enrollmentId}}', retakeScope: 'full' }), tests: successTests() }),
   ], '', bearerAuth('registeredToken')),
@@ -538,15 +539,8 @@ const managerFolder = folder('07 - Manager Portal', [
     }),
     request({ name: 'Submit Roster', method: 'POST', path: 'manager/rosters/{{rosterId}}/submit', body: jsonBody({ status: 'submitted' }), tests: successTests() }),
   ]),
-  folder('Schedule & Results', [
+  folder('Schedule', [
     request({ name: 'School Schedule', method: 'GET', path: 'manager/schedule', tests: successTests() }),
-    request({
-      name: 'Record Final Result',
-      method: 'POST',
-      path: 'manager/exam-results',
-      body: jsonBody({ enrollmentId: '{{enrollmentId}}', theoryScore: 85, practicalScore: 90, finalStatus: 'passed', attemptNumber: 1 }),
-      tests: successTests(),
-    }),
   ]),
 ], 'School manager portal. Scoped to manager school. Use `managerToken`.', bearerAuth('managerToken'));
 
@@ -722,7 +716,8 @@ const workflowsFolder = folder('10 - End-to-End Workflows', [
     request({ name: '6. Accept Enrollment', method: 'POST', path: 'manager/enrollments/{{enrollmentId}}/accept', body: jsonBody({ paymentDeadlineDays: 7 }), tests: successTests() }),
     request({ name: '7. Login Student & Pay', method: 'POST', path: 'auth/login', auth: { type: 'noauth' }, body: jsonBody({ email: SEED.studentEmail, password: SEED.password, portal: 'student' }), tests: loginTests('accessToken') }),
     request({ name: '8. Initiate Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/initiate', tests: successTests() }),
-    request({ name: '9. Confirm Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/confirm', body: jsonBody({ amount: 500000, gatewayRef: 'FLOW-MOCK-001' }), tests: successTests() }),
+    request({ name: '9. Claim Payment', method: 'POST', path: 'enrollments/{{enrollmentId}}/payment/claim', body: jsonBody({ studentReference: 'FLOW-REF-001' }), tests: successTests() }),
+    request({ name: '10. Confirm Payment (Manager)', method: 'POST', path: 'manager/enrollments/{{enrollmentId}}/payment/confirm', body: jsonBody({ amount: 500000, gatewayRef: 'FLOW-MANUAL-001' }), tests: successTests() }),
   ], 'Full enrollment: register → enroll → accept → pay'),
 ], 'Run with Collection Runner in order.');
 

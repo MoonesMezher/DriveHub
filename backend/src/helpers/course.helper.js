@@ -15,10 +15,17 @@ const computeTrainingEnd = (launchDate) => addDays(launchDate, COURSE_DURATION_D
 
 const canLaunchNewCourse = (previousLaunchDate) => canLaunchCourse(previousLaunchDate, 15);
 
+const isTrainingPeriodComplete = (course) => {
+    if (!course?.launchDate) return false;
+    if (course.endDate && new Date(course.endDate) <= new Date()) return true;
+    return canLaunchCourse(course.launchDate, COURSE_DURATION_DAYS);
+};
+
 module.exports = {
     isRegistrationOpen,
     isCourseFull,
     computeLaunchWindow,
     computeTrainingEnd,
     canLaunchNewCourse,
+    isTrainingPeriodComplete,
 };

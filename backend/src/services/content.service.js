@@ -13,6 +13,7 @@ const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const { getActiveEnrollment } = require('../helpers/enrollment.helper');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
+const mediaService = require('./media.service');
 
 const CONTENT_MODELS = {
     theory: TheoryContent,
@@ -38,20 +39,165 @@ class ContentService {
         return filter;
     }
 
-    async listTheory(query = {}) {
-        return TheoryContent.find(this._buildFilter(query))
+    async _getStudentCategoryCode(userId, query = {}) {
+        if (query.categoryCode) return query.categoryCode.toUpperCase();
+        const enrollment = await getActiveEnrollment(userId);
+        return enrollment?.categoryCode?.toUpperCase() || null;
+    }
+
+    async _getOrCreateUnlockRecord(userId, categoryCode, enrollmentId = null) {
+        const code = categoryCode.toUpperCase();
+        let record = await ContentUnlockMode.findOne({ userId, categoryCode: code });
+        if (!record) {
+            const enrollment = enrollmentId
+                ? { _id: enrollmentId }
+                : await getActiveEnrollment(userId);
+            record = await ContentUnlockMode.create({
+                userId,
+                categoryCode: code,
+                mode: enrollment ? 'full' : 'progressive',
+                maxUnlockedPhase: enrollment ? null : 1,
+                enrollmentId: enrollment?._id || enrollmentId || null,
+                unlockedAt: enrollment ? new Date() : undefined,
+            });
+        }
+        return record;
+    }
+
+    async _getMaxPhase(categoryCode, subTypeCode = null) {
+        const filter = { isActive: true, categoryCode: categoryCode.toUpperCase() };
+        if (subTypeCode) filter.subTypeCode = subTypeCode.toUpperCase();
+        const [theoryMax, videoMax] = await Promise.all([
+            TheoryContent.findOne(filter).sort({ phase: -1 }).select('phase').lean(),
+            PracticalVideo.findOne(filter).sort({ phase: -1 }).select('phase').lean(),
+        ]);
+        return Math.max(theoryMax?.phase ?? 1, videoMax?.phase ?? 1, 1);
+    }
+
+    _applyProgressivePhaseFilter(filter, maxUnlockedPhase) {
+        return {
+            ...filter,
+            $or: [
+                { phase: { $lte: maxUnlockedPhase } },
+                { phase: 0 },
+            ],
+        };
+    }
+
+    async _resolveStudentUnlock(userId, query = {}) {
+        const categoryCode = await this._getStudentCategoryCode(userId, query);
+        if (!categoryCode) {
+            return { mode: 'full', categoryCode: null, maxUnlockedPhase: null, totalPhases: null };
+        }
+
+        const enrollment = await getActiveEnrollment(userId);
+        const record = await this._getOrCreateUnlockRecord(
+            userId,
+            categoryCode,
+            enrollment?._id || null,
+        );
+        const totalPhases = await this._getMaxPhase(categoryCode, enrollment?.subTypeCode);
+
+        return {
+            mode: record.mode,
+            categoryCode,
+            maxUnlockedPhase: record.maxUnlockedPhase ?? 1,
+            totalPhases,
+            viewedContentIds: record.viewedContentIds || [],
+        };
+    }
+
+    async _assertTheoryAccess(userId, content) {
+        const unlock = await this._resolveStudentUnlock(userId, { categoryCode: content.categoryCode });
+        if (unlock.mode === 'full') return unlock;
+        const phase = content.phase ?? 0;
+        if (phase === 0 || phase <= unlock.maxUnlockedPhase) return unlock;
+        throw new ApiError(403, ERR.CONTENT_LOCKED);
+    }
+
+    async _maybeAdvancePhase(userId, categoryCode, phase) {
+        const code = categoryCode.toUpperCase();
+        const record = await ContentUnlockMode.findOne({ userId, categoryCode: code });
+        if (!record || record.mode !== 'progressive') return record;
+
+        const phaseItems = await TheoryContent.find({
+            isActive: true,
+            categoryCode: code,
+            phase,
+        }).select('_id').lean();
+
+        if (!phaseItems.length) return record;
+
+        const viewed = new Set((record.viewedContentIds || []).map((id) => id.toString()));
+        const allViewed = phaseItems.every((item) => viewed.has(item._id.toString()));
+        if (!allViewed || phase < record.maxUnlockedPhase) return record;
+
+        const totalPhases = await this._getMaxPhase(code);
+        if (record.maxUnlockedPhase >= totalPhases) return record;
+
+        record.maxUnlockedPhase = Math.min(totalPhases, record.maxUnlockedPhase + 1);
+        await record.save();
+        return record;
+    }
+
+    async listTheory(query = {}, userId = null) {
+        const filter = this._buildFilter(query);
+        if (userId) {
+            const unlock = await this._resolveStudentUnlock(userId, query);
+            if (unlock.mode === 'progressive' && unlock.categoryCode) {
+                Object.assign(filter, this._applyProgressivePhaseFilter(filter, unlock.maxUnlockedPhase));
+            }
+            if (!filter.categoryCode && unlock.categoryCode) {
+                filter.categoryCode = unlock.categoryCode;
+            }
+        }
+        return TheoryContent.find(filter)
             .sort({ phase: 1, order: 1 })
             .select('-interactiveQuestions.correctAnswer')
             .lean();
     }
 
-    async getTheoryById(id) {
+    async getTheoryById(id, userId = null) {
         const content = await TheoryContent.findOne({ _id: id, isActive: true }).lean();
         if (!content) throw new ApiError(404, ERR.CONTENT_NOT_FOUND);
+        if (userId) await this._assertTheoryAccess(userId, content);
         if (content.interactiveQuestions?.length) {
             content.interactiveQuestions = stripAnswers(content.interactiveQuestions);
         }
         return content;
+    }
+
+    async completeTheoryContent(userId, contentId) {
+        const content = await TheoryContent.findOne({ _id: contentId, isActive: true });
+        if (!content) throw new ApiError(404, ERR.CONTENT_NOT_FOUND);
+
+        const enrollment = await getActiveEnrollment(userId, { required: true });
+        const record = await this._getOrCreateUnlockRecord(userId, content.categoryCode, enrollment._id);
+
+        if (record.mode === 'progressive') {
+            const phase = content.phase ?? 0;
+            if (phase > 0 && phase > record.maxUnlockedPhase) {
+                throw new ApiError(403, ERR.CONTENT_LOCKED);
+            }
+        }
+
+        const contentOid = content._id;
+        const alreadyViewed = (record.viewedContentIds || []).some((id) => id.equals(contentOid));
+        if (!alreadyViewed) {
+            record.viewedContentIds = [...(record.viewedContentIds || []), contentOid];
+            await record.save();
+        }
+
+        const updated = await this._maybeAdvancePhase(userId, content.categoryCode, content.phase ?? 0);
+        const totalPhases = await this._getMaxPhase(content.categoryCode, enrollment.subTypeCode);
+
+        return {
+            contentId: content._id,
+            phase: content.phase,
+            maxUnlockedPhase: updated?.maxUnlockedPhase ?? record.maxUnlockedPhase,
+            totalPhases,
+            mode: record.mode,
+        };
     }
 
     async listShared(query = {}) {
@@ -66,8 +212,18 @@ class ContentService {
             .lean();
     }
 
-    async listVideos(query = {}) {
-        return PracticalVideo.find(this._buildFilter(query))
+    async listVideos(query = {}, userId = null) {
+        const filter = this._buildFilter(query);
+        if (userId) {
+            const unlock = await this._resolveStudentUnlock(userId, query);
+            if (unlock.mode === 'progressive' && unlock.categoryCode) {
+                Object.assign(filter, this._applyProgressivePhaseFilter(filter, unlock.maxUnlockedPhase));
+            }
+            if (!filter.categoryCode && unlock.categoryCode) {
+                filter.categoryCode = unlock.categoryCode;
+            }
+        }
+        return PracticalVideo.find(filter)
             .sort({ phase: 1, order: 1 })
             .lean();
     }
@@ -76,41 +232,89 @@ class ContentService {
         const categoryCode = (query.categoryCode || '').toUpperCase();
         if (!categoryCode) {
             const enrollment = await getActiveEnrollment(userId);
-            if (!enrollment) return { mode: 'progressive', categoryCode: null };
-            return ContentUnlockMode.findOne({ userId, categoryCode: enrollment.categoryCode }).lean()
-                || { mode: 'progressive', categoryCode: enrollment.categoryCode };
+            if (!enrollment) {
+                return { mode: 'progressive', categoryCode: null, maxUnlockedPhase: 1, totalPhases: null };
+            }
+            const unlock = await this._resolveStudentUnlock(userId, { categoryCode: enrollment.categoryCode });
+            return {
+                mode: unlock.mode,
+                categoryCode: enrollment.categoryCode,
+                maxUnlockedPhase: unlock.maxUnlockedPhase,
+                totalPhases: unlock.totalPhases,
+            };
         }
-        return ContentUnlockMode.findOne({ userId, categoryCode }).lean()
-            || { mode: 'progressive', categoryCode };
+        const unlock = await this._resolveStudentUnlock(userId, { categoryCode });
+        return {
+            mode: unlock.mode,
+            categoryCode,
+            maxUnlockedPhase: unlock.maxUnlockedPhase,
+            totalPhases: unlock.totalPhases,
+        };
     }
 
-    async setUnlockMode(userId, { categoryCode, mode, enrollmentId = null }) {
+    async grantFullContentAccess(userId, categoryCode, enrollmentId = null) {
+        return this.setUnlockMode(userId, {
+            categoryCode,
+            mode: 'full',
+            enrollmentId,
+        }, { staff: true });
+    }
+
+    async setUnlockMode(userId, { categoryCode, mode, enrollmentId = null }, { staff = false } = {}) {
+        if (!staff && mode === 'progressive') {
+            throw new ApiError(403, ERR.CONTENT_UNLOCK_STAFF_ONLY);
+        }
         const code = categoryCode.toUpperCase();
+        const update = {
+            userId,
+            categoryCode: code,
+            mode,
+            enrollmentId,
+            unlockedAt: new Date(),
+        };
+        if (mode === 'progressive') {
+            update.maxUnlockedPhase = 1;
+            update.viewedContentIds = [];
+        }
         return ContentUnlockMode.findOneAndUpdate(
             { userId, categoryCode: code },
-            { userId, categoryCode: code, mode, enrollmentId, unlockedAt: new Date() },
+            update,
             { upsert: true, new: true, runValidators: true },
         );
     }
 
+    async _normalizeContentImages(data, fields = []) {
+        const payload = { ...data };
+        for (const field of fields) {
+            if (!payload[field]) continue;
+            payload[field] = mediaService.normalizeImageRef(payload[field]);
+            await mediaService.assertMediaExists(payload[field]);
+        }
+        return payload;
+    }
+
     async createTheory(data, adminId) {
-        return TheoryContent.create({ ...data, categoryCode: data.categoryCode.toUpperCase(), updatedBy: adminId });
+        const payload = await this._normalizeContentImages(data, ['imageUrl']);
+        return TheoryContent.create({ ...payload, categoryCode: payload.categoryCode.toUpperCase(), updatedBy: adminId });
     }
 
     async createShared(data, adminId) {
-        return TrainingContentShared.create({ ...data, updatedBy: adminId });
+        const payload = await this._normalizeContentImages(data, ['mediaUrl']);
+        return TrainingContentShared.create({ ...payload, updatedBy: adminId });
     }
 
     async createSpecific(data, adminId) {
+        const payload = await this._normalizeContentImages(data, ['mediaUrl']);
         return TrainingContentSpecific.create({
-            ...data,
-            categoryCode: data.categoryCode.toUpperCase(),
+            ...payload,
+            categoryCode: payload.categoryCode.toUpperCase(),
             updatedBy: adminId,
         });
     }
 
     async createVideo(data) {
-        return PracticalVideo.create({ ...data, categoryCode: data.categoryCode.toUpperCase() });
+        const payload = await this._normalizeContentImages(data, ['thumbnailUrl']);
+        return PracticalVideo.create({ ...payload, categoryCode: payload.categoryCode.toUpperCase() });
     }
 
     async listQuestionBanks(schoolId, query = {}) {
@@ -132,7 +336,8 @@ class ContentService {
     async addQuestion(bankId, questionData) {
         const bank = await QuestionBank.findById(bankId);
         if (!bank) throw new ApiError(404, ERR.QUESTION_BANK_NOT_FOUND);
-        bank.questions.push(questionData);
+        const payload = await this._normalizeContentImages(questionData, ['imageUrl']);
+        bank.questions.push(payload);
         await bank.save();
         return bank.questions[bank.questions.length - 1];
     }
@@ -141,6 +346,28 @@ class ContentService {
         const instructor = await Instructor.findOne({ userId: coachId, status: 'active' });
         if (!instructor) throw new ApiError(403, ERR.COACH_NOT_IN_SCHOOL);
         return instructor.schoolId;
+    }
+
+    async listCoachQuestionBanks(coachId) {
+        const schoolId = await this._getCoachSchoolId(coachId);
+        return this.listQuestionBanks(schoolId);
+    }
+
+    async listCoachContent(contentType) {
+        const Model = CONTENT_MODELS[contentType];
+        if (!Model) throw new ApiError(400, ERR.VALIDATION_FAILED);
+
+        const projection = {
+            theory: 'title categoryCode subTypeCode phase',
+            shared: 'title section',
+            specific: 'title categoryCode subTypeCode section',
+            video: 'title categoryCode subTypeCode phase',
+        }[contentType];
+
+        return Model.find({ isActive: true })
+            .select(projection)
+            .sort({ order: 1, createdAt: -1 })
+            .lean();
     }
 
     async requestQuestionEdit(coachId, data) {

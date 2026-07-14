@@ -84,6 +84,12 @@ export const LoginPage = () => {
         </form>
 
         <p className="mt-comfortable text-center text-label-md text-on-surface-variant">
+          <Link to={ROUTES.FORGOT_PASSWORD} className="font-medium text-primary hover:underline">
+            نسيت كلمة المرور؟
+          </Link>
+        </p>
+
+        <p className="mt-tight text-center text-label-md text-on-surface-variant">
           ليس لديك حساب؟{' '}
           <Link to={ROUTES.REGISTER} className="font-medium text-primary hover:underline">
             إنشاء حساب

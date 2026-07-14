@@ -15,6 +15,8 @@ const {
     trafficScheduleRules,
     createReviewRules,
     upsertPricingRules,
+    bookLessonRules,
+    autoBookLessonRules,
 } = require('../../../src/validators');
 
 const strongPassword = 'SecurePass1!';
@@ -130,6 +132,19 @@ describe('Validators', () => {
             expect(result.isEmpty()).toBe(true);
         });
 
+        it('validates structured prerequisites on license upsert', async () => {
+            const result = await runValidation(upsertCategoryRules, {
+                code: 'C',
+                name: 'عمومي صغير',
+                minAge: 21,
+                requirementsIntro: 'ما تحتاجه قبل التقديم',
+                prerequisites: [
+                    { label: 'رخصة B مسبقاً', code: 'B', type: 'license', isRequired: true },
+                ],
+            });
+            expect(result.isEmpty()).toBe(true);
+        });
+
         it('rejects payment confirm without amount', async () => {
             const result = await runValidation(confirmPaymentRules, {});
             expect(result.array().some((e) => e.path === 'amount')).toBe(true);
@@ -185,6 +200,26 @@ describe('Validators', () => {
             const result = await runValidation(upsertPricingRules, {
                 categoryCode: 'B',
                 fixedPrice: 500000,
+            });
+            expect(result.isEmpty()).toBe(true);
+        });
+    });
+
+    describe('lesson sessions', () => {
+        it('rejects practical lesson duration other than 60 minutes', async () => {
+            const result = await runValidation(bookLessonRules, {
+                enrollmentId: '507f1f77bcf86cd799439011',
+                coachId: '507f1f77bcf86cd799439012',
+                scheduledAt: '2026-07-01T09:00:00.000Z',
+                durationMinutes: 45,
+            });
+            expect(result.array().some((e) => e.path === 'durationMinutes')).toBe(true);
+        });
+
+        it('accepts auto-book payload with fixed 60-minute duration', async () => {
+            const result = await runValidation(autoBookLessonRules, {
+                enrollmentId: '507f1f77bcf86cd799439011',
+                durationMinutes: 60,
             });
             expect(result.isEmpty()).toBe(true);
         });

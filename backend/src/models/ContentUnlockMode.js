@@ -6,6 +6,8 @@ const contentUnlockModeSchema = new mongoose.Schema(
         enrollmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Enrollment', default: null },
         categoryCode: { type: String, required: true },
         mode: { type: String, enum: ['progressive', 'full'], default: 'progressive' },
+        maxUnlockedPhase: { type: Number, default: 1, min: 1 },
+        viewedContentIds: [{ type: mongoose.Schema.Types.ObjectId }],
         unlockedAt: { type: Date, default: Date.now },
     },
     { timestamps: true }

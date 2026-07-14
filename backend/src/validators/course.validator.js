@@ -15,7 +15,7 @@ const createCourseRules = [
     mongoIdBody('schoolId', 'المدرسة'),
     requiredLicenseCode('categoryCode'),
     optionalLicenseSubCode('subTypeCode'),
-    requiredInt('maxStudents', 'الحد الأقصى للطلاب', { min: 1, max: 500 }),
+    optionalInt('maxStudents', 'الحد الأقصى للطلاب', { min: 1, max: 500 }),
     optionalInt('paymentDeadlineDays', 'مهلة الدفع بالأيام', { min: 1, max: 14 }),
     optionalInt('launchAfterCloseDays', 'أيام الانطلاق بعد الإغلاق', { min: 1, max: 30 }),
 ];

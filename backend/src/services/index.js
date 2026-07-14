@@ -6,8 +6,10 @@ module.exports = {
     enrollmentService: require('./enrollment.service'),
     courseService: require('./course.service'),
     paymentService: require('./payment.service'),
+    walletService: require('./wallet.service'),
     notificationService: require('./notification.service'),
     documentService: require('./document.service'),
+    mediaService: require('./media.service'),
     auditService: require('./audit.service'),
     locationService: require('./location.service'),
     contentService: require('./content.service'),
@@ -23,4 +25,7 @@ module.exports = {
     studentService: require('./student.service'),
     settingsService: require('./settings.service'),
     searchService: require('./search.service'),
+    faqService: require('./faq.service'),
+    requirementService: require('./requirement.service'),
+    testimonialService: require('./testimonial.service'),
 };

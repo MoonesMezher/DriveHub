@@ -9,6 +9,7 @@ import { PERMISSIONS } from '@/lib/auth/permissions'
 
 import { HomePage } from '@/features/home/pages/HomePage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { UnauthorizedPage } from '@/features/auth/pages/UnauthorizedPage'
 import { LicensesPage } from '@/features/licenses/pages/LicensesPage'
@@ -30,6 +31,7 @@ import { FaqPage } from '@/features/shared/pages/FaqPage'
 import { PrivacyPage } from '@/features/shared/pages/PrivacyPage'
 import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
 import { AddSchoolPage } from '@/features/shared/pages/AddSchoolPage'
+import { VerifyPage } from '@/features/shared/pages/VerifyPage'
 
 export const AppRouter = () => (
   <Routes>
@@ -44,6 +46,7 @@ export const AppRouter = () => (
       <Route path="sample" element={<SamplePage />} />
       <Route path="faq" element={<FaqPage />} />
       <Route path="privacy" element={<PrivacyPage />} />
+      <Route path="verify/:type/:token" element={<VerifyPage />} />
       <Route path="add-school" element={<AddSchoolPage />} />
       <Route path="unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />
@@ -53,6 +56,7 @@ export const AppRouter = () => (
     <Route element={<GuestRoute />}>
       <Route element={<AuthLayout />}>
         <Route path="login" element={<LoginPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="register" element={<RegisterPage />} />
       </Route>
     </Route>

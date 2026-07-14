@@ -36,7 +36,7 @@ export const LicensesPage = () => {
           </Badge>
           <PageHeader
             title="أنواع الرخص"
-            description="تعرف على فئات الرخص ومتطلباتها قبل التسجيل — بدون أسعار للزائر"
+            description="تعرف على فئات الرخص ومتطلباتها قبل التسجيل"
             className="!mb-0 [&_h1]:text-white [&_p]:text-white/90"
           />
         </div>
@@ -45,7 +45,7 @@ export const LicensesPage = () => {
       <PageSection>
         <SectionBlock
           title="استكشف الفئات"
-          description="بطاقات واضحة — اضغط لعرض المتطلبات والأنواع الفرعية"
+          description="اضغط لعرض المتطلبات والأنواع الفرعية"
         >
           <AsyncContent
             isLoading={isLoading}

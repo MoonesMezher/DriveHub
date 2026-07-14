@@ -11,6 +11,7 @@ const PERMISSIONS = {
     // مسجّل
     VIEW_SAMPLE_FULL: 'view:sample:full',
     MANAGE_PROFILE: 'profile:manage',
+    UPLOAD_MEDIA: 'media:upload',
     SUBMIT_ENROLLMENT: 'enrollment:submit',
     CANCEL_PENDING_ENROLLMENT: 'enrollment:cancel',
 
@@ -34,6 +35,7 @@ const PERMISSIONS = {
     ACCESS_MANAGER_PORTAL: 'manager:portal',
     MANAGE_COURSES: 'manager:courses',
     REVIEW_ENROLLMENTS: 'manager:enrollments',
+    VERIFY_ENROLLMENT_DOCUMENTS: 'manager:documents:verify',
     MANAGE_INSTRUCTORS: 'manager:instructors',
     SUBMIT_ROSTER: 'manager:roster',
     MANAGE_QUESTION_BANK: 'manager:questions',
@@ -49,7 +51,13 @@ const PERMISSIONS = {
     DISTRIBUTE_TRAFFIC_DATA: 'admin:traffic',
     VIEW_PLATFORM_REPORTS: 'admin:reports',
     MANAGE_ADS: 'admin:ads',
+    MANAGE_FAQ: 'admin:faq',
+    MANAGE_REQUIREMENTS: 'admin:requirements',
+    MANAGE_TESTIMONIALS: 'admin:testimonials',
+    VIEW_COMPLIANCE: 'admin:compliance:view',
+    MANAGE_COMPLIANCE: 'admin:compliance:manage',
     VIEW_AUDIT_LOG: 'admin:audit',
+    VIEW_DOCUMENT_AUDIT: 'admin:documents:audit',
 
     // المرور
     ACCESS_TRAFFIC_PORTAL: 'traffic:portal',

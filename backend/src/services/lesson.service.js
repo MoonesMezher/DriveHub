@@ -14,6 +14,7 @@ const LESSONABLE_STATUSES = [
     ENROLLMENT_STATUS.ACTIVE,
     ENROLLMENT_STATUS.FINAL_THEORY_PASSED,
 ];
+const FIXED_PRACTICAL_SESSION_MINUTES = 60;
 
 class LessonService {
     async _resolveCoach(coachId, schoolId) {
@@ -51,7 +52,7 @@ class LessonService {
         if (hasConflict) throw new ApiError(409, ERR.LESSON_CONFLICT);
     }
 
-    async book(studentId, { enrollmentId, coachId, scheduledAt, durationMinutes = 60 }) {
+    async book(studentId, { enrollmentId, coachId, scheduledAt, durationMinutes = FIXED_PRACTICAL_SESSION_MINUTES }) {
         const enrollment = await Enrollment.findOne({
             _id: enrollmentId,
             userId: studentId,
@@ -64,7 +65,7 @@ class LessonService {
             coachId: coachUserId,
             studentId,
             scheduledAt,
-            durationMinutes,
+            durationMinutes: FIXED_PRACTICAL_SESSION_MINUTES,
         });
 
         return PracticalLesson.create({
@@ -73,7 +74,7 @@ class LessonService {
             coachId: coachUserId,
             schoolId: enrollment.schoolId,
             scheduledAt,
-            durationMinutes,
+            durationMinutes: FIXED_PRACTICAL_SESSION_MINUTES,
         });
     }
 
@@ -106,38 +107,89 @@ class LessonService {
         }));
     }
 
-    async autoBookNextLesson(studentId, { enrollmentId, durationMinutes = 60 }) {
+    async autoBookNextLesson(studentId, { enrollmentId, durationMinutes = FIXED_PRACTICAL_SESSION_MINUTES }) {
+        const enrollment = await Enrollment.findOne({
+            _id: enrollmentId,
+            userId: studentId,
+            status: { $in: LESSONABLE_STATUSES },
+        });
+        if (!enrollment) throw new ApiError(400, ERR.ACTIVE_ENROLLMENT_REQUIRED);
+
         const coaches = await this.listEligibleCoaches(studentId, enrollmentId);
         if (!coaches.length) throw new ApiError(400, ERR.LESSON_NO_COACHES);
 
+        const coachUserIds = coaches.map((c) => c.userId);
         const base = new Date();
         base.setDate(base.getDate() + 1);
         base.setHours(9, 0, 0, 0);
 
-        for (let day = 0; day < 14; day += 1) {
-            for (const coach of coaches) {
-                for (let hour = 9; hour <= 17; hour += 1) {
-                    const slot = new Date(base);
-                    slot.setDate(base.getDate() + day);
-                    slot.setHours(hour, 0, 0, 0);
-                    if (slot <= new Date()) continue;
+        const rangeEnd = new Date(base);
+        rangeEnd.setDate(rangeEnd.getDate() + 14);
 
-                    try {
-                        await this._checkConflict({
-                            coachId: coach.userId,
-                            studentId,
-                            scheduledAt: slot,
-                            durationMinutes,
-                        });
-                        return this.book(studentId, {
-                            enrollmentId,
-                            coachId: coach.userId,
-                            scheduledAt: slot,
-                            durationMinutes,
-                        });
-                    } catch (err) {
-                        if (err.statusCode !== 409) throw err;
-                    }
+        const [coachLessons, studentLessons, pastCoachCounts] = await Promise.all([
+            PracticalLesson.find({
+                coachId: { $in: coachUserIds },
+                status: 'scheduled',
+                scheduledAt: { $gte: base, $lt: rangeEnd },
+            }).lean(),
+            PracticalLesson.find({
+                studentId,
+                status: 'scheduled',
+                scheduledAt: { $gte: base, $lt: rangeEnd },
+            }).lean(),
+            PracticalLesson.aggregate([
+                { $match: { studentId, enrollmentId, status: 'completed' } },
+                { $group: { _id: '$coachId', count: { $sum: 1 } } },
+            ]),
+        ]);
+
+        const pastCoachMap = new Map(pastCoachCounts.map((row) => [String(row._id), row.count]));
+        const workloadMap = coachLessons.reduce((acc, lesson) => {
+            const key = String(lesson.coachId);
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+
+        const sortedCoaches = [...coaches].sort((a, b) => {
+            const pastA = pastCoachMap.get(String(a.userId)) || 0;
+            const pastB = pastCoachMap.get(String(b.userId)) || 0;
+            if (pastB !== pastA) return pastB - pastA;
+            const loadA = workloadMap[String(a.userId)] || 0;
+            const loadB = workloadMap[String(b.userId)] || 0;
+            return loadA - loadB;
+        });
+
+        const lessonsByCoach = coachLessons.reduce((acc, lesson) => {
+            const key = String(lesson.coachId);
+            acc[key] = acc[key] || [];
+            acc[key].push(lesson);
+            return acc;
+        }, {});
+
+        for (let day = 0; day < 14; day += 1) {
+            for (let hour = 9; hour <= 17; hour += 1) {
+                const slot = new Date(base);
+                slot.setDate(base.getDate() + day);
+                slot.setHours(hour, 0, 0, 0);
+                if (slot <= new Date()) continue;
+
+                const slotEnd = new Date(
+                    slot.getTime() + FIXED_PRACTICAL_SESSION_MINUTES * 60 * 1000,
+                );
+                const studentBusy = studentLessons.some((l) => this._overlaps(l, slot, slotEnd));
+                if (studentBusy) continue;
+
+                for (const coach of sortedCoaches) {
+                    const coachBusy = (lessonsByCoach[String(coach.userId)] || [])
+                        .some((l) => this._overlaps(l, slot, slotEnd));
+                    if (coachBusy) continue;
+
+                    return this.book(studentId, {
+                        enrollmentId,
+                        coachId: coach.userId,
+                        scheduledAt: slot,
+                        durationMinutes: FIXED_PRACTICAL_SESSION_MINUTES,
+                    });
                 }
             }
         }

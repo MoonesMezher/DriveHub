@@ -1,6 +1,8 @@
 const NOTIFICATION_TYPES = {
     ENROLLMENT_ACCEPTED: 'enrollment_accepted',
     ENROLLMENT_REJECTED: 'enrollment_rejected',
+    ENROLLMENT_WAITLIST: 'enrollment_waitlist',
+    ENROLLMENT_REQUEST: 'enrollment_request',
     PAYMENT_REMINDER: 'payment_reminder',
     PAYMENT_EXPIRED: 'payment_expired',
     COURSE_LAUNCH: 'course_launch',

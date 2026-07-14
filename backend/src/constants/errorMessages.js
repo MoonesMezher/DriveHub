@@ -19,6 +19,9 @@ const ERR = {
     INVALID_TOKEN_TYPE: 'نوع الرمز غير صالح',
     INVALID_REFRESH_TOKEN: 'رمز التحديث غير صالح',
     REFRESH_REVOKED: 'انتهت صلاحية الجلسة — سجّل الدخول مجدداً',
+    RESET_CODE_INVALID: 'رمز التحقق غير صحيح أو منتهي الصلاحية',
+    RESET_CODE_ATTEMPTS_EXCEEDED: 'تم تجاوز عدد محاولات التحقق المسموح بها',
+    RESET_TOKEN_INVALID: 'جلسة إعادة التعيين غير صالحة أو منتهية',
     PORTAL_DENIED: 'هذا الحساب لا يمكنه الدخول عبر البوابة المختارة',
     ROLE_NOT_ASSIGNED: 'لا تملك هذا الدور',
     USER_NOT_FOUND: 'المستخدم غير موجود',
@@ -49,6 +52,9 @@ const ERR = {
     ENROLLMENT_NO_SPOTS: 'لا توجد أماكن متاحة في هذه الدورة',
     ENROLLMENT_UNDERAGE: 'عمرك لا يستوفي الحد الأدنى المطلوب لهذه الفئة',
     ENROLLMENT_DOB_REQUIRED: 'أكمل تاريخ الميلاد في ملفك الشخصي قبل التقديم',
+    ENROLLMENT_DOCUMENTS_REQUIRED: 'يجب رفع صورة الهوية والتوثيق الطبي قبل تقديم الطلب',
+    ENROLLMENT_NATIONAL_ID_REQUIRED: 'يجب رفع صورة الهوية الوطنية قبل التقديم',
+    ENROLLMENT_MEDICAL_REPORT_REQUIRED: 'يجب رفع التوثيق الطبي قبل التقديم',
     ENROLLMENT_NOT_CANCELLABLE: 'لا يمكن إلغاء هذا الطلب في حالته الحالية',
     ENROLLMENT_NOT_OWNER: 'هذا الطلب لا يخصك',
     ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
@@ -56,16 +62,7 @@ const ERR = {
     ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
     ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
     ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
-    ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
-    ENROLLMENT_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق الدورة المختارة',
-    ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
-    ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
-    ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
-    ENROLLMENT_PREREQUISITE_MISSING: 'لم تستوفِ متطلبات الفئة المطلوبة بعد',
-    ENROLLMENT_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق الدورة المختارة',
-    ENROLLMENT_SUBTYPE_REQUIRED: 'يجب اختيار B1 أو B2 لفئة الخصوصي',
-    ENROLLMENT_SUBTYPE_LOCKED: 'لا يمكن تغيير النوع الفرعي بعد التسجيل',
-    ENROLLMENT_ACTIVE_CATEGORY_EXISTS: 'لديك اشتراك نشط لهذه الفئة بالفعل',
+    ENROLLMENT_MULTI_CATEGORY: 'طلب واحد لفئة واحدة فقط — لا يمكن دمج الفئات',
     ENROLLMENT_NOT_RETAKEABLE: 'لا يمكن إعادة الاشتراك في حالة هذا الطلب',
     ENROLLMENT_ALREADY_ARCHIVED: 'تم أرشفة هذا الاشتراك مسبقاً',
     ENROLLMENT_RETAKE_SCOPE_MISMATCH: 'نطاق الإعادة لا يطابق حالة الرسوب',
@@ -80,11 +77,21 @@ const ERR = {
     PAYMENT_DEADLINE_EXPIRED: 'انتهت مهلة الدفع',
     PRICING_NOT_FOUND: 'لم يُحدد سعر لهذه الفئة',
 
+    // Wallet
+    WALLET_CREDIT_INVALID: 'مبلغ الرصيد يجب أن يكون أكبر من صفر',
+    WALLET_INSUFFICIENT_BALANCE: (balance) => `رصيدك غير كافٍ — رصيدك الحالي ${balance} د.أ`,
+
     // Document
     DOCUMENT_NOT_FOUND: 'المستند غير موجود',
     NO_FILE: 'لم يتم إرفاق ملف',
-    INVALID_FILE_TYPE: 'نوع الملف غير مسموح',
+    INVALID_FILE_TYPE: 'نوع الملف غير مسموح — يُقبل JPEG أو PNG أو PDF فقط',
+    FILE_SIGNATURE_MISMATCH: 'محتوى الملف لا يطابق نوعه — قد يكون الملف تالفاً أو غير آمن',
     FILE_TOO_LARGE: 'حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت)',
+    INVALID_IMAGE_TYPE: 'نوع الصورة غير مسموح — يُقبل JPEG أو PNG أو WebP فقط',
+    EXTERNAL_IMAGE_URL_REJECTED: 'يجب رفع ملف صورة وليس إدخال رابط خارجي',
+    INVALID_MEDIA_REF: 'مرجع الصورة غير صالح — ارفع ملف صورة أولاً',
+    IMAGE_UPLOAD_REQUIRED: 'يجب رفع ملف صورة',
+    MEDIA_NOT_FOUND: 'الصورة غير موجودة',
     PASSWORD_WEAK: 'كلمة المرور ضعيفة: 8 أحرف على الأقل، حرف كبير وصغير، رقم، ورمز خاص',
 
     // Notification
@@ -93,6 +100,8 @@ const ERR = {
     // Student / content / exam
     ACTIVE_ENROLLMENT_REQUIRED: 'لا يوجد اشتراك نشط — أكمل التسجيل والدفع أولاً',
     CONTENT_NOT_FOUND: 'المحتوى التعليمي غير موجود',
+    CONTENT_LOCKED: 'هذا المحتوى مقفل — أكمل المرحلة السابقة أولاً',
+    CONTENT_UNLOCK_STAFF_ONLY: 'فتح المحتوى الكامل تلقائي — لا يمكن تفعيل الوضع المتدرج',
     QUESTION_BANK_NOT_FOUND: 'بنك الأسئلة غير موجود',
     QUESTION_NOT_FOUND: 'السؤال غير موجود',
     NO_QUESTIONS_AVAILABLE: 'لا توجد أسئلة متاحة لهذه الفئة',
@@ -116,6 +125,8 @@ const ERR = {
     ROSTER_EXISTS: 'قائمة طلاب موجودة لهذه الدورة مسبقاً',
     ROSTER_NOT_SUBMITTED: 'القائمة لم تُرسَل بعد',
     ROSTER_ALREADY_SUBMITTED: 'تم إرسال القائمة مسبقاً',
+    ROSTER_COURSE_NOT_LAUNCHED: 'لا يمكن رفع قائمة الطلاب قبل إطلاق الدورة',
+    ROSTER_TOO_EARLY: 'لا يمكن رفع قائمة الطلاب قبل مرور 15 يوماً من إطلاق الدورة',
 
     // Review
     REVIEW_EXISTS: 'لديك تقييم لهذه المدرسة مسبقاً',

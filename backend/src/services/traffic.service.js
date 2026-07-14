@@ -123,14 +123,23 @@ class TrafficService {
             throw new ApiError(400, 'البريد الإلكتروني أو معرّف الاشتراك مطلوب');
         }
 
-        const user = await User.findOne({ email: String(row.studentEmail).trim().toLowerCase() });
-        if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
+        const email = String(row.studentEmail).trim().toLowerCase();
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new ApiError(404, `لا يوجد مستخدم بالبريد: ${email}`);
+        }
 
+        const categoryCode = row.categoryCode
+            ? String(row.categoryCode).trim().toUpperCase()
+            : null;
         const filter = { userId: user._id };
-        if (row.categoryCode) filter.categoryCode = String(row.categoryCode).trim().toUpperCase();
+        if (categoryCode) filter.categoryCode = categoryCode;
 
         const enrollment = await Enrollment.findOne(filter).sort({ updatedAt: -1 });
-        if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
+        if (!enrollment) {
+            const categoryHint = categoryCode ? ` وفئة ${categoryCode}` : '';
+            throw new ApiError(404, `لا يوجد اشتراك للبريد ${email}${categoryHint}`);
+        }
         return enrollment;
     }
 
@@ -269,6 +278,9 @@ class TrafficService {
             issuer: 'وزارة النقل',
             details: { issuedBy },
         });
+
+        const verificationService = require('./verification.service');
+        await verificationService.ensureCertificateToken(record._id);
 
         if (data.enrollmentId) {
             await Enrollment.findByIdAndUpdate(data.enrollmentId, {

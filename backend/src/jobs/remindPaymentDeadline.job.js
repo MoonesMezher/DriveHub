@@ -37,9 +37,8 @@ const remindPaymentDeadline = async () => {
                 title: 'تذكير بمهلة الدفع',
                 message,
                 data: { enrollmentId: enrollment._id, paymentDeadline: enrollment.paymentDeadline },
-                channels: ['in_app', 'email', 'sms'],
+                channels: ['in_app', 'email'],
                 email: student?.email,
-                phone: student?.phone,
             });
             sent += 1;
         }

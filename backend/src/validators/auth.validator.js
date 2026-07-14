@@ -43,6 +43,46 @@ const logoutRules = [
     body('refreshToken').optional().isString().withMessage('رمز التحديث غير صالح'),
 ];
 
+const forgotPasswordRules = [
+    requiredEmail('email'),
+];
+
+const verifyResetCodeRules = [
+    requiredEmail('email'),
+    body('code')
+        .trim()
+        .isLength({ min: 6, max: 6 })
+        .withMessage('رمز التحقق يجب أن يكون 6 أرقام')
+        .isNumeric()
+        .withMessage('رمز التحقق يجب أن يكون أرقاماً فقط'),
+];
+
+const resetPasswordRules = [
+    requiredEmail('email'),
+    requiredPassword('newPassword'),
+    body().custom((value) => {
+        const hasCode = Boolean(value.code);
+        const hasResetToken = Boolean(value.resetToken);
+        if (!hasCode && !hasResetToken) {
+            throw new Error('يجب إرسال رمز التحقق أو جلسة إعادة التعيين');
+        }
+        return true;
+    }),
+    body('code')
+        .optional({ values: 'falsy' })
+        .trim()
+        .isLength({ min: 6, max: 6 })
+        .withMessage('رمز التحقق يجب أن يكون 6 أرقام')
+        .isNumeric()
+        .withMessage('رمز التحقق يجب أن يكون أرقاماً فقط'),
+    body('resetToken')
+        .optional({ values: 'falsy' })
+        .isString()
+        .withMessage('جلسة إعادة التعيين غير صالحة')
+        .isLength({ min: 32, max: 256 })
+        .withMessage('جلسة إعادة التعيين غير صالحة'),
+];
+
 const updateProfileRules = [
     optionalString('name', 'الاسم', { max: 120 }),
     optionalPhone('phone'),
@@ -55,5 +95,8 @@ module.exports = {
     refreshRules,
     switchContextRules,
     logoutRules,
+    forgotPasswordRules,
+    verifyResetCodeRules,
+    resetPasswordRules,
     updateProfileRules,
 };

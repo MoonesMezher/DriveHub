@@ -5,19 +5,23 @@ const {
     TrainingContentSpecific,
     PracticalVideo,
     QuestionBank,
+    FaqItem,
+    RequirementItem,
+    Testimonial,
 } = require('../models');
 
-// Unsplash / placeholder media — stable public URLs for dev seed
+// Static driving imagery — served from frontend public/images/driving
 const MEDIA = {
-    trafficLight: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80',
-    roadSigns: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80',
-    drivingLesson: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
-    parking: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80',
-    safety: 'https://images.unsplash.com/photo-1511919888226-fd3cad34687d?w=800&q=80',
-    videoThumb: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80',
-    videoIntro: 'https://www.youtube.com/embed/ysz5S6PUM-U',
-    videoSigns: 'https://www.youtube.com/embed/9GvLrezw3K8',
-    videoParking: 'https://www.youtube.com/embed/k3Q20AmBAPM',
+    trafficLight: '/images/driving/traffic-light.jpg',
+    roadSigns: '/images/driving/road-signs.jpg',
+    drivingLesson: '/images/driving/driving-lesson.jpg',
+    parking: '/images/driving/parking.jpg',
+    safety: '/images/driving/safety.jpg',
+    videoThumb: '/images/driving/video-thumb.jpg',
+  // Public driving-education videos that allow embedding (verified via YouTube oEmbed)
+    videoIntro: 'https://www.youtube-nocookie.com/embed/KxrfkcDAgsY',
+    videoSigns: 'https://www.youtube-nocookie.com/embed/G3_1Yh0Lb_E',
+    videoParking: 'https://www.youtube-nocookie.com/embed/l4LcfZeS4qw',
 };
 
 const makeMcq = (text, options, correctKey, explanation = '', imageUrl = null) => ({
@@ -413,6 +417,35 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
             },
             { upsert: true, new: true },
         );
+    }
+
+    // ── Public content: FAQ, requirements, testimonials ──
+    const faqItems = [
+        { question: 'كيف أنشئ حساباً على DriveHub؟', answer: 'اضغط «تسجيل جديد» من الصفحة الرئيسية وأدخل بياناتك الأساسية.', category: 'التسجيل', order: 1 },
+        { question: 'متى أدفع رسوم الدورة؟', answer: 'بعد قبول المدرسة لطلبك — ادفع مباشرةً للمدرسة ثم أعلِمنا من صفحة الاشتراك.', category: 'الدفع', order: 2 },
+        { question: 'هل المحتوى النظري مجاني؟', answer: 'نوفر عينة مجانية للزائر؛ المحتوى الكامل متاح بعد الاشتراك في دورة.', category: 'التعلم', order: 3 },
+    ];
+    for (const faq of faqItems) {
+        await FaqItem.findOneAndUpdate({ question: faq.question }, { ...faq, isActive: true }, { upsert: true, new: true });
+    }
+
+    const requirementItems = [
+        { title: 'السن القانوني', description: 'يجب بلوغ الحد الأدنى للعمر حسب فئة الرخصة (18 سنة للخصوصي، 21 للعمومي).', icon: 'cake', imageUrl: '/images/driving/license.jpg', order: 1 },
+        { title: 'الهوية الوطنية', description: 'بطاقة هوية سارية أو جواز سفر مع إثبات الإقامة للمقيمين.', icon: 'badge', imageUrl: '/images/driving/exam.jpg', order: 2 },
+        { title: 'الفحص الطبي', description: 'شهادة لياقة طبية من جهة معتمدة تثبت قدرتك على القيادة.', icon: 'health_and_safety', imageUrl: '/images/driving/medical.jpg', order: 3 },
+        { title: 'التسجيل في مدرسة', description: 'اختيار مدرسة معتمدة ودفع رسوم الدورة مباشرةً للمدرسة.', icon: 'school', imageUrl: '/images/driving/school.jpg', order: 4 },
+    ];
+    for (const req of requirementItems) {
+        await RequirementItem.findOneAndUpdate({ title: req.title }, { ...req, isActive: true }, { upsert: true, new: true });
+    }
+
+    const testimonials = [
+        { name: 'أحمد ك.', role: 'طالب', quote: 'فهمت كل خطوات الرخصة من أول نظرة على المنصة', rating: 5, order: 1 },
+        { name: 'سارة م.', role: 'متخرجة', quote: 'اختبار تجريبي ساعدني قبل امتحان المرور', rating: 5, order: 2 },
+        { name: 'محمد ع.', role: 'طالب', quote: 'لقيت مدرسة قريبة واشتركت خلال دقائق', rating: 4, order: 3 },
+    ];
+    for (const t of testimonials) {
+        await Testimonial.findOneAndUpdate({ name: t.name, quote: t.quote }, { ...t, isActive: true }, { upsert: true, new: true });
     }
 
     console.log('✓ contentSeed complete');

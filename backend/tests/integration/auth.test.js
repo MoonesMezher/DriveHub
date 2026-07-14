@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const request = require('supertest');
 const createApp = require('../../src/app');
-const { User, UserRole, RefreshToken } = require('../../src/models');
+const { User, UserRole, RefreshToken, PasswordResetToken } = require('../../src/models');
 const passwordService = require('../../src/utils/passwordService');
 const { ROLES } = require('../../src/constants/roles');
 
@@ -16,11 +16,18 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
+    jest.restoreAllMocks();
     await Promise.all([
         User.deleteMany({}),
         UserRole.deleteMany({}),
         RefreshToken.deleteMany({}),
+        PasswordResetToken.deleteMany({}),
     ]);
+});
+
+beforeEach(() => {
+    jest.spyOn(require('../../src/services/notificationChannels'), 'sendEmail')
+        .mockResolvedValue({ sent: true, channel: 'email' });
 });
 
 afterAll(async () => {
@@ -159,5 +166,111 @@ describe('Auth API', () => {
             .send({ refreshToken: reg.body.data.refreshToken });
 
         expect(refresh.status).toBe(401);
+    });
+
+    it('forgot-password always returns generic success', async () => {
+        const existingRes = await request(app).post('/api/v1/auth/forgot-password').send({
+            email: 'existing@drivehub.local',
+        });
+        const missingRes = await request(app).post('/api/v1/auth/forgot-password').send({
+            email: 'missing@drivehub.local',
+        });
+        expect(existingRes.status).toBe(200);
+        expect(missingRes.status).toBe(200);
+        expect(existingRes.body.message).toEqual(missingRes.body.message);
+    });
+
+    it('forgot-password returns generic success when email send fails', async () => {
+        const userEmail = 'mailfail@drivehub.local';
+        await request(app).post('/api/v1/auth/register').send({
+            name: 'Mail Fail',
+            email: userEmail,
+            password: strongPassword,
+        });
+
+        const channels = require('../../src/services/notificationChannels');
+        channels.sendEmail.mockRejectedValueOnce(
+            new Error('Demo domains can only be used to send emails to account owners'),
+        );
+
+        const res = await request(app).post('/api/v1/auth/forgot-password').send({ email: userEmail });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.message).toBeDefined();
+        expect(JSON.stringify(res.body)).not.toMatch(/mailtrap|demo domain/i);
+        expect(await PasswordResetToken.findOne({ email: userEmail })).toBeTruthy();
+    });
+
+    it('verifies code and resets password via resetToken', async () => {
+        const userEmail = 'reset-flow@drivehub.local';
+        const reg = await request(app).post('/api/v1/auth/register').send({
+            name: 'Reset Flow',
+            email: userEmail,
+            password: strongPassword,
+        });
+        expect(reg.status).toBe(201);
+
+        await request(app).post('/api/v1/auth/forgot-password').send({ email: userEmail });
+        const tokenDoc = await PasswordResetToken.findOne({ email: userEmail });
+        tokenDoc.codeHash = require('crypto').createHash('sha256').update('123456').digest('hex');
+        await tokenDoc.save();
+
+        const verify = await request(app).post('/api/v1/auth/verify-reset-code').send({
+            email: userEmail,
+            code: '123456',
+        });
+        expect(verify.status).toBe(200);
+        expect(verify.body.data.resetToken).toBeDefined();
+
+        const reset = await request(app).post('/api/v1/auth/reset-password').send({
+            email: userEmail,
+            resetToken: verify.body.data.resetToken,
+            newPassword: 'NewSecurePass1!',
+        });
+        expect(reset.status).toBe(200);
+
+        const login = await request(app).post('/api/v1/auth/login').send({
+            email: userEmail,
+            password: 'NewSecurePass1!',
+        });
+        expect(login.status).toBe(200);
+    });
+
+    it('rejects expired code and too many attempts', async () => {
+        const userEmail = 'attempts@drivehub.local';
+        await request(app).post('/api/v1/auth/register').send({
+            name: 'Attempts',
+            email: userEmail,
+            password: strongPassword,
+        });
+        await request(app).post('/api/v1/auth/forgot-password').send({ email: userEmail });
+
+        const tokenDoc = await PasswordResetToken.findOne({ email: userEmail });
+        tokenDoc.codeHash = require('crypto').createHash('sha256').update('123456').digest('hex');
+        tokenDoc.maxAttempts = 2;
+        tokenDoc.expiresAt = new Date(Date.now() - 1000);
+        await tokenDoc.save();
+
+        const expired = await request(app).post('/api/v1/auth/verify-reset-code').send({
+            email: userEmail,
+            code: '123456',
+        });
+        expect(expired.status).toBe(400);
+
+        tokenDoc.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        tokenDoc.attemptCount = 1;
+        await tokenDoc.save();
+        const wrong1 = await request(app).post('/api/v1/auth/verify-reset-code').send({
+            email: userEmail,
+            code: '111111',
+        });
+        expect([400, 429]).toContain(wrong1.status);
+
+        const wrong2 = await request(app).post('/api/v1/auth/verify-reset-code').send({
+            email: userEmail,
+            code: '111111',
+        });
+        expect(wrong2.status).toBe(429);
     });
 });

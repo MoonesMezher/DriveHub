@@ -3,7 +3,7 @@ export const TRAFFIC_RESULTS_IMPORT_COLUMNS = [
   {
     key: 'studentEmail',
     label: 'البريد الإلكتروني',
-    type: 'نص (بريد إلكتروني)',
+    type: 'نص — يجب أن يطابق طالباً لديه اشتراك نشط في النظام',
     required: true,
     example: 'activestudent@drivehub.local',
     aliases: ['studentEmail', 'email', 'البريد_الإلكتروني', 'البريد الإلكتروني'],

@@ -10,6 +10,8 @@ const drivingLicenseRecordSchema = new mongoose.Schema(
         certificateNumber: { type: String, default: null },
         enrollmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Enrollment', default: null },
         details: { type: mongoose.Schema.Types.Mixed, default: {} },
+        verificationToken: { type: String, default: null, index: true },
+        qrPayload: { type: mongoose.Schema.Types.Mixed, default: null },
     },
     { timestamps: true }
 );

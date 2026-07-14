@@ -15,6 +15,7 @@ const { ERR } = require('../constants/errorMessages');
 const config = require('../config');
 const passwordService = require('../utils/passwordService');
 const rosterService = require('./roster.service');
+const mediaService = require('./media.service');
 
 class PlatformService {
     async listPricing() {
@@ -210,26 +211,38 @@ class PlatformService {
         return { user: { _id: user._id, status: user.status }, reason };
     }
 
-    async listAds() {
+    async listAds(query = {}) {
         const now = new Date();
-        return Ad.find({
+        const filter = {
             status: 'active',
             $or: [
                 { startDate: null, endDate: null },
                 { startDate: { $lte: now }, endDate: { $gte: now } },
                 { startDate: { $lte: now }, endDate: null },
             ],
-        })
+        };
+        if (query.placement) filter.placement = query.placement;
+        return Ad.find(filter)
             .sort({ order: 1, createdAt: -1 })
             .lean();
     }
 
     async createAd(adminId, data) {
-        return Ad.create({ ...data, createdBy: adminId });
+        const payload = { ...data };
+        if (payload.imageUrl) {
+            payload.imageUrl = mediaService.normalizeImageRef(payload.imageUrl);
+            await mediaService.assertMediaExists(payload.imageUrl);
+        }
+        return Ad.create({ ...payload, createdBy: adminId });
     }
 
     async updateAd(id, data) {
-        const ad = await Ad.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+        const payload = { ...data };
+        if (payload.imageUrl) {
+            payload.imageUrl = mediaService.normalizeImageRef(payload.imageUrl);
+            await mediaService.assertMediaExists(payload.imageUrl);
+        }
+        const ad = await Ad.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
         if (!ad) throw new ApiError(404, ERR.NOT_FOUND);
         return ad;
     }

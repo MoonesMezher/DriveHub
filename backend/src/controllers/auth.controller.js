@@ -43,6 +43,24 @@ const switchContext = asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, data: result });
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+    await authService.forgotPassword(req.body);
+    res.status(200).json({
+        success: true,
+        message: 'إذا كان البريد الإلكتروني مسجلاً لدينا، سيتم إرسال رمز التحقق إليه',
+    });
+});
+
+const verifyResetCode = asyncHandler(async (req, res) => {
+    const result = await authService.verifyResetCode(req.body);
+    res.status(200).json({ success: true, data: result });
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    await authService.resetPassword(req.body);
+    res.status(200).json({ success: true, message: 'تم تغيير كلمة المرور بنجاح' });
+});
+
 module.exports = {
     register,
     login,
@@ -51,4 +69,7 @@ module.exports = {
     getMe,
     getContexts,
     switchContext,
+    forgotPassword,
+    verifyResetCode,
+    resetPassword,
 };

@@ -215,6 +215,20 @@ const optionalEnumBody = (field, label, values) =>
         .isIn(values)
         .withMessage(msg.mustBeIn(label, values));
 
+const optionalMediaRef = (field, label) =>
+    body(field)
+        .optional({ values: 'null' })
+        .trim()
+        .custom((value) => {
+            if (!value) return true;
+            if (/^https?:\/\//i.test(value)) {
+                throw new Error('يجب رفع ملف صورة وليس إدخال رابط خارجي');
+            }
+            if (/^\/api\/v1\/media\/[a-f0-9]{24}$/i.test(value)) return true;
+            if (/^[a-f0-9]{24}$/i.test(value)) return true;
+            throw new Error(`${label} غير صالح — ارفع ملف صورة أولاً`);
+        });
+
 const stringArrayBody = (field, label, { min = 0, max = 50 } = {}) =>
     body(field)
         .optional({ values: 'null' })
@@ -282,6 +296,7 @@ module.exports = {
     optionalDate,
     requiredEnumBody,
     optionalEnumBody,
+    optionalMediaRef,
     stringArrayBody,
     paginationQuery,
 };

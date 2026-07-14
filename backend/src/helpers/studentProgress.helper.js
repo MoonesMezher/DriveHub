@@ -12,6 +12,7 @@ const resetStudentProgress = async (enrollmentId, userId, scope) => {
             StudentStatistics.findOneAndUpdate(
                 { enrollmentId },
                 {
+                    userId,
                     progressPercent: 0,
                     practiceScores: [],
                     lessonsCompleted: 0,
@@ -32,6 +33,7 @@ const resetStudentProgress = async (enrollmentId, userId, scope) => {
         StudentStatistics.findOneAndUpdate(
             { enrollmentId },
             {
+                userId,
                 lessonsCompleted: 0,
                 lessonsTotal: 0,
                 averageLessonRating: null,

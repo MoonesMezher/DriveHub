@@ -7,9 +7,11 @@ export const enrollmentService = {
   getById: (id) => apiClient.get(ENDPOINTS.enrollments.detail(id)),
   cancel: (id) => apiClient.delete(ENDPOINTS.enrollments.detail(id)),
   initiatePayment: (id) => apiClient.post(ENDPOINTS.enrollments.paymentInitiate(id)),
-  confirmPayment: (id, amount, gatewayRef) =>
-    apiClient.post(ENDPOINTS.enrollments.paymentConfirm(id), { amount, gatewayRef }),
+  claimPayment: (id, studentReference) =>
+    apiClient.post(ENDPOINTS.enrollments.paymentClaim(id), { studentReference }),
+  payFromWallet: (id) => apiClient.post(ENDPOINTS.enrollments.payFromWallet(id)),
   initiateRetakePayment: (id) => apiClient.post(ENDPOINTS.enrollments.retakePaymentInitiate(id)),
-  confirmRetakePayment: (id, amount, gatewayRef) =>
-    apiClient.post(ENDPOINTS.enrollments.retakePaymentConfirm(id), { amount, gatewayRef }),
+  claimRetakePayment: (id, studentReference) =>
+    apiClient.post(ENDPOINTS.enrollments.retakePaymentClaim(id), { studentReference }),
+  payRetakeFromWallet: (id) => apiClient.post(ENDPOINTS.enrollments.retakePayFromWallet(id)),
 }

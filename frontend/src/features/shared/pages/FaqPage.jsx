@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { PageHeader, Badge } from '@/components/ui'
+import { useQuery } from '@tanstack/react-query'
+import { PageHeader, Badge, Alert } from '@/components/ui'
 import { FaqAccordion, CtaBanner } from '@/components/sections'
 import { ROUTES } from '@/lib/constants/routes'
 import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
+import { faqService } from '@/lib/services'
+import { unwrap } from '@/lib/helpers/api'
 
-const faqItems = [
+const FALLBACK_FAQ_ITEMS = [
   {
     id: 'register',
     title: 'كيف أنشئ حساباً على DriveHub؟',
@@ -33,7 +36,7 @@ const faqItems = [
     id: 'payment',
     title: 'متى أدفع رسوم الدورة؟',
     content:
-      'بعد قبول المدرسة لطلبك ينتقل الطلب إلى «بانتظار الدفع». ادفع خلال المهلة المحددة عبر المنصة لتفعيل مقعدك في الدورة.',
+      'بعد قبول المدرسة لطلبك ينتقل الطلب إلى «بانتظار الدفع». ادفع رسوم الدورة مباشرةً للمدرسة (نقداً أو تحويلاً) خلال المهلة، ثم أعلِمنا من صفحة الاشتراك. يُفعَّل مقعدك بعد تأكيد المدرسة لاستلام الدفع — لا يوجد دفع إلكتروني عبر المنصة.',
   },
   {
     id: 'sample',
@@ -49,8 +52,24 @@ const faqItems = [
   },
 ]
 
+const mapApiItems = (items = []) =>
+  items.map((item) => ({
+    id: item._id,
+    title: item.question,
+    content: item.answer,
+  }))
+
 export const FaqPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
+
+  const faqQuery = useQuery({
+    queryKey: ['faq'],
+    queryFn: () => faqService.list().then(unwrap),
+    staleTime: 60_000,
+  })
+
+  const apiItems = faqQuery.data?.items ?? []
+  const faqItems = apiItems.length > 0 ? mapApiItems(apiItems) : FALLBACK_FAQ_ITEMS
 
   return (
     <div dir="rtl" className="space-y-loose">
@@ -73,6 +92,12 @@ export const FaqPage = () => {
           />
         </div>
       </section>
+
+      {faqQuery.isError && (
+        <Alert variant="warning" title="تعذّر تحميل الأسئلة من الخادم">
+          نعرض الأسئلة الافتراضية مؤقتاً.
+        </Alert>
+      )}
 
       <FaqAccordion
         items={faqItems}

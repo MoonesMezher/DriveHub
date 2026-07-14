@@ -1,19 +1,29 @@
-const { TrainingCourse, Enrollment } = require('../models');
+const { TrainingCourse, Enrollment, DrivingSchool } = require('../models');
 const { COURSE_STATUS } = require('../constants/courseStatus');
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const courseHelper = require('../helpers/course.helper');
+const { computeMaxStudents } = require('../constants/courseCapacity');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
 class CourseService {
     async create({ schoolId, categoryCode, subTypeCode, maxStudents, paymentDeadlineDays, launchAfterCloseDays }) {
+        let resolvedMax = maxStudents;
+        if (!resolvedMax) {
+            const school = await DrivingSchool.findById(schoolId).select('vehiclesCount').lean();
+            resolvedMax = computeMaxStudents(school?.vehiclesCount);
+        }
+        if (!resolvedMax) {
+            throw new ApiError(400, 'حدد الحد الأقصى للطلاب أو سجّل عدد مركبات المدرسة');
+        }
+
         return TrainingCourse.create({
             schoolId,
             categoryCode: categoryCode.toUpperCase(),
             subTypeCode: subTypeCode?.toUpperCase() || null,
-            maxStudents,
+            maxStudents: resolvedMax,
             paymentDeadlineDays,
             launchAfterCloseDays,
             status: COURSE_STATUS.REGISTRATION_OPEN,
@@ -21,9 +31,12 @@ class CourseService {
         });
     }
 
-    async closeRegistration(courseId) {
-        const course = await TrainingCourse.findByIdAndUpdate(
-            courseId,
+    async closeRegistration(courseId, schoolId = null) {
+        const filter = { _id: courseId };
+        if (schoolId) filter.schoolId = schoolId;
+
+        const course = await TrainingCourse.findOneAndUpdate(
+            filter,
             {
                 status: COURSE_STATUS.REGISTRATION_CLOSED,
                 registrationOpen: false,
@@ -58,8 +71,11 @@ class CourseService {
         return lastLaunched?.launchDate || null;
     }
 
-    async launch(courseId, previousLaunchDate) {
-        const courseBefore = await TrainingCourse.findById(courseId);
+    async launch(courseId, previousLaunchDate, schoolId = null) {
+        const filter = { _id: courseId };
+        if (schoolId) filter.schoolId = schoolId;
+
+        const courseBefore = await TrainingCourse.findOne(filter);
         if (!courseBefore) throw new ApiError(404, ERR.COURSE_NOT_FOUND);
 
         if (courseBefore.registrationClosedAt) {
@@ -80,12 +96,22 @@ class CourseService {
         const launchDate = new Date();
         const endDate = courseHelper.computeTrainingEnd(launchDate);
 
+        const lastLaunched = await TrainingCourse.findOne({
+            schoolId: courseBefore.schoolId,
+            launchDate: { $ne: null },
+            _id: { $ne: courseId },
+        })
+            .sort({ launchDate: -1 })
+            .select('_id')
+            .lean();
+
         const course = await TrainingCourse.findByIdAndUpdate(
             courseId,
             {
                 status: COURSE_STATUS.ACTIVE,
                 launchDate,
                 endDate,
+                previousCourseId: lastLaunched?._id || courseBefore.previousCourseId || null,
             },
             { new: true },
         );
@@ -98,10 +124,15 @@ class CourseService {
         const paidEnrollments = await Enrollment.find({
             courseId,
             status: ENROLLMENT_STATUS.ACTIVE,
-        }).select('userId').lean();
+        }).select('userId categoryCode').lean();
 
+        const contentService = require('./content.service');
         const launchLabel = launchDate.toLocaleDateString('ar-SY');
         for (const row of paidEnrollments) {
+            await contentService.grantFullContentAccess(
+                row.userId,
+                row.categoryCode || course.categoryCode,
+            );
             await sendInstant(row.userId, {
                 type: NOTIFICATION_TYPES.COURSE_LAUNCH,
                 title: 'انطلقت دورتك',

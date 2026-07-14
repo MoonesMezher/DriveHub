@@ -24,36 +24,53 @@ export const AdminAuditPage = () => {
   const paginatedLogs = logs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns = [
-    { key: 'at', label: 'التاريخ', render: (row) => formatDateTime(row.at) },
+    { key: 'at', label: 'التاريخ', className: 'whitespace-nowrap', render: (row) => formatDateTime(row.at) },
     {
       key: 'action',
       label: 'الإجراء',
-      render: (row) => <Badge variant="primary">{row.action}</Badge>,
+      className: 'max-w-[180px]',
+      render: (row) => (
+        <Badge variant="primary" className="max-w-full truncate">
+          {row.action}
+        </Badge>
+      ),
     },
     {
       key: 'actor',
       label: 'المستخدم',
+      className: 'max-w-[160px] truncate',
       render: (row) => fullName(row.userId) || row.userId?.email || '—',
     },
     {
       key: 'target',
       label: 'الهدف',
+      className: 'whitespace-nowrap',
       render: (row) => (row.entityType ? `${row.entityType}` : '—'),
     },
     {
       key: 'meta',
       label: 'تفاصيل',
-      render: (row) =>
-        row.metadata?.schoolName
-        || row.metadata?.note
-        || row.path
-        || row.ip
-        || '—',
+      className: 'max-w-[280px]',
+      render: (row) => (
+        <span className="block truncate" title={
+          row.metadata?.schoolName
+          || row.metadata?.note
+          || row.path
+          || row.ip
+          || ''
+        }>
+          {row.metadata?.schoolName
+          || row.metadata?.note
+          || row.path
+          || row.ip
+          || '—'}
+        </span>
+      ),
     },
   ]
 
   return (
-    <div dir="rtl">
+    <div dir="rtl" className="min-w-0">
       <PageHeader
         variant="compact"
         title="سجل التدقيق"
@@ -72,7 +89,7 @@ export const AdminAuditPage = () => {
         }
       />
 
-      <Card title={`آخر ${logs.length} عملية`} padding="none">
+      <Card title={`آخر ${logs.length} عملية`} padding="none" className="min-w-0 overflow-hidden">
         {isLoading ? (
           <div className="p-comfortable"><SkeletonTable rows={8} cols={5} /></div>
         ) : error ? (
@@ -81,7 +98,12 @@ export const AdminAuditPage = () => {
           </div>
         ) : (
           <>
-            <DataTable columns={columns} rows={paginatedLogs} emptyLabel="لا توجد سجلات" />
+            <DataTable
+              columns={columns}
+              rows={paginatedLogs}
+              emptyLabel="لا توجد سجلات"
+              className="max-w-full"
+            />
             <div className="border-t border-outline-variant/50 p-comfortable">
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>

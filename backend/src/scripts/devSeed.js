@@ -19,16 +19,7 @@ const { ROLES } = require('../constants/roles');
 const passwordService = require('../utils/passwordService');
 const { contentSeed } = require('./contentSeed');
 const settingsService = require('../services/settings.service');
-
-const LICENSE_CATEGORIES = [
-    { code: 'B', name: 'خصوصي', briefDesc: 'سيارات خاصة', minAge: 18, order: 1 },
-    { code: 'C', name: 'عمومي صغير', briefDesc: 'حتى 10 ركاب', minAge: 21, prerequisites: ['B'], order: 2 },
-    { code: 'D1', name: 'عمومي متوسط', briefDesc: 'حتى 24 راكب', minAge: 23, prerequisites: ['C'], order: 3 },
-    { code: 'D2', name: 'عمومي كبير', briefDesc: 'باصات وشاحنات', minAge: 25, prerequisites: ['D1'], order: 4 },
-    { code: 'A', name: 'دراجة نارية', briefDesc: 'دراجات نارية', minAge: 18, order: 5 },
-    { code: 'H', name: 'آليات زراعية', briefDesc: 'آليات زراعية', minAge: 18, order: 6 },
-    { code: 'W', name: 'ذوي احتياجات', briefDesc: 'تقرير طبي مطلوب', minAge: 18, order: 7 },
-];
+const { CATEGORIES: LICENSE_CATEGORIES } = require('./licenseSeed');
 
 const LICENSE_SUB_TYPES = [
     { parentCode: 'B', subCode: 'B1', name: 'عادي (يدوي)', transmissionType: 'manual' },
@@ -404,7 +395,7 @@ const devSeed = async () => {
             type: 'initial',
             status: 'completed',
             paidAt: new Date(),
-            gatewayRef: 'SEED-MOCK',
+            gatewayRef: 'SEED-MANUAL',
         },
         { upsert: true, new: true },
     );

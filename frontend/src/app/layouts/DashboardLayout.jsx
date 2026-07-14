@@ -15,7 +15,7 @@ const buildSharedFooter = (activeRole, onLogoutClick) => {
     { icon: 'logout', label: 'تسجيل الخروج', onClick: onLogoutClick },
   ]
 
-  if (activeRole !== ROLES.TRAFFIC && activeRole !== ROLES.MANAGER) {
+  if (activeRole !== ROLES.TRAFFIC && activeRole !== ROLES.MANAGER && activeRole !== ROLES.COACH) {
     items.splice(1, 0, { to: ROUTES.ENROLL, label: 'اشتراكي', icon: 'school' })
   }
 

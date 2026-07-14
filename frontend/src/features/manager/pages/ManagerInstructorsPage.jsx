@@ -4,8 +4,8 @@ import {
   PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
   Alert, FormSection, SearchInput, Select, Checkbox, StatusBadge,
 } from '@/components/ui'
-import { managerService } from '@/lib/services'
-import { unwrap } from '@/lib/helpers/api'
+import { managerService, licenseService } from '@/lib/services'
+import { unwrap, unwrapList } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/hooks/useAuth'
@@ -37,10 +37,19 @@ export const ManagerInstructorsPage = () => {
   const [page, setPage] = useState(1)
   const [form, setForm] = useState({
     email: '',
-    licenseCategories: '',
+    name: '',
+    phone: '',
+    password: '',
+    licenseCategories: [],
     gender: 'male',
     isFemaleCoach: false,
   })
+
+  const licensesQuery = useQuery({
+    queryKey: ['licenses'],
+    queryFn: async () => unwrapList(await licenseService.list(), ['licenses']),
+  })
+  const licenses = licensesQuery.data ?? []
 
   const instructorsQuery = useQuery({
     queryKey: ['manager', 'instructors'],
@@ -67,7 +76,15 @@ export const ManagerInstructorsPage = () => {
     mutationFn: (data) => managerService.assignInstructor(data).then(unwrap),
     onSuccess: () => {
       toast.success('تم تعيين المدرب')
-      setForm({ email: '', licenseCategories: '', gender: 'male', isFemaleCoach: false })
+      setForm({
+        email: '',
+        name: '',
+        phone: '',
+        password: '',
+        licenseCategories: [],
+        gender: 'male',
+        isFemaleCoach: false,
+      })
       queryClient.invalidateQueries({ queryKey: ['manager', 'instructors'] })
     },
     onError: (err) => toast.error(err, 'فشل تعيين المدرب'),
@@ -75,16 +92,29 @@ export const ManagerInstructorsPage = () => {
 
   const handleAssign = (e) => {
     e.preventDefault()
+    if (!form.licenseCategories.length) {
+      toast.error('اختر فئة رخصة واحدة على الأقل')
+      return
+    }
     assignMutation.mutate({
       email: form.email.trim(),
       schoolId,
-      licenseCategories: form.licenseCategories
-        .split(',')
-        .map((c) => c.trim().toUpperCase())
-        .filter(Boolean),
+      licenseCategories: form.licenseCategories,
       gender: form.gender,
       isFemaleCoach: form.isFemaleCoach,
+      ...(form.name.trim() ? { name: form.name.trim() } : {}),
+      ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
+      ...(form.password ? { password: form.password } : {}),
     })
+  }
+
+  const toggleLicenseCategory = (code) => {
+    setForm((f) => ({
+      ...f,
+      licenseCategories: f.licenseCategories.includes(code)
+        ? f.licenseCategories.filter((c) => c !== code)
+        : [...f.licenseCategories, code],
+    }))
   }
 
   const columns = [
@@ -160,11 +190,11 @@ export const ManagerInstructorsPage = () => {
           )}
         </Card>
 
-        <Card title="تعيين مدرب" className="xl:sticky xl:top-24 xl:self-start">
+        <Card title="إضافة مدرب" className="xl:sticky xl:top-24 xl:self-start">
           <form onSubmit={handleAssign}>
-            <FormSection>
+            <FormSection description="أدخل بريد مدرب موجود للتعيين، أو أضف الاسم وكلمة المرور لإنشاء حساب جديد">
               <Input
-                label="البريد الإلكتروني للمدرب"
+                label="البريد الإلكتروني"
                 name="email"
                 type="email"
                 value={form.email}
@@ -173,13 +203,39 @@ export const ManagerInstructorsPage = () => {
                 required
               />
               <Input
-                label="فئات الرخص (مفصولة بفاصلة)"
-                name="licenseCategories"
-                value={form.licenseCategories}
-                onChange={(e) => setForm((f) => ({ ...f, licenseCategories: e.target.value }))}
-                placeholder="B, C"
-                required
+                label="الاسم (لحساب جديد)"
+                name="name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="اسم المدرب"
               />
+              <Input
+                label="الهاتف (اختياري)"
+                name="phone"
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              />
+              <Input
+                label="كلمة المرور (لحساب جديد)"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                placeholder="8 أحرف على الأقل"
+              />
+              <div>
+                <p className="mb-2 text-label-md text-on-surface">فئات الرخص</p>
+                <div className="flex flex-wrap gap-3">
+                  {licenses.map((license) => (
+                    <Checkbox
+                      key={license.code}
+                      label={`${license.code} — ${license.name}`}
+                      checked={form.licenseCategories.includes(license.code)}
+                      onChange={() => toggleLicenseCategory(license.code)}
+                    />
+                  ))}
+                </div>
+              </div>
               <Select
                 label="الجنس"
                 value={form.gender}
@@ -192,7 +248,7 @@ export const ManagerInstructorsPage = () => {
                 onChange={(e) => setForm((f) => ({ ...f, isFemaleCoach: e.target.checked }))}
               />
               <Button type="submit" className="w-full" disabled={assignMutation.isPending}>
-                تعيين
+                {assignMutation.isPending ? 'جاري الحفظ…' : 'حفظ المدرب'}
               </Button>
             </FormSection>
           </form>

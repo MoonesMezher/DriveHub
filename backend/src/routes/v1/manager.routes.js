@@ -6,6 +6,7 @@ const {
     updateCourseRules,
 } = require('../../validators/course.validator');
 const { acceptEnrollmentRules, rejectEnrollmentRules } = require('../../validators/enrollment.validator');
+const { confirmPaymentRules } = require('../../validators/payment.validator');
 const {
     assignInstructorRules,
     updateInstructorRules,
@@ -13,13 +14,13 @@ const {
 const {
     createQuestionBankRules,
     createQuestionRules,
+    createTheoryContentRules,
     reviewEditRequestRules,
 } = require('../../validators/content.validator');
 const {
     createRosterRules,
     submitRosterRules,
 } = require('../../validators/roster.validator');
-const { finalExamResultRules } = require('../../validators/exam.validator');
 const { paginationQuery } = require('../../validators/common.validator');
 const {
     auth, validate, idParam, mongoIdParam, attachPagination, schoolScope, requirePermission, audit,
@@ -38,9 +39,11 @@ router.post('/courses/:id/launch', ...idParam('id', 'الدورة'), requirePerm
 
 // Enrollments
 router.get('/courses/:courseId/enrollments', mongoIdParam('courseId', 'الدورة'), validate, requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), managerController.enrollmentQueue);
+router.get('/courses/:courseId/enrollments/awaiting-payment', mongoIdParam('courseId', 'الدورة'), validate, requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), managerController.awaitingPaymentQueue);
 router.get('/courses/:courseId/roster-candidates', mongoIdParam('courseId', 'الدورة'), validate, requirePermission(PERMISSIONS.SUBMIT_ROSTER), managerController.rosterCandidates);
 router.post('/enrollments/:id/accept', ...idParam('id', 'طلب الاشتراك'), requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), acceptEnrollmentRules, validate, audit('manager.enrollment.accept'), managerController.acceptEnrollment);
 router.post('/enrollments/:id/reject', ...idParam('id', 'طلب الاشتراك'), requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), rejectEnrollmentRules, validate, audit('manager.enrollment.reject'), managerController.rejectEnrollment);
+router.post('/enrollments/:id/payment/confirm', ...idParam('id', 'طلب الاشتراك'), requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), confirmPaymentRules, validate, audit('manager.enrollment.payment.confirm'), managerController.confirmEnrollmentPayment);
 
 // Instructors
 router.get('/instructors', requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), managerController.listInstructors);
@@ -51,6 +54,10 @@ router.patch('/instructors/:id', ...idParam('id', 'المدرب'), requirePermis
 router.get('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), managerController.listQuestionBanks);
 router.post('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionBankRules, validate, managerController.createQuestionBank);
 router.post('/question-banks/:bankId/questions', mongoIdParam('bankId', 'بنك الأسئلة'), validate, requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionRules, validate, managerController.addQuestion);
+
+// Theory content (MVP editor)
+router.get('/content/theory', requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), managerController.listTheoryContent);
+router.post('/content/theory', requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), createTheoryContentRules, validate, audit('manager.content.theory.create'), managerController.createTheoryContent);
 
 // Content edit approvals
 router.get('/content-edits/pending', requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), managerController.listPendingEdits);
@@ -63,8 +70,5 @@ router.post('/rosters/:id/submit', ...idParam('id', 'القائمة'), requirePe
 
 // Schedule
 router.get('/schedule', requirePermission(PERMISSIONS.MANAGE_COURSES), managerController.schoolSchedule);
-
-// Final exam results (internal record)
-router.post('/exam-results', requirePermission(PERMISSIONS.REVIEW_ENROLLMENTS), finalExamResultRules, validate, managerController.recordFinalResult);
 
 module.exports = router;

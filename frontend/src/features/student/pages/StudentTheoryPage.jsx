@@ -7,6 +7,7 @@ import { studentService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { SHARED_SECTION_LABELS } from '@/lib/constants/lessonLabels'
+import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
 const TABS = [
   { id: 'theory', label: 'النظري' },
@@ -22,14 +23,6 @@ const fetchers = {
   specific: () => studentService.listSpecific(),
 }
 
-const getChapterProgress = (phase, maxPhase, unlockMode, progressPercent) => {
-  if (unlockMode === 'full') return 100
-  const currentPhase = Math.max(1, Math.ceil((progressPercent / 100) * maxPhase))
-  if (phase < currentPhase) return 100
-  if (phase === currentPhase) return Math.min(100, Math.max(20, progressPercent % 100 || 40))
-  return 0
-}
-
 export const StudentTheoryPage = () => {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState('theory')
@@ -40,22 +33,28 @@ export const StudentTheoryPage = () => {
     queryFn: async () => unwrap(await studentService.getUnlock()),
   })
 
-  const dashboardQuery = useQuery({
-    queryKey: ['student', 'dashboard'],
-    queryFn: async () => unwrap(await studentService.dashboard()),
-  })
-
   const unlockMode = unlockQuery.data?.mode || 'progressive'
   const categoryCode = unlockQuery.data?.categoryCode
-  const progressPercent = dashboardQuery.data?.dashboard?.statistics?.progressPercent ?? 0
+  const maxUnlockedPhase = unlockQuery.data?.maxUnlockedPhase ?? 1
+  const totalPhases = unlockQuery.data?.totalPhases ?? maxUnlockedPhase
 
   const setUnlockMutation = useMutation({
     mutationFn: (mode) => studentService.setUnlock({ mode, categoryCode }),
     onSuccess: () => {
       toast.success('تم تحديث وضع فتح المحتوى')
       queryClient.invalidateQueries({ queryKey: ['student', 'unlock'] })
+      queryClient.invalidateQueries({ queryKey: ['student', 'theory'] })
+      queryClient.invalidateQueries({ queryKey: ['student', 'videos'] })
     },
     onError: (err) => toast.error(getErrorMessage(err)),
+  })
+
+  const completeMutation = useMutation({
+    mutationFn: (id) => studentService.completeTheory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'unlock'] })
+      queryClient.invalidateQueries({ queryKey: ['student', 'theory'] })
+    },
   })
 
   const { data, isLoading, error } = useQuery({
@@ -77,10 +76,21 @@ export const StudentTheoryPage = () => {
       .map(([phase, chapterItems]) => ({ phase: Number(phase), items: chapterItems }))
   }, [items])
 
-  const maxPhase = useMemo(
-    () => Math.max(...items.map((i) => i.phase ?? 0), 1),
-    [items],
-  )
+  const lockedPhaseCount = unlockMode === 'progressive' && totalPhases > maxUnlockedPhase
+    ? totalPhases - maxUnlockedPhase
+    : 0
+
+  const handleExpandPhase = async (phase, chapterItems) => {
+    const isExpanded = expandedPhase === phase
+    setExpandedPhase(isExpanded ? null : phase)
+    if (!isExpanded && activeTab === 'theory') {
+      await Promise.all(
+        chapterItems.map((item) =>
+          completeMutation.mutateAsync(item._id).catch(() => null),
+        ),
+      )
+    }
+  }
 
   return (
     <div dir="rtl">
@@ -95,7 +105,7 @@ export const StudentTheoryPage = () => {
           <p className="mb-4 text-body-md text-on-surface-variant">
             اختر كيفية عرض المحتوى لفئة {categoryCode}: متدرج (مرحلة تلو الأخرى) أو كامل (كل المراحل متاحة).
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               variant={unlockMode === 'progressive' ? 'primary' : 'outline'}
               size="sm"
@@ -113,6 +123,11 @@ export const StudentTheoryPage = () => {
               كامل
             </Button>
             <Badge variant="secondary">الوضع الحالي: {unlockMode === 'full' ? 'كامل' : 'متدرج'}</Badge>
+            {unlockMode === 'progressive' && (
+              <Badge variant="primary">
+                مفتوح حتى الفصل {maxUnlockedPhase} من {totalPhases}
+              </Badge>
+            )}
           </div>
         </Card>
       )}
@@ -122,7 +137,7 @@ export const StudentTheoryPage = () => {
       <AsyncContent
         isLoading={isLoading}
         error={error}
-        isEmpty={!items.length}
+        isEmpty={!items.length && !lockedPhaseCount}
         emptyIcon="menu_book"
         emptyTitle="لا يوجد محتوى"
         emptyDescription="سيظهر المحتوى التعليمي هنا عند توفره"
@@ -130,15 +145,15 @@ export const StudentTheoryPage = () => {
         {() => (
         <div className="space-y-comfortable">
           {chapters.map(({ phase, items: chapterItems }) => {
-            const chapterProgress = getChapterProgress(phase, maxPhase, unlockMode, progressPercent)
             const isExpanded = expandedPhase === phase
+            const isCurrentPhase = unlockMode === 'progressive' && phase === maxUnlockedPhase
 
             return (
               <Card key={phase}>
                 <button
                   type="button"
                   className="flex w-full items-start gap-4 text-start"
-                  onClick={() => setExpandedPhase(isExpanded ? null : phase)}
+                  onClick={() => handleExpandPhase(phase, chapterItems)}
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
                     <Icon name={CHAPTER_ICONS[phase % CHAPTER_ICONS.length]} size={26} />
@@ -148,18 +163,9 @@ export const StudentTheoryPage = () => {
                       <h3 className="text-headline-sm text-on-surface">
                         {phase === 0 ? 'مقدمة' : `الفصل ${phase}`}
                       </h3>
-                      <Badge variant="secondary">{chapterItems.length} درس</Badge>
-                    </div>
-                    <div className="mt-3">
-                      <div className="mb-1 flex justify-between text-label-sm text-on-surface-variant">
-                        <span>التقدّم</span>
-                        <span>{chapterProgress}%</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-surface-container">
-                        <div
-                          className="h-full rounded-full bg-secondary transition-all duration-500"
-                          style={{ width: `${chapterProgress}%` }}
-                        />
+                      <div className="flex flex-wrap gap-2">
+                        {isCurrentPhase && <Badge variant="primary">الفصل الحالي</Badge>}
+                        <Badge variant="secondary">{chapterItems.length} درس</Badge>
                       </div>
                     </div>
                   </div>
@@ -179,7 +185,7 @@ export const StudentTheoryPage = () => {
                             <h4 className="text-headline-sm text-on-surface">{item.title}</h4>
                             {item.imageUrl && (
                               <img
-                                src={item.imageUrl}
+                                src={resolveMediaUrl(item.imageUrl)}
                                 alt={item.title}
                                 className="mt-3 w-full max-w-lg rounded-lg object-cover max-h-48"
                                 loading="lazy"
@@ -193,7 +199,7 @@ export const StudentTheoryPage = () => {
                             )}
                             {item.mediaUrl && (
                               <img
-                                src={item.mediaUrl}
+                                src={resolveMediaUrl(item.mediaUrl)}
                                 alt={item.title}
                                 className="mt-3 w-full max-w-lg rounded-lg object-cover max-h-48"
                                 loading="lazy"
@@ -223,6 +229,19 @@ export const StudentTheoryPage = () => {
               </Card>
             )
           })}
+
+          {lockedPhaseCount > 0 && (
+            <Card className="border-dashed border-outline-variant bg-surface-container-low">
+              <div className="flex items-center gap-3 text-on-surface-variant">
+                <Icon name="lock" size={24} />
+                <p className="text-body-md">
+                  {lockedPhaseCount === 1
+                    ? `الفصل ${maxUnlockedPhase + 1} مقفل — أكمل جميع دروس الفصل ${maxUnlockedPhase} لفتحه`
+                    : `${lockedPhaseCount} فصول مقفلة — أكمل الفصل ${maxUnlockedPhase} للمتابعة`}
+                </p>
+              </div>
+            </Card>
+          )}
         </div>
         )}
       </AsyncContent>

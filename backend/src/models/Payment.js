@@ -15,6 +15,9 @@ const paymentSchema = new mongoose.Schema(
         status: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
         gateway: { type: String, default: null },
         gatewayRef: { type: String, default: null },
+        studentReference: { type: String, default: null },
+        studentClaimedAt: { type: Date, default: null },
+        confirmedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         paidAt: { type: Date, default: null },
     },
     { timestamps: true }

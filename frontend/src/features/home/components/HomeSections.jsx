@@ -52,7 +52,7 @@ export const PopularLicenses = () => {
       <div className="mb-loose flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-headline-md text-primary">اختر نوع الرخصة</h2>
-          <p className="mt-2 text-body-md text-on-surface-variant">بطاقات واضحة — اضغط للتفاصيل</p>
+          <p className="mt-2 text-body-md text-on-surface-variant">اضغط للتفاصيل</p>
         </div>
         <Link to={ROUTES.LICENSES}>
           <Button variant="outline" size="sm">كل الفئات</Button>

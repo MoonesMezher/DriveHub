@@ -22,6 +22,7 @@ router.get('/statistics', studentController.statistics);
 
 router.get('/content/theory', attachPagination, paginationQuery, validate, requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.listTheory);
 router.get('/content/theory/:id', ...idParam('id', 'المحتوى'), requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.getTheory);
+router.post('/content/theory/:id/complete', ...idParam('id', 'المحتوى'), requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.completeTheory);
 router.get('/content/shared', requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.listShared);
 router.get('/content/specific', requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.listSpecific);
 router.get('/content/videos', requirePermission(PERMISSIONS.LEARN_CONTENT), studentController.listVideos);

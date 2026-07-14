@@ -13,9 +13,9 @@ const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const { getActiveEnrollment } = require('../helpers/enrollment.helper');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
+const { PRACTICE_PASS_THRESHOLD } = require('../constants/examThresholds');
 const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
-const PASS_THRESHOLD = 70;
 const DEFAULT_QUESTION_COUNT = 20;
 const SUBMIT_GRACE_SECONDS = 5;
 
@@ -37,6 +37,14 @@ const stripQuestion = (q, sourceId) => ({
     difficulty: q.difficulty,
     sourceId,
 });
+
+const normalizeIdSet = (ids = []) => ids.map((id) => String(id)).sort();
+const sameQuestionSet = (a = [], b = []) => {
+    if (a.length !== b.length) return false;
+    const aa = normalizeIdSet(a);
+    const bb = normalizeIdSet(b);
+    return aa.every((id, idx) => id === bb[idx]);
+};
 
 const buildAnswerKey = async (categoryCode, subTypeCode = null, schoolId = null) => {
     const code = categoryCode.toUpperCase();
@@ -79,6 +87,103 @@ const buildAnswerKey = async (categoryCode, subTypeCode = null, schoolId = null)
 };
 
 class ExamService {
+    _pickQuestions(pool, count, previousQuestionIds = []) {
+        if (pool.length <= count) return shuffle(pool).slice(0, count);
+
+        let picked = shuffle(pool).slice(0, count);
+        if (!previousQuestionIds.length) return picked;
+
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+            if (!sameQuestionSet(picked.map((q) => q._id), previousQuestionIds)) {
+                return picked;
+            }
+            picked = shuffle(pool).slice(0, count);
+        }
+        return picked;
+    }
+
+    async _finalizeSession(userId, session, rawAnswers = []) {
+        const answerKey = await buildAnswerKey(session.categoryCode, session.subTypeCode, session.schoolId);
+        const allowedIds = new Set((session.questionIds || []).map(String));
+        const answerMap = new Map(
+            (rawAnswers || [])
+                .filter((a) => allowedIds.has(String(a.questionId)))
+                .map((a) => [String(a.questionId), a.selectedAnswer]),
+        );
+
+        let correctCount = 0;
+        const review = (session.questionIds || []).map((qId) => {
+            const key = answerKey.get(String(qId));
+            const selectedAnswer = answerMap.get(String(qId)) ?? null;
+            const isCorrect = Boolean(key && selectedAnswer != null && selectedAnswer === key.correctAnswer);
+            if (isCorrect) correctCount += 1;
+            return {
+                questionId: qId,
+                text: key?.text || null,
+                selectedAnswer,
+                correctAnswer: key?.correctAnswer || null,
+                explanation: key?.explanation || '',
+                isCorrect,
+                unanswered: selectedAnswer == null,
+            };
+        });
+
+        const total = session.questionIds.length || 1;
+        const score = Math.round((correctCount / total) * 100);
+        const passed = score >= PRACTICE_PASS_THRESHOLD;
+        const elapsedSeconds = Math.min(
+            session.durationSeconds,
+            Math.max(0, Math.round((Date.now() - session.startedAt.getTime()) / 1000)),
+        );
+
+        const enrollment = session.enrollmentId
+            ? await Enrollment.findById(session.enrollmentId)
+            : await getActiveEnrollment(userId);
+
+        const exam = await PracticeExam.create({
+            userId,
+            enrollmentId: enrollment?._id || session.enrollmentId || null,
+            schoolId: session.schoolId || null,
+            categoryCode: session.categoryCode,
+            subTypeCode: session.subTypeCode,
+            score,
+            passed,
+            attempt: session.attempt,
+            durationSeconds: elapsedSeconds,
+            answers: (rawAnswers || []).filter((a) => allowedIds.has(String(a.questionId))),
+            questionIds: session.questionIds,
+        });
+
+        session.status = 'submitted';
+        session.submittedAt = new Date();
+        session.practiceExamId = exam._id;
+        await session.save();
+
+        if (enrollment) {
+            const { StudentStatistics } = require('../models');
+            await StudentStatistics.findOneAndUpdate(
+                { enrollmentId: enrollment._id },
+                {
+                    $push: {
+                        practiceScores: {
+                            examId: exam._id,
+                            score: exam.score,
+                            passed: exam.passed,
+                            takenAt: new Date(),
+                        },
+                    },
+                    $set: {
+                        userId,
+                        progressPercent: Math.min(100, Math.round((exam.score / 100) * 60)),
+                    },
+                },
+                { upsert: true, new: true },
+            );
+        }
+
+        return { exam, review, score, passed };
+    }
+
     async _collectQuestions(categoryCode, subTypeCode = null, schoolId = null) {
         const code = categoryCode.toUpperCase();
         const sub = subTypeCode?.toUpperCase() || null;
@@ -139,16 +244,30 @@ class ExamService {
         if (!pool.length) throw new ApiError(404, ERR.NO_QUESTIONS_AVAILABLE);
 
         const count = Math.min(data.questionCount || DEFAULT_QUESTION_COUNT, pool.length);
-        const questions = shuffle(pool).slice(0, count);
+        const lastAttempt = await PracticeExam.findOne({
+            userId,
+            categoryCode: categoryCode.toUpperCase(),
+        })
+            .sort({ completedAt: -1 })
+            .select('questionIds')
+            .lean();
+        const questions = this._pickQuestions(pool, count, lastAttempt?.questionIds || []);
         const previousAttempts = await PracticeExam.countDocuments({ userId, categoryCode: categoryCode.toUpperCase() });
         const durationSeconds = data.durationSeconds || 1800;
         const startedAt = new Date();
         const expiresAt = new Date(startedAt.getTime() + durationSeconds * 1000);
 
-        await PracticeExamSession.updateMany(
-            { userId, status: 'active' },
-            { status: 'expired' },
-        );
+        const activeSessions = await PracticeExamSession.find({ userId, status: 'active' });
+        for (const activeSession of activeSessions) {
+            const overdue = activeSession.expiresAt.getTime() + SUBMIT_GRACE_SECONDS * 1000 < Date.now();
+            if (overdue) {
+                activeSession.status = 'expired';
+                await activeSession.save();
+                continue;
+            }
+            // Enter/exit without explicit submit must still be accounted as a final attempt.
+            await this._finalizeSession(userId, activeSession, []);
+        }
 
         const session = await PracticeExamSession.create({
             userId,
@@ -174,7 +293,7 @@ class ExamService {
             questionCount: count,
             durationSeconds,
             expiresAt,
-            passThreshold: PASS_THRESHOLD,
+            passThreshold: PRACTICE_PASS_THRESHOLD,
             questions,
         };
     }
@@ -197,80 +316,8 @@ class ExamService {
             throw new ApiError(400, ERR.PRACTICE_SESSION_EXPIRED);
         }
 
-        const enrollment = session.enrollmentId
-            ? await Enrollment.findById(session.enrollmentId)
-            : await getActiveEnrollment(userId);
-        const categoryCode = session.categoryCode;
-        const subTypeCode = session.subTypeCode;
-        const schoolId = session.schoolId;
-
-        const answerKey = await buildAnswerKey(categoryCode, subTypeCode, schoolId);
-        const allowedIds = new Set(session.questionIds.map(String));
-        const answers = (data.answers || []).filter((a) => allowedIds.has(String(a.questionId)));
-        let correctCount = 0;
-        const review = answers.map((answer) => {
-            const key = answerKey.get(String(answer.questionId));
-            const isCorrect = Boolean(key && answer.selectedAnswer === key.correctAnswer);
-            if (isCorrect) correctCount += 1;
-            return {
-                questionId: answer.questionId,
-                text: key?.text || null,
-                selectedAnswer: answer.selectedAnswer,
-                correctAnswer: key?.correctAnswer || null,
-                explanation: key?.explanation || '',
-                isCorrect,
-            };
-        });
-
-        const total = session.questionIds.length || 1;
-        const score = Math.round((correctCount / total) * 100);
-        const passed = score >= PASS_THRESHOLD;
-        const elapsedSeconds = Math.min(
-            session.durationSeconds,
-            Math.round((now - session.startedAt.getTime()) / 1000),
-        );
-
-        const exam = await PracticeExam.create({
-            userId,
-            enrollmentId: enrollment?._id || session.enrollmentId || null,
-            schoolId: schoolId || null,
-            categoryCode,
-            subTypeCode,
-            score,
-            passed,
-            attempt: session.attempt,
-            durationSeconds: elapsedSeconds,
-            answers,
-            questionIds: session.questionIds,
-        });
-
-        session.status = 'submitted';
-        session.submittedAt = new Date();
-        session.practiceExamId = exam._id;
-        await session.save();
-
-        if (enrollment) {
-            const { StudentStatistics } = require('../models');
-            await StudentStatistics.findOneAndUpdate(
-                { enrollmentId: enrollment._id },
-                {
-                    $push: {
-                        practiceScores: {
-                            examId: exam._id,
-                            score: exam.score,
-                            passed: exam.passed,
-                            takenAt: new Date(),
-                        },
-                    },
-                    $set: {
-                        progressPercent: Math.min(100, Math.round((exam.score / 100) * 60)),
-                    },
-                },
-                { upsert: true, new: true },
-            );
-        }
-
-        return { exam, review, score, passed, passThreshold: PASS_THRESHOLD };
+        const finalized = await this._finalizeSession(userId, session, data.answers || []);
+        return { ...finalized, passThreshold: PRACTICE_PASS_THRESHOLD };
     }
 
     async getPracticeStatus(userId) {
@@ -287,7 +334,7 @@ class ExamService {
                 .lean();
         }
         return {
-            passThreshold: PASS_THRESHOLD,
+            passThreshold: PRACTICE_PASS_THRESHOLD,
             alreadyPassed: Boolean(lastPassed),
             lastPassedAt: lastPassed?.completedAt || null,
         };
@@ -364,7 +411,7 @@ class ExamService {
                 : null,
             schedules,
             finalResult,
-            passThreshold: PASS_THRESHOLD,
+            passThreshold: PRACTICE_PASS_THRESHOLD,
             retakeEligible,
             retakeScope,
             pendingRetakePayment: Boolean(pendingRetake),
@@ -380,8 +427,8 @@ class ExamService {
         const enrollment = await Enrollment.findById(data.enrollmentId);
         if (!enrollment) throw new ApiError(404, ERR.ENROLLMENT_NOT_FOUND);
 
-        const theoryPassed = data.theoryScore != null ? data.theoryScore >= PASS_THRESHOLD : null;
-        const practicalPassed = data.practicalScore != null ? data.practicalScore >= PASS_THRESHOLD : null;
+        const theoryPassed = data.theoryScore != null ? data.theoryScore >= PRACTICE_PASS_THRESHOLD : null;
+        const practicalPassed = data.practicalScore != null ? data.practicalScore >= PRACTICE_PASS_THRESHOLD : null;
 
         const enrollmentService = require('./enrollment.service');
         const retakeScope = data.retakeScope
@@ -435,7 +482,19 @@ class ExamService {
     }
 
     async listCertificates(userId) {
-        return DrivingLicenseRecord.find({ userId }).sort({ issueDate: -1 }).lean();
+        const verificationService = require('./verification.service');
+        const records = await DrivingLicenseRecord.find({ userId }).sort({ issueDate: -1 }).lean();
+        const withVerification = await Promise.all(
+            records.map(async (record) => {
+                const verification = await verificationService.ensureCertificateToken(record._id);
+                return {
+                    ...record,
+                    verificationToken: verification?.verificationToken || record.verificationToken,
+                    verifyPath: verification?.verifyPath || null,
+                };
+            }),
+        );
+        return withVerification;
     }
 }
 

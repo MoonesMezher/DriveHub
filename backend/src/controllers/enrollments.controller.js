@@ -33,14 +33,13 @@ const initiatePayment = asyncHandler(async (req, res) => {
     return success(res, result);
 });
 
-const confirmPayment = asyncHandler(async (req, res) => {
-    const result = await paymentService.confirm({
+const claimPayment = asyncHandler(async (req, res) => {
+    const result = await paymentService.claim({
         enrollmentId: req.params.id,
         userId: req._user.userId,
-        amount: req.body.amount,
-        gatewayRef: req.body.gatewayRef,
+        studentReference: req.body.studentReference,
     });
-    return success(res, result, { message: 'تم تأكيد الدفع بنجاح' });
+    return success(res, result, { message: 'تم تسجيل إعلامك بالدفع — بانتظار تأكيد المدرسة' });
 });
 
 const createRetake = asyncHandler(async (req, res) => {
@@ -60,14 +59,29 @@ const initiateRetakePayment = asyncHandler(async (req, res) => {
     return success(res, result);
 });
 
-const confirmRetakePayment = asyncHandler(async (req, res) => {
-    const result = await paymentService.confirmRetake({
+const claimRetakePayment = asyncHandler(async (req, res) => {
+    const result = await paymentService.claimRetake({
         enrollmentId: req.params.id,
         userId: req._user.userId,
-        amount: req.body.amount,
-        gatewayRef: req.body.gatewayRef,
+        studentReference: req.body.studentReference,
     });
-    return success(res, result, { message: 'تم تأكيد دفع الإعادة بنجاح' });
+    return success(res, result, { message: 'تم تسجيل إعلامك بدفع الإعادة — بانتظار تأكيد المدرسة' });
+});
+
+const payFromWallet = asyncHandler(async (req, res) => {
+    const result = await paymentService.payFromWallet({
+        enrollmentId: req.params.id,
+        userId: req._user.userId,
+    });
+    return success(res, result, { message: 'تم الدفع من الرصيد وحجز المقعد' });
+});
+
+const payRetakeFromWallet = asyncHandler(async (req, res) => {
+    const result = await paymentService.payRetakeFromWallet({
+        enrollmentId: req.params.id,
+        userId: req._user.userId,
+    });
+    return success(res, result, { message: 'تم دفع الإعادة من الرصيد' });
 });
 
 module.exports = {
@@ -76,8 +90,10 @@ module.exports = {
     getById,
     cancel,
     initiatePayment,
-    confirmPayment,
+    claimPayment,
     createRetake,
     initiateRetakePayment,
-    confirmRetakePayment,
+    claimRetakePayment,
+    payFromWallet,
+    payRetakeFromWallet,
 };

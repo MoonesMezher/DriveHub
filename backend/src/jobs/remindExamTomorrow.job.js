@@ -38,9 +38,8 @@ const remindExamTomorrow = async () => {
                 title: 'تذكير بموعد الامتحان',
                 message,
                 data: { scheduleId: schedule._id, examDate: schedule.examDate },
-                channels: ['in_app', 'email', 'sms'],
+                channels: ['in_app', 'email'],
                 email: student?.email,
-                phone: student?.phone,
             });
 
             await TrafficExamSchedule.updateOne({ _id: schedule._id }, { reminderSent: true });

@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const { expireAwaitingPaymentEnrollments } = require('./expirePayments.job');
 const { remindExamTomorrow } = require('./remindExamTomorrow.job');
 const { remindPaymentDeadline } = require('./remindPaymentDeadline.job');
+const { completeCourses } = require('./completeCourses.job');
 
 const registerJobs = () => {
     if (process.env.NODE_ENV === 'test') return;
@@ -12,10 +13,11 @@ const registerJobs = () => {
         expireAwaitingPaymentEnrollments();
     });
 
-    // يومياً 08:00: تذكير امتحان الغد + مهلة الدفع خلال 24 ساعة
+    // يومياً 08:00: تذكير امتحان الغد + مهلة الدفع + إكمال الدورات
     cron.schedule('0 8 * * *', () => {
         remindExamTomorrow();
         remindPaymentDeadline();
+        completeCourses();
     });
 
     logger.info('jobs.scheduler.started');

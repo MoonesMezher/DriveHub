@@ -1,22 +1,51 @@
+const extractYoutubeId = (url) => {
+  if (!url) return null
+
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./, '')
+
+    if (host === 'youtu.be') {
+      return parsed.pathname.slice(1).split('/')[0] || null
+    }
+
+    if (host.includes('youtube.com')) {
+      if (parsed.pathname.startsWith('/embed/')) {
+        return parsed.pathname.split('/embed/')[1]?.split('/')[0] || null
+      }
+      if (parsed.pathname.startsWith('/shorts/')) {
+        return parsed.pathname.split('/shorts/')[1]?.split('/')[0] || null
+      }
+      return parsed.searchParams.get('v')
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+const toYoutubeEmbedUrl = (url) => {
+  const videoId = extractYoutubeId(url)
+  if (!videoId) return null
+  return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`
+}
+
 /** Renders YouTube embed or external video link */
 export const VideoEmbed = ({ url, title = 'فيديو تعليمي', className = '' }) => {
   if (!url) return null
 
-  const isEmbed = url.includes('youtube.com/embed') || url.includes('youtu.be')
-  const embedUrl = url.includes('youtu.be')
-    ? `https://www.youtube.com/embed/${url.split('/').pop()}`
-    : url.includes('watch?v=')
-      ? url.replace('watch?v=', 'embed/')
-      : url
+  const embedUrl = toYoutubeEmbedUrl(url)
 
-  if (isEmbed || url.includes('youtube')) {
+  if (embedUrl) {
     return (
       <div className={`aspect-video overflow-hidden rounded-xl bg-surface-container ${className}`}>
         <iframe
           src={embedUrl}
           title={title}
           className="h-full w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
       </div>

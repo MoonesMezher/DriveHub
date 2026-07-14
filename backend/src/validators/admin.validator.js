@@ -13,6 +13,7 @@ const {
     optionalMongoIdBody,
     requiredEnumBody,
     optionalDate,
+    optionalMediaRef,
 } = require('./chains');
 
 const upsertPricingRules = [
@@ -34,7 +35,7 @@ const updateCommissionRules = [
 
 const createAdRules = [
     requiredString('title', 'عنوان الإعلان', { min: 2, max: 200 }),
-    optionalString('imageUrl', 'رابط الصورة', { max: 500 }),
+    optionalMediaRef('imageUrl', 'صورة الإعلان'),
     optionalString('link', 'رابط الإعلان', { max: 500 }),
     requiredEnumBody('placement', 'موضع الإعلان', ['home', 'student', 'sidebar', 'banner']),
     body('status').optional().isIn(['draft', 'active', 'paused', 'expired']).withMessage(msg.mustBeIn('حالة الإعلان', ['draft', 'active', 'paused', 'expired'])),
@@ -86,6 +87,14 @@ const createTrafficAccountRules = [
         .withMessage('كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
 ];
 
+const rejectComplianceRules = [
+    body('rejectionReason')
+        .notEmpty()
+        .withMessage(msg.required('سبب الرفض'))
+        .isLength({ min: 3, max: 500 })
+        .withMessage('سبب الرفض يجب أن يكون بين 3 و 500 حرف'),
+];
+
 module.exports = {
     upsertPricingRules,
     updateCommissionRules,
@@ -95,4 +104,5 @@ module.exports = {
     updatePrivacyRules,
     updateRegistrationRules,
     createTrafficAccountRules,
+    rejectComplianceRules,
 };

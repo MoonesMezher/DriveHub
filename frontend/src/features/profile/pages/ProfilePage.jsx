@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PageHeader, Card, AsyncContent, Button, Input, Badge, Avatar, FormSection } from '@/components/ui'
+import { DocumentUploadSection } from '@/components/ui/DocumentUploadSection'
 import { profileService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
@@ -14,7 +15,7 @@ const resolveProfile = (data) => {
   return candidate && typeof candidate === 'object' ? candidate : null
 }
 
-const ProfileContent = ({ profile, activeRole, form, setForm, onSubmit, isSaving }) => (
+const ProfileContent = ({ profile, activeRole, form, setForm, onSubmit, isSaving, showDocuments }) => (
   <div className="bento-grid">
     <Card className="col-span-12 md:col-span-4" padding="lg">
       <div className="flex flex-col items-center text-center md:items-start md:text-start">
@@ -101,6 +102,16 @@ const ProfileContent = ({ profile, activeRole, form, setForm, onSubmit, isSaving
         </form>
       </FormSection>
     </Card>
+
+    {showDocuments && (
+      <Card className="col-span-12" padding="lg">
+        <DocumentUploadSection
+          requiredOnly
+          title="المستندات المطلوبة"
+          description="ارفع صورة الهوية والتوثيق الطبي — تُشفَّر الملفات ويراجعها مدير المدرسة عند التحقق من طلبك"
+        />
+      </Card>
+    )}
   </div>
 )
 
@@ -108,6 +119,7 @@ export const ProfilePage = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const activeRole = user?.activeContext?.role
+  const showDocuments = !activeRole || activeRole === 'registered' || activeRole === 'student'
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -180,6 +192,7 @@ export const ProfilePage = () => {
               setForm={setForm}
               onSubmit={handleSubmit}
               isSaving={updateMutation.isPending}
+              showDocuments={showDocuments}
             />
           ) : null
         }

@@ -7,6 +7,10 @@ import { AdminUsersPage } from './AdminUsersPage'
 import { AdminReportsPage } from './AdminReportsPage'
 import { AdminAuditPage } from './AdminAuditPage'
 import { AdminSettingsPage } from './AdminSettingsPage'
+import { AdminLicensesPage } from './AdminLicensesPage'
+import { AdminFaqPage } from './AdminFaqPage'
+import { AdminRequirementsPage } from './AdminRequirementsPage'
+import { AdminTestimonialsPage } from './AdminTestimonialsPage'
 import { AdminAdsPage } from './AdminAdsPage'
 
 export const AdminRoutes = () => (
@@ -14,6 +18,10 @@ export const AdminRoutes = () => (
     <Route index element={<AdminHomePage />} />
     <Route path="schools" element={<AdminSchoolsPage />} />
     <Route path="pricing" element={<AdminPricingPage />} />
+    <Route path="licenses" element={<AdminLicensesPage />} />
+    <Route path="requirements" element={<AdminRequirementsPage />} />
+    <Route path="testimonials" element={<AdminTestimonialsPage />} />
+    <Route path="faq" element={<AdminFaqPage />} />
     <Route path="compliance" element={<AdminCompliancePage />} />
     <Route path="users" element={<AdminUsersPage />} />
     <Route path="reports" element={<AdminReportsPage />} />

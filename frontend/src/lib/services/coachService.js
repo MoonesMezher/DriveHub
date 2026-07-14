@@ -7,6 +7,8 @@ export const coachService = {
   completeLesson: (id, data) => apiClient.patch(ENDPOINTS.coach.completeLesson(id), data),
   listNotes: (params) => apiClient.get(`${ENDPOINTS.coach.notes}${buildQueryString(params)}`),
   addNote: (data) => apiClient.post(ENDPOINTS.coach.notes, data),
+  listQuestionBanks: () => apiClient.get(ENDPOINTS.coach.questionBanks),
+  listContent: (contentType) => apiClient.get(`${ENDPOINTS.coach.content}?contentType=${contentType}`),
   requestQuestionEdit: (data) => apiClient.post(ENDPOINTS.coach.editQuestion, data),
   requestContentEdit: (data) => apiClient.post(ENDPOINTS.coach.editContent, data),
 }

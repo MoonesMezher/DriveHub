@@ -3,6 +3,7 @@ const { StudentRoster, Enrollment, TrainingCourse, DrivingSchool } = require('..
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
+const courseHelper = require('../helpers/course.helper');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
@@ -15,12 +16,22 @@ const ROSTER_ELIGIBLE = [
 ];
 
 class RosterService {
+    assertRosterTimingAllowed(course) {
+        if (!course?.launchDate) {
+            throw new ApiError(400, ERR.ROSTER_COURSE_NOT_LAUNCHED);
+        }
+        if (!courseHelper.isTrainingPeriodComplete(course)) {
+            throw new ApiError(400, ERR.ROSTER_TOO_EARLY);
+        }
+    }
+
     async create({ courseId, schoolId, studentIds, enrollmentIds = [], submittedBy }) {
         const existing = await StudentRoster.findOne({ courseId });
         if (existing) throw new ApiError(409, ERR.ROSTER_EXISTS);
 
         const course = await TrainingCourse.findOne({ _id: courseId, schoolId });
         if (!course) throw new ApiError(404, ERR.COURSE_NOT_FOUND);
+        this.assertRosterTimingAllowed(course);
 
         const enrollments = await Enrollment.find({
             courseId,
@@ -67,6 +78,7 @@ class RosterService {
             TrainingCourse.findById(roster.courseId).lean(),
             DrivingSchool.findById(roster.schoolId).select('name governorate').lean(),
         ]);
+        this.assertRosterTimingAllowed(course);
 
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const submittedAt = new Date();

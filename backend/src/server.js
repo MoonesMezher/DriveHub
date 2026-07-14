@@ -3,7 +3,7 @@ const config = require('./config');
 const { connectDatabase } = require('./config/database');
 const { registerJobs } = require('./jobs');
 
-const startServer = async () => {
+const startServer = async() => {
     await connectDatabase();
     registerJobs();
     const app = createApp();

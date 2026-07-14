@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants/routes'
 import { Icon } from '@/components/ui/Icon'
+import { AdsBanner } from '@/components/ui/AdsBanner'
 import { PUBLIC_FOOTER_NAV } from '@/lib/design/navigation'
 
 export const SiteFooter = ({ variant = 'full' }) => {
@@ -54,6 +55,8 @@ export const SiteFooter = ({ variant = 'full' }) => {
             </div>
           </nav>
         </div>
+
+        <AdsBanner placement="footer" className="mt-loose" />
 
         <div className="mt-loose flex flex-col gap-3 border-t border-outline-variant/60 pt-comfortable sm:flex-row sm:items-center sm:justify-between">
           <p className="text-label-sm text-on-surface-variant">

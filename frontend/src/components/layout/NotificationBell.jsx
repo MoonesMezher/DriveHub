@@ -13,7 +13,7 @@ export const NotificationBell = () => {
     staleTime: 30_000,
   })
 
-  const unread = (data?.items || []).length
+  const unread = (data?.notifications ?? data?.items ?? []).filter((n) => !n.read).length
 
   return (
     <Link

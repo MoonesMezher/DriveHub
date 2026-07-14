@@ -1,213 +1,298 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  PageHeader, Card, Button, Input, DataTable, SkeletonTable, Alert, Tabs, StatusBadge,
+  PageHeader, Card, Button, DataTable, SkeletonTable, Alert, StatusBadge, Drawer, Textarea,
 } from '@/components/ui'
 import { adminService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDate } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
+import { PERMISSIONS } from '@/lib/auth/permissions'
+import { usePermissions } from '@/hooks/usePermissions'
 
-const reviewStatusLabels = {
+const requestStatusLabels = {
   pending: 'قيد المراجعة',
   approved: 'موافق عليه',
   rejected: 'مرفوض',
 }
 
-const reviewStatusVariants = {
+const requestStatusVariants = {
   pending: 'warning',
   approved: 'success',
   rejected: 'error',
 }
 
-const TABS = [
-  { id: 'reviews', label: 'تقييمات معلّقة' },
-  { id: 'applications', label: 'طلبات المدارس' },
-]
+const requestTypeLabels = {
+  school_onboarding: 'طلب إضافة مدرسة',
+}
+
+const maskNationalId = (nationalId) => {
+  if (!nationalId) return '—'
+  const str = String(nationalId)
+  if (str.length <= 4) return str
+  return `${'*'.repeat(str.length - 4)}${str.slice(-4)}`
+}
 
 export const AdminCompliancePage = () => {
   const toast = useToast()
+  const { can } = usePermissions()
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState('reviews')
-  const [rejectReasons, setRejectReasons] = useState({})
+  const [includeHistory, setIncludeHistory] = useState(false)
+  const [activeRequestId, setActiveRequestId] = useState(null)
+  const [rejectReason, setRejectReason] = useState('')
 
-  const reviewsQuery = useQuery({
-    queryKey: ['admin', 'reviewsPending'],
-    queryFn: () => adminService.pendingReviews().then(unwrap),
+  const listQuery = useQuery({
+    queryKey: ['admin', 'compliance', includeHistory],
+    queryFn: () => adminService.listComplianceRequests({ includeHistory }).then(unwrap),
   })
 
-  const applicationsQuery = useQuery({
-    queryKey: ['admin', 'applications'],
-    queryFn: () => adminService.listApplications().then(unwrap),
+  const requestDetailsQuery = useQuery({
+    queryKey: ['admin', 'compliance', 'details', activeRequestId],
+    queryFn: () => adminService.getComplianceRequest(activeRequestId).then(unwrap),
+    enabled: Boolean(activeRequestId),
   })
 
-  const reviews = reviewsQuery.data?.reviews ?? []
-  const applications = applicationsQuery.data?.applications ?? []
+  const requests = listQuery.data?.requests ?? []
+  const requestDetails = requestDetailsQuery.data?.request ?? null
+  const canManageCompliance = can(PERMISSIONS.MANAGE_COMPLIANCE)
+  const pendingCount = useMemo(
+    () => requests.filter((item) => item.status === 'pending').length,
+    [requests],
+  )
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['admin', 'reviewsPending'] })
-    queryClient.invalidateQueries({ queryKey: ['admin', 'applications'] })
+    queryClient.invalidateQueries({ queryKey: ['admin', 'compliance'] })
   }
 
-  const moderateMutation = useMutation({
-    mutationFn: ({ id, adminStatus }) => adminService.moderateReview(id, adminStatus).then(unwrap),
+  const approveMutation = useMutation({
+    mutationFn: (id) => adminService.approveComplianceRequest(id).then(unwrap),
     onSuccess: () => {
-      toast.success('تمت مراجعة التقييم')
+      toast.success('تم قبول الطلب')
+      setActiveRequestId(null)
       invalidate()
     },
-    onError: (err) => toast.error(err, 'فشل مراجعة التقييم'),
+    onError: (err) => toast.error(err, 'فشل قبول الطلب'),
   })
 
-  const reviewAppMutation = useMutation({
-    mutationFn: ({ id, status, rejectionReason }) =>
-      adminService.reviewApplication(id, { status, rejectionReason }).then(unwrap),
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason }) => adminService.rejectComplianceRequest(id, reason).then(unwrap),
     onSuccess: () => {
-      toast.success('تمت مراجعة الطلب')
+      toast.success('تم رفض الطلب')
+      setRejectReason('')
+      setActiveRequestId(null)
       invalidate()
     },
-    onError: (err) => toast.error(err, 'فشل مراجعة الطلب'),
+    onError: (err) => toast.error(err, 'فشل رفض الطلب'),
   })
 
-  const reviewColumns = [
-    {
-      key: 'school',
-      label: 'المدرسة',
-      render: (review) => review.schoolId?.name || '—',
-    },
-    {
-      key: 'reviewer',
-      label: 'المقيّم',
-      render: (review) => review.reviewerId?.name || '—',
-    },
-    { key: 'rating', label: 'التقييم', render: (review) => `${review.rating}/5` },
-    {
-      key: 'comment',
-      label: 'التعليق',
-      render: (review) => <span className="max-w-xs truncate">{review.comment || '—'}</span>,
-    },
-    {
-      key: 'actions',
-      label: 'إجراءات',
-      render: (review) => (
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={() => moderateMutation.mutate({ id: review._id, adminStatus: 'approved' })}
-            disabled={moderateMutation.isPending}
-          >
-            موافقة
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => moderateMutation.mutate({ id: review._id, adminStatus: 'rejected' })}
-            disabled={moderateMutation.isPending}
-          >
-            رفض
-          </Button>
-        </div>
-      ),
-    },
-  ]
-
-  const applicationColumns = [
+  const columns = [
     { key: 'schoolName', label: 'اسم المدرسة' },
+    { key: 'city', label: 'المدينة', render: (row) => row.city || '—' },
+    { key: 'ownerName', label: 'المالك', render: (row) => row.ownerName || '—' },
     {
-      key: 'applicant',
-      label: 'مقدّم الطلب',
-      render: (app) => app.applicantUserId?.name || '—',
+      key: 'type',
+      label: 'النوع',
+      render: (row) => requestTypeLabels[row.type] || row.type,
     },
-    { key: 'governorate', label: 'المحافظة', render: (app) => app.governorate || '—' },
     {
       key: 'status',
       label: 'الحالة',
-      render: (app) => (
+      render: (row) => (
         <StatusBadge
-          status={app.status}
-          labels={reviewStatusLabels}
-          variants={reviewStatusVariants}
+          status={row.status}
+          labels={requestStatusLabels}
+          variants={requestStatusVariants}
         />
       ),
     },
     {
       key: 'createdAt',
       label: 'التاريخ',
-      render: (app) => formatDate(app.createdAt),
+      render: (row) => formatDate(row.createdAt),
     },
     {
       key: 'actions',
       label: 'إجراءات',
-      render: (app) => (
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Button
-            size="sm"
-            onClick={() => reviewAppMutation.mutate({ id: app._id, status: 'approved' })}
-            disabled={reviewAppMutation.isPending}
-          >
-            قبول
-          </Button>
-          <Input
-            placeholder="سبب الرفض"
-            value={rejectReasons[app._id] || ''}
-            onChange={(e) =>
-              setRejectReasons((r) => ({ ...r, [app._id]: e.target.value }))
-            }
-            wrapperClassName="min-w-[140px]"
-          />
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() =>
-              reviewAppMutation.mutate({
-                id: app._id,
-                status: 'rejected',
-                rejectionReason: rejectReasons[app._id] || 'مرفوض',
-              })
-            }
-            disabled={reviewAppMutation.isPending}
-          >
-            رفض
-          </Button>
-        </div>
+      render: (row) => (
+        <Button size="sm" variant="ghost" onClick={() => setActiveRequestId(row.id)}>
+          عرض التفاصيل
+        </Button>
       ),
     },
   ]
 
-  const isLoading = tab === 'reviews' ? reviewsQuery.isLoading : applicationsQuery.isLoading
-  const error = tab === 'reviews' ? reviewsQuery.error : applicationsQuery.error
+  const isMutating = approveMutation.isPending || rejectMutation.isPending
 
   return (
     <div>
       <PageHeader
         variant="compact"
         title="التحقق والامتثال"
-        description="مراجعة التقييمات المعلّقة وطلبات انضمام المدارس"
+        description={`مراجعة طلبات الامتثال عالية الحساسية (طلبات معلّقة: ${pendingCount})`}
       />
 
-      <Card padding="none">
-        <Tabs tabs={TABS} activeId={tab} onChange={setTab} className="px-comfortable" />
-
-        <div className="p-comfortable">
-          {isLoading ? (
-            <SkeletonTable rows={5} cols={5} />
-          ) : error ? (
-            <Alert variant="error" title="حدث خطأ">{getErrorMessage(error)}</Alert>
-          ) : tab === 'reviews' ? (
-            <DataTable
-              columns={reviewColumns}
-              rows={reviews}
-              emptyLabel="لا توجد تقييمات معلّقة"
+      <Card className="mb-comfortable">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-body-md text-on-surface-variant">
+            تشمل هذه الصفحة طلبات إضافة المدارس مع بيانات المالك والحساب البنكي والمستندات.
+          </p>
+          <label className="inline-flex items-center gap-2 text-label-md text-on-surface">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border border-outline-variant"
+              checked={includeHistory}
+              onChange={(e) => setIncludeHistory(e.target.checked)}
             />
+            عرض السجل (الموافق والمرفوض)
+          </label>
+        </div>
+      </Card>
+
+      <Card padding="none">
+        <div className="p-comfortable">
+          {listQuery.isLoading ? (
+            <SkeletonTable rows={6} cols={6} />
+          ) : listQuery.error ? (
+            <Alert variant="error" title="حدث خطأ">{getErrorMessage(listQuery.error)}</Alert>
           ) : (
             <DataTable
-              columns={applicationColumns}
-              rows={applications}
-              emptyLabel="لا توجد طلبات معلّقة"
+              columns={columns}
+              rows={requests}
+              emptyLabel={includeHistory ? 'لا توجد طلبات امتثال' : 'لا توجد طلبات معلّقة'}
+              onRowClick={(row) => setActiveRequestId(row.id)}
             />
           )}
         </div>
       </Card>
+
+      <Drawer
+        open={Boolean(activeRequestId)}
+        onClose={() => {
+          setActiveRequestId(null)
+          setRejectReason('')
+        }}
+        title="تفاصيل طلب الامتثال"
+        className="w-[40rem] max-w-[95vw]"
+      >
+        <div className="space-y-4 p-comfortable">
+          {requestDetailsQuery.isLoading ? (
+            <SkeletonTable rows={4} cols={2} />
+          ) : requestDetailsQuery.error ? (
+            <Alert variant="error" title="فشل تحميل التفاصيل">
+              {getErrorMessage(requestDetailsQuery.error)}
+            </Alert>
+          ) : !requestDetails ? (
+            <Alert variant="warning" title="لا توجد بيانات للطلب" />
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-label-lg text-on-surface">
+                  {requestTypeLabels[requestDetails.type] || requestDetails.type}
+                </p>
+                <StatusBadge
+                  status={requestDetails.status}
+                  labels={requestStatusLabels}
+                  variants={requestStatusVariants}
+                />
+              </div>
+
+              <Card>
+                <h3 className="mb-3 text-title-sm text-primary">بيانات المدرسة</h3>
+                <div className="grid grid-cols-1 gap-2 text-body-md md:grid-cols-2">
+                  <p><strong>الاسم:</strong> {requestDetails.school?.name || '—'}</p>
+                  <p><strong>الاسم القانوني:</strong> {requestDetails.school?.legalName || '—'}</p>
+                  <p><strong>العنوان:</strong> {requestDetails.school?.address || '—'}</p>
+                  <p><strong>المدينة:</strong> {requestDetails.school?.city || '—'}</p>
+                  <p><strong>رقم الترخيص:</strong> {requestDetails.school?.licenseNumber || '—'}</p>
+                  <p><strong>عدد المركبات:</strong> {requestDetails.school?.vehiclesCount ?? '—'}</p>
+                  <p className="md:col-span-2">
+                    <strong>فئات الرخص:</strong> {(requestDetails.school?.categories || []).join('، ') || '—'}
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <h3 className="mb-3 text-title-sm text-primary">بيانات المالك</h3>
+                <div className="grid grid-cols-1 gap-2 text-body-md md:grid-cols-2">
+                  <p><strong>الاسم:</strong> {requestDetails.owner?.name || '—'}</p>
+                  <p><strong>الرقم الوطني:</strong> {maskNationalId(requestDetails.owner?.nationalId)}</p>
+                  <p><strong>الهاتف:</strong> {requestDetails.owner?.phone || '—'}</p>
+                  <p><strong>البريد:</strong> {requestDetails.owner?.email || '—'}</p>
+                </div>
+              </Card>
+
+              <Card>
+                <h3 className="mb-3 text-title-sm text-primary">البيانات البنكية</h3>
+                <div className="grid grid-cols-1 gap-2 text-body-md md:grid-cols-2">
+                  <p><strong>اسم الحساب:</strong> {requestDetails.bank?.accountName || '—'}</p>
+                  <p><strong>اسم البنك:</strong> {requestDetails.bank?.bankName || '—'}</p>
+                  <p className="md:col-span-2"><strong>IBAN / رقم الحساب:</strong> {requestDetails.bank?.iban || requestDetails.bank?.accountNumber || '—'}</p>
+                </div>
+              </Card>
+
+              <Card>
+                <h3 className="mb-3 text-title-sm text-primary">المرفقات</h3>
+                {requestDetails.documents?.length ? (
+                  <div className="space-y-2">
+                    {requestDetails.documents.map((doc) => (
+                      <div key={doc._id} className="rounded-lg border border-outline-variant p-3 text-body-sm">
+                        <p><strong>النوع:</strong> {doc.type}</p>
+                        <p><strong>الملف:</strong> {doc.originalName}</p>
+                        <p><strong>الحجم:</strong> {doc.size} بايت</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-body-sm text-on-surface-variant">لا توجد مرفقات مرتبطة بهذا الطلب.</p>
+                )}
+              </Card>
+
+              {requestDetails.status === 'pending' && canManageCompliance && (
+                <Card>
+                  <h3 className="mb-3 text-title-sm text-primary">إجراء المراجعة</h3>
+                  <Textarea
+                    label="سبب الرفض (إجباري عند الرفض)"
+                    placeholder="أدخل سبب الرفض إن أردت رفض الطلب"
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    rows={3}
+                  />
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      onClick={() => approveMutation.mutate(requestDetails.id)}
+                      disabled={isMutating}
+                    >
+                      قبول الطلب
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        if (!rejectReason.trim()) {
+                          toast.error('سبب الرفض مطلوب')
+                          return
+                        }
+                        rejectMutation.mutate({ id: requestDetails.id, reason: rejectReason.trim() })
+                      }}
+                      disabled={isMutating}
+                    >
+                      رفض الطلب
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
+              {requestDetails.status !== 'pending' && (
+                <Alert variant="info" title="تمت معالجة هذا الطلب">
+                  {requestDetails.status === 'approved'
+                    ? `تمت الموافقة بتاريخ ${formatDate(requestDetails.reviewedAt)}`
+                    : `تم الرفض بتاريخ ${formatDate(requestDetails.reviewedAt)} — السبب: ${requestDetails.rejectionReason || 'غير محدد'}`}
+                </Alert>
+              )}
+            </>
+          )}
+        </div>
+      </Drawer>
     </div>
   )
 }

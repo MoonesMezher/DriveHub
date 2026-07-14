@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
-  Alert, FormSection, SearchInput, StatusBadge,
+  Alert, FormSection, SearchInput, StatusBadge, LicenseCategorySelect,
 } from '@/components/ui'
-import { managerService } from '@/lib/services'
+import { managerService, schoolService } from '@/lib/services'
+import { computeMaxStudentsFromVehicles, STUDENTS_PER_VEHICLE } from '@/lib/constants/courseCapacity'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDate } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
@@ -53,12 +54,23 @@ export const ManagerCoursesPage = () => {
     subTypeCode: '',
     maxStudents: '30',
     paymentDeadlineDays: '3',
+    launchAfterCloseDays: '7',
   })
 
   const coursesQuery = useQuery({
     queryKey: ['manager', 'courses'],
     queryFn: () => managerService.listCourses().then(unwrap),
   })
+
+  const schoolQuery = useQuery({
+    queryKey: ['manager', 'school', schoolId],
+    queryFn: () => schoolService.getById(schoolId).then(unwrap),
+    enabled: Boolean(schoolId),
+  })
+
+  const suggestedMax = computeMaxStudentsFromVehicles(
+    schoolQuery.data?.school?.vehiclesCount ?? schoolQuery.data?.vehiclesCount,
+  )
 
   const courses = coursesQuery.data?.courses ?? []
 
@@ -82,7 +94,7 @@ export const ManagerCoursesPage = () => {
     mutationFn: (data) => managerService.createCourse(data).then(unwrap),
     onSuccess: () => {
       toast.success('تم إنشاء الدورة بنجاح')
-      setForm({ categoryCode: '', subTypeCode: '', maxStudents: '30', paymentDeadlineDays: '3' })
+      setForm({ categoryCode: '', subTypeCode: '', maxStudents: '30', paymentDeadlineDays: '3', launchAfterCloseDays: '7' })
       invalidate()
     },
     onError: (err) => toast.error(err, 'فشل إنشاء الدورة'),
@@ -134,13 +146,16 @@ export const ManagerCoursesPage = () => {
 
   const handleCreate = (e) => {
     e.preventDefault()
-    createMutation.mutate({
+    const payload = {
       schoolId,
       categoryCode: form.categoryCode.trim().toUpperCase(),
       subTypeCode: form.subTypeCode.trim() || undefined,
-      maxStudents: Number(form.maxStudents),
       paymentDeadlineDays: Number(form.paymentDeadlineDays),
-    })
+      launchAfterCloseDays: Number(form.launchAfterCloseDays),
+    }
+    const maxVal = Number(form.maxStudents)
+    if (maxVal > 0) payload.maxStudents = maxVal
+    createMutation.mutate(payload)
   }
 
   const columns = [
@@ -262,12 +277,9 @@ export const ManagerCoursesPage = () => {
         <Card title="دورة جديدة" className="xl:sticky xl:top-24 xl:self-start">
           <form onSubmit={handleCreate}>
             <FormSection description="أنشئ دورة جديدة لبدء استقبال طلبات الالتحاق">
-              <Input
-                label="رمز الفئة"
-                name="categoryCode"
+              <LicenseCategorySelect
                 value={form.categoryCode}
                 onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
-                placeholder="مثال: B"
                 required
               />
               <Input
@@ -284,7 +296,11 @@ export const ManagerCoursesPage = () => {
                 max={500}
                 value={form.maxStudents}
                 onChange={(e) => setForm((f) => ({ ...f, maxStudents: e.target.value }))}
-                required
+                hint={
+                  suggestedMax
+                    ? `مقترح: ${suggestedMax} (${schoolQuery.data?.school?.vehiclesCount} مركبة × ${STUDENTS_PER_VEHICLE}) — اتركه فارغاً لاستخدام المقترح`
+                    : `افتراضي: مركبات المدرسة × ${STUDENTS_PER_VEHICLE}`
+                }
               />
               <Input
                 label="مهلة الدفع (أيام)"
@@ -294,6 +310,17 @@ export const ManagerCoursesPage = () => {
                 max={14}
                 value={form.paymentDeadlineDays}
                 onChange={(e) => setForm((f) => ({ ...f, paymentDeadlineDays: e.target.value }))}
+                hint="يحددها المدير عند قبول الطلب (مثال 2–3 أيام)"
+              />
+              <Input
+                label="أيام الانطلاق بعد الإغلاق"
+                name="launchAfterCloseDays"
+                type="number"
+                min={1}
+                max={30}
+                value={form.launchAfterCloseDays}
+                onChange={(e) => setForm((f) => ({ ...f, launchAfterCloseDays: e.target.value }))}
+                hint="افتراضياً 7 أيام من إغلاق التسجيل"
               />
               <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 إنشاء الدورة

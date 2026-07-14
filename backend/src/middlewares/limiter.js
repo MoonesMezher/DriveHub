@@ -25,8 +25,24 @@ const refreshLimiter = rateLimiter({
     standardHeaders: true,
 })
 
+const forgotPasswordLimiter = rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: { error: 'محاولات كثيرة لطلب إعادة تعيين كلمة المرور، حاول لاحقاً' },
+    standardHeaders: true,
+})
+
+const verifyResetCodeLimiter = rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: 'محاولات كثيرة للتحقق من الرمز، حاول لاحقاً' },
+    standardHeaders: true,
+})
+
 module.exports = {
     apiLimiter,
     loginLimiter,
     refreshLimiter,
+    forgotPasswordLimiter,
+    verifyResetCodeLimiter,
 }

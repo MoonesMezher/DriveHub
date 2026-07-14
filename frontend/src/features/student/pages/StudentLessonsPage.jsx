@@ -44,8 +44,15 @@ export const StudentLessonsPage = () => {
     queryFn: async () => unwrap(await studentService.listLessons()),
   })
 
-  const enrollmentId =
-    form.enrollmentId || dashboardQuery.data?.dashboard?.enrollment?.id || ''
+  const enrollment = dashboardQuery.data?.dashboard?.enrollment
+  const enrollmentId = form.enrollmentId || enrollment?.id || ''
+
+  const enrollmentLabel = enrollment
+    ? [
+        enrollment.school?.name,
+        `فئة ${enrollment.categoryCode}${enrollment.subTypeCode ? ` (${enrollment.subTypeCode})` : ''}`,
+      ].filter(Boolean).join(' · ')
+    : ''
 
   const coachesQuery = useQuery({
     queryKey: ['student', 'eligible-coaches', enrollmentId],
@@ -114,14 +121,21 @@ export const StudentLessonsPage = () => {
 
       <Card title="حجز موعد جديد" className="mb-loose">
         <form onSubmit={handleBook} className="grid gap-comfortable md:grid-cols-2">
-          <Input
-            label="معرّف الاشتراك"
-            name="enrollmentId"
-            value={enrollmentId}
-            onChange={(e) => setForm((f) => ({ ...f, enrollmentId: e.target.value }))}
-            hint="يُملأ تلقائياً من اشتراكك النشط"
-            disabled={!!dashboardQuery.data?.dashboard?.enrollment?.id}
-          />
+          <div>
+            <label className="mb-2 block text-label-md text-on-surface">الاشتراك النشط</label>
+            {enrollmentId ? (
+              <p className="rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface">
+                {enrollmentLabel || 'اشتراك نشط'}
+              </p>
+            ) : (
+              <p className="text-body-md text-on-surface-variant">لا يوجد اشتراك نشط</p>
+            )}
+            {enrollment?.status && (
+              <p className="mt-1 text-label-sm text-on-surface-variant">
+                الحالة: {enrollment.status}
+              </p>
+            )}
+          </div>
 
           <div>
             <label className="mb-2 block text-label-md text-on-surface">المدرب</label>

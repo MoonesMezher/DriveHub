@@ -3,9 +3,11 @@ module.exports = {
     User: require('./User'),
     UserRole: require('./UserRole'),
     RefreshToken: require('./RefreshToken'),
+    PasswordResetToken: require('./PasswordResetToken'),
     UserLocation: require('./UserLocation'),
     DocumentUpload: require('./DocumentUpload'),
     DocumentAccessLog: require('./DocumentAccessLog'),
+    MediaAsset: require('./MediaAsset'),
 
     // Schools & applications
     DrivingSchool: require('./DrivingSchool'),
@@ -25,6 +27,7 @@ module.exports = {
     WaitingList: require('./WaitingList'),
     PreRegistration: require('./PreRegistration'),
     Payment: require('./Payment'),
+    WalletTransaction: require('./WalletTransaction'),
 
     // Learning content
     QuestionBank: require('./QuestionBank'),
@@ -55,4 +58,7 @@ module.exports = {
     AuditLog: require('./AuditLog'),
     Ad: require('./Ad'),
     PlatformSetting: require('./PlatformSetting'),
+    FaqItem: require('./FaqItem'),
+    RequirementItem: require('./RequirementItem'),
+    Testimonial: require('./Testimonial'),
 };
