@@ -1,12 +1,24 @@
-const { SchoolApplication, DrivingSchool, UserRole } = require('../models');
+const mongoose = require('mongoose');
+const { SchoolApplication, DrivingSchool, UserRole, DocumentUpload } = require('../models');
 const { ROLES } = require('../constants/roles');
 const ApiError = require('../utils/ApiError');
 const { ERR } = require('../constants/errorMessages');
 const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 
 class SchoolApplicationService {
+    _isTruthyQueryFlag(value) {
+        return value === true || value === 1 || value === '1' || value === 'true';
+    }
+
+    _toOwner(applicant) {
+        if (!applicant || typeof applicant !== 'object' || !applicant._id) {
+            return {};
+        }
+        return applicant;
+    }
+
     _toComplianceSummary(application) {
-        const owner = application.applicantUserId || {};
+        const owner = this._toOwner(application.applicantUserId);
         return {
             id: application._id,
             type: 'school_onboarding',
@@ -20,12 +32,17 @@ class SchoolApplicationService {
     }
 
     _extractNationalId(profileData = {}) {
+        if (!profileData || typeof profileData !== 'object') return null;
         return profileData.nationalId
             || profileData.nationalID
             || profileData.national_id
             || profileData.idNumber
             || profileData.nationalNumber
             || null;
+    }
+
+    _validObjectIds(values = []) {
+        return (values || []).filter((value) => mongoose.isValidObjectId(value));
     }
 
     async submit(applicantUserId, data) {
@@ -65,14 +82,14 @@ class SchoolApplicationService {
         const filter = { status: 'pending' };
         if (query.governorate) filter.governorate = query.governorate;
         return SchoolApplication.find(filter)
-            .populate('applicantUserId', 'name email phone')
+            .populate({ path: 'applicantUserId', select: 'name email phone' })
             .sort({ createdAt: 1 })
             .lean();
     }
 
     async listComplianceRequests(query = {}) {
         const statuses = ['pending'];
-        if (query.includeHistory === 'true') {
+        if (this._isTruthyQueryFlag(query.includeHistory)) {
             statuses.push('approved', 'rejected');
         }
 
@@ -80,7 +97,7 @@ class SchoolApplicationService {
         if (query.governorate) filter.governorate = query.governorate;
 
         const applications = await SchoolApplication.find(filter)
-            .populate('applicantUserId', 'name email phone')
+            .populate({ path: 'applicantUserId', select: 'name email phone', options: { strictPopulate: false } })
             .sort({ createdAt: 1 })
             .lean();
 
@@ -90,15 +107,21 @@ class SchoolApplicationService {
     async getComplianceRequestById(id) {
         const application = await SchoolApplication.findById(id)
             .select('+bankAccount')
-            .populate('applicantUserId', 'name email phone profileData')
-            .populate('documents', 'type mime originalName size uploadedAt createdAt')
-            .populate('reviewedBy', 'name email')
-            .populate('createdSchoolId', 'name governorate status createdAt')
+            .populate({ path: 'applicantUserId', select: 'name email phone profileData', options: { strictPopulate: false } })
+            .populate({ path: 'reviewedBy', select: 'name email', options: { strictPopulate: false } })
+            .populate({ path: 'createdSchoolId', select: 'name governorate status createdAt', options: { strictPopulate: false } })
             .lean();
 
         if (!application) throw new ApiError(404, ERR.APPLICATION_NOT_FOUND);
 
-        const owner = application.applicantUserId || {};
+        const documentIds = this._validObjectIds(application.documents);
+        const documents = documentIds.length
+            ? await DocumentUpload.find({ _id: { $in: documentIds } })
+                .select('type mime originalName size uploadedAt createdAt')
+                .lean()
+            : [];
+
+        const owner = this._toOwner(application.applicantUserId);
         const ownerNationalId = this._extractNationalId(owner.profileData);
 
         return {
@@ -135,7 +158,7 @@ class SchoolApplicationService {
                 accountNumber: application.bankAccount || null,
                 bankName: null,
             },
-            documents: application.documents || [],
+            documents,
             reviewer: application.reviewedBy || null,
             createdSchool: application.createdSchoolId || null,
         };
@@ -150,10 +173,13 @@ class SchoolApplicationService {
     }
 
     async review(applicationId, reviewerId, { status, rejectionReason = null }) {
-        const application = await SchoolApplication.findById(applicationId);
+        const application = await SchoolApplication.findById(applicationId).select('+bankAccount');
         if (!application) throw new ApiError(404, ERR.APPLICATION_NOT_FOUND);
         if (application.status !== 'pending') {
             throw new ApiError(400, ERR.APPLICATION_ALREADY_REVIEWED);
+        }
+        if (!application.applicantUserId) {
+            throw new ApiError(400, ERR.APPLICATION_NOT_FOUND);
         }
 
         application.status = status;

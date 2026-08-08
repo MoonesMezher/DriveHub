@@ -18,21 +18,25 @@ class InstructorService {
         const filter = { _id: id };
         if (schoolId) filter.schoolId = schoolId;
         const instructor = await Instructor.findOne(filter)
-            .populate('userId', 'name email phone')
+            .populate('userId', 'name email phone gender')
             .lean();
         if (!instructor) throw new ApiError(404, ERR.INSTRUCTOR_NOT_FOUND);
         return instructor;
     }
 
     async assign({ userId, email, schoolId, licenseCategories, gender, isFemaleCoach, name, phone, password }) {
+        if (!password) {
+            throw new ApiError(400, 'يجب تعيين كلمة مرور للمدرب حتى يتمكن من تسجيل الدخول');
+        }
+        if (!name?.trim()) {
+            throw new ApiError(400, 'يجب إدخال اسم المدرب');
+        }
+
         let resolvedUserId = userId;
         if (email && !userId) {
             const normalizedEmail = email.trim().toLowerCase();
             let user = await User.findOne({ email: normalizedEmail });
             if (!user) {
-                if (!name || !password) {
-                    throw new ApiError(400, 'يجب إدخال الاسم وكلمة المرور لإنشاء حساب مدرب جديد');
-                }
                 user = await User.create({
                     name: name.trim(),
                     email: normalizedEmail,
@@ -40,6 +44,11 @@ class InstructorService {
                     password: await passwordService.hashPassword(password),
                     activeContext: { role: ROLES.COACH, schoolId },
                 });
+            } else {
+                user.name = name.trim();
+                if (phone?.trim()) user.phone = phone.trim();
+                user.password = await passwordService.hashPassword(password);
+                await user.save();
             }
             resolvedUserId = user._id;
         }
@@ -47,6 +56,13 @@ class InstructorService {
 
         const user = await User.findById(resolvedUserId);
         if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
+
+        if (userId) {
+            user.name = name.trim();
+            if (phone?.trim()) user.phone = phone.trim();
+            user.password = await passwordService.hashPassword(password);
+            await user.save();
+        }
 
         const existing = await Instructor.findOne({ userId: resolvedUserId, schoolId });
         if (existing) throw new ApiError(409, ERR.INSTRUCTOR_EXISTS);
@@ -75,14 +91,19 @@ class InstructorService {
         const instructor = await Instructor.findOneAndUpdate(filter, data, { new: true, runValidators: true });
         if (!instructor) throw new ApiError(404, ERR.INSTRUCTOR_NOT_FOUND);
 
-        if (data.licenseCategories) {
+        const rolePatch = {};
+        if (data.licenseCategories) rolePatch.licenseCategories = instructor.licenseCategories;
+        if (data.status) rolePatch.status = instructor.status;
+        if (Object.keys(rolePatch).length) {
             await UserRole.updateOne(
                 { userId: instructor.userId, role: ROLES.COACH, schoolId: instructor.schoolId },
-                { licenseCategories: instructor.licenseCategories },
+                rolePatch,
             );
         }
 
-        return instructor;
+        return Instructor.findById(instructor._id)
+            .populate('userId', 'name email phone gender')
+            .lean();
     }
 
     async remove(id, schoolId) {

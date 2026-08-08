@@ -57,6 +57,8 @@ const mapApiItems = (items = []) =>
     id: item._id,
     title: item.question,
     content: item.answer,
+    linkUrl: item.linkUrl || '',
+    linkLabel: item.linkLabel || '',
   }))
 
 export const FaqPage = () => {

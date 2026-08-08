@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { PageHeader, Card, AsyncContent, Button, Input, Badge, Avatar, FormSection } from '@/components/ui'
+import {
+  PageHeader, Card, AsyncContent, Button, Input, Badge, Avatar, FormSection, ImageUploadField,
+} from '@/components/ui'
 import { DocumentUploadSection } from '@/components/ui/DocumentUploadSection'
-import { profileService } from '@/lib/services'
+import { profileService, mediaService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
+import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 import { ROLE_LABELS } from '@/lib/constants/roles'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -15,14 +18,25 @@ const resolveProfile = (data) => {
   return candidate && typeof candidate === 'object' ? candidate : null
 }
 
-const ProfileContent = ({ profile, activeRole, form, setForm, onSubmit, isSaving, showDocuments }) => (
+const ProfileContent = ({
+  profile,
+  activeRole,
+  form,
+  setForm,
+  onSubmit,
+  isSaving,
+  showDocuments,
+  uploadingAvatar,
+  onAvatarUpload,
+}) => (
   <div className="bento-grid">
     <Card className="col-span-12 md:col-span-4" padding="lg">
       <div className="flex flex-col items-center text-center md:items-start md:text-start">
         <Avatar
+          src={resolveMediaUrl(form.avatar || profile.profileData?.avatar)}
           name={profile.name}
           status="online"
-          className="mb-comfortable [&>div]:h-20 [&>div]:w-20 [&>div]:rounded-2xl [&>div]:text-headline-md"
+          className="mb-comfortable [&>div]:h-20 [&>div]:w-20 [&>div]:rounded-2xl [&>div]:text-headline-md [&>img]:h-20 [&>img]:w-20 [&>img]:rounded-2xl"
         />
         <h2 className="text-headline-sm text-primary">{profile.name || '—'}</h2>
         <p className="mt-1 text-body-md text-on-surface-variant">{profile.email ?? '—'}</p>
@@ -57,6 +71,16 @@ const ProfileContent = ({ profile, activeRole, form, setForm, onSubmit, isSaving
     <Card className="col-span-12 md:col-span-8" padding="lg">
       <FormSection title="تعديل البيانات" description="حدّث معلوماتك — تُحفظ تلقائياً في طلباتك القادمة">
         <form onSubmit={onSubmit} className="grid gap-comfortable md:grid-cols-2">
+          <div className="md:col-span-2">
+            <ImageUploadField
+              label="الصورة الشخصية"
+              value={form.avatar}
+              onUpload={onAvatarUpload}
+              uploading={uploadingAvatar}
+              category="general"
+              hint="ارفع صورة من جهازك — لا يُقبل إدخال رابط"
+            />
+          </div>
           <Input
             label="الاسم الكامل"
             name="name"
@@ -120,12 +144,14 @@ export const ProfilePage = () => {
   const { user } = useAuth()
   const activeRole = user?.activeContext?.role
   const showDocuments = !activeRole || activeRole === 'registered' || activeRole === 'student'
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [form, setForm] = useState({
     name: '',
     phone: '',
     nationalId: '',
     address: '',
     dateOfBirth: '',
+    avatar: '',
   })
 
   const profileQuery = useQuery({
@@ -143,6 +169,7 @@ export const ProfilePage = () => {
       nationalId: profile.profileData?.nationalId || '',
       address: profile.profileData?.address || '',
       dateOfBirth: profile.profileData?.dateOfBirth || '',
+      avatar: profile.profileData?.avatar || '',
     })
   }, [profile])
 
@@ -155,6 +182,18 @@ export const ProfilePage = () => {
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
+  const handleAvatarUpload = async (file) => {
+    setUploadingAvatar(true)
+    try {
+      const result = await mediaService.upload(file, { category: 'general' })
+      const url = result.media?.url || result.url
+      setForm((f) => ({ ...f, avatar: url }))
+      toast.success('تم رفع الصورة الشخصية')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     updateMutation.mutate({
@@ -164,6 +203,7 @@ export const ProfilePage = () => {
         nationalId: form.nationalId || undefined,
         address: form.address || undefined,
         dateOfBirth: form.dateOfBirth || undefined,
+        avatar: form.avatar || undefined,
       },
     })
   }
@@ -172,7 +212,7 @@ export const ProfilePage = () => {
     <div dir="rtl">
       <PageHeader
         title="الملف الشخصي"
-        description="بيانات محفوظة — لا حاجة لإعادة إدخالها عند كل تقديم"
+        description="بيانات محفوظة — ارفع صورتك الشخصية وملفاتك من جهازك مباشرة"
       />
 
       <AsyncContent
@@ -193,6 +233,8 @@ export const ProfilePage = () => {
               onSubmit={handleSubmit}
               isSaving={updateMutation.isPending}
               showDocuments={showDocuments}
+              uploadingAvatar={uploadingAvatar}
+              onAvatarUpload={handleAvatarUpload}
             />
           ) : null
         }

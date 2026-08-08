@@ -14,6 +14,8 @@ const EMPTY_FORM = {
   question: '',
   answer: '',
   category: '',
+  linkUrl: '',
+  linkLabel: '',
   order: '0',
   isActive: true,
 }
@@ -85,6 +87,8 @@ export const AdminFaqPage = () => {
       question: item.question || '',
       answer: item.answer || '',
       category: item.category || '',
+      linkUrl: item.linkUrl || '',
+      linkLabel: item.linkLabel || '',
       order: String(item.order ?? 0),
       isActive: item.isActive !== false,
     })
@@ -96,6 +100,8 @@ export const AdminFaqPage = () => {
       question: form.question.trim(),
       answer: form.answer.trim(),
       category: form.category.trim(),
+      linkUrl: form.linkUrl.trim(),
+      linkLabel: form.linkLabel.trim(),
       order: Number(form.order) || 0,
       isActive: form.isActive,
     }
@@ -230,6 +236,23 @@ export const AdminFaqPage = () => {
                 value={form.category}
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                 hint="مثال: التسجيل، الدفع"
+              />
+              <Input
+                label="رابط"
+                type="url"
+                dir="ltr"
+                className="text-start"
+                value={form.linkUrl}
+                onChange={(e) => setForm((f) => ({ ...f, linkUrl: e.target.value }))}
+                hint="اختياري — https://example.com"
+                placeholder="https://"
+              />
+              <Input
+                label="نص الرابط"
+                value={form.linkLabel}
+                onChange={(e) => setForm((f) => ({ ...f, linkLabel: e.target.value }))}
+                hint="اختياري — يظهر كنص قابل للنقر تحت الإجابة"
+                placeholder="مثال: صفحة التسجيل"
               />
               <Input
                 label="ترتيب العرض"

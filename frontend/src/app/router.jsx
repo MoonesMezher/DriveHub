@@ -28,6 +28,7 @@ import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { RequirementsPage } from '@/features/shared/pages/RequirementsPage'
 import { SamplePage } from '@/features/shared/pages/SamplePage'
 import { FaqPage } from '@/features/shared/pages/FaqPage'
+import { HelpPage } from '@/features/shared/pages/HelpPage'
 import { PrivacyPage } from '@/features/shared/pages/PrivacyPage'
 import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
 import { AddSchoolPage } from '@/features/shared/pages/AddSchoolPage'
@@ -45,6 +46,7 @@ export const AppRouter = () => (
       <Route path="requirements" element={<RequirementsPage />} />
       <Route path="sample" element={<SamplePage />} />
       <Route path="faq" element={<FaqPage />} />
+      <Route path="help" element={<HelpPage />} />
       <Route path="privacy" element={<PrivacyPage />} />
       <Route path="verify/:type/:token" element={<VerifyPage />} />
       <Route path="add-school" element={<AddSchoolPage />} />

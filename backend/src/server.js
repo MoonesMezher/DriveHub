@@ -2,9 +2,11 @@ const createApp = require('./app');
 const config = require('./config');
 const { connectDatabase } = require('./config/database');
 const { registerJobs } = require('./jobs');
+const { platformService } = require('./services');
 
 const startServer = async() => {
     await connectDatabase();
+    await platformService.loadCommissionFromStore();
     registerJobs();
     const app = createApp();
 

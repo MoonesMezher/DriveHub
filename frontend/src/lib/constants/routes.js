@@ -7,6 +7,7 @@ export const ROUTES = {
   REQUIREMENTS: '/requirements',
   SAMPLE: '/sample',
   FAQ: '/faq',
+  HELP: '/help',
   PRIVACY: '/privacy',
   ADD_SCHOOL: '/add-school',
   LOGIN: '/login',

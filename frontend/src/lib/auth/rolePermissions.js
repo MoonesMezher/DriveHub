@@ -44,11 +44,23 @@ export const getPermissionsForRoles = (roles = []) => {
   return [...set]
 }
 
+/** Normalize permissions from array, Set, or user-like object to a plain array. */
+export const normalizePermissions = (userPermissions) => {
+  if (!userPermissions) return []
+  if (Array.isArray(userPermissions)) return userPermissions
+  if (userPermissions instanceof Set) return [...userPermissions]
+  if (typeof userPermissions === 'object') {
+    if (Array.isArray(userPermissions.permissions)) return userPermissions.permissions
+    if (userPermissions.permissions instanceof Set) return [...userPermissions.permissions]
+  }
+  return []
+}
+
 export const hasPermission = (userPermissions, permission) =>
-  userPermissions?.includes(permission)
+  normalizePermissions(userPermissions).includes(permission)
 
-export const hasAnyPermission = (userPermissions, permissions) =>
-  permissions.some((p) => hasPermission(userPermissions, p))
+export const hasAnyPermission = (userPermissions, permissions = []) =>
+  (Array.isArray(permissions) ? permissions : []).some((p) => hasPermission(userPermissions, p))
 
-export const hasAllPermissions = (userPermissions, permissions) =>
-  permissions.every((p) => hasPermission(userPermissions, p))
+export const hasAllPermissions = (userPermissions, permissions = []) =>
+  (Array.isArray(permissions) ? permissions : []).every((p) => hasPermission(userPermissions, p))

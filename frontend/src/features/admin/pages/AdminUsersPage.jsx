@@ -9,6 +9,8 @@ import { unwrap } from '@/lib/helpers/api'
 import { formatDate } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
+import { ROLE_LABELS } from '@/lib/constants/roles'
+import { UserDetailPanel } from '../components/UserDetailPanel'
 
 const PAGE_SIZE = 10
 
@@ -35,8 +37,6 @@ const emptyTrafficForm = {
 }
 
 const emptyWalletForm = {
-  userId: '',
-  userName: '',
   amount: '',
   note: '',
 }
@@ -45,7 +45,8 @@ export const AdminUsersPage = () => {
   const toast = useToast()
   const queryClient = useQueryClient()
   const [showTrafficForm, setShowTrafficForm] = useState(false)
-  const [walletTarget, setWalletTarget] = useState(null)
+  const [selectedUserId, setSelectedUserId] = useState(null)
+  const [showWalletForm, setShowWalletForm] = useState(false)
   const [walletForm, setWalletForm] = useState(emptyWalletForm)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -58,6 +59,12 @@ export const AdminUsersPage = () => {
   })
 
   const users = extractUsers(usersQuery.data)
+
+  const userDetailQuery = useQuery({
+    queryKey: ['admin', 'users', selectedUserId],
+    queryFn: () => adminService.getUser(selectedUserId).then(unwrap),
+    enabled: Boolean(selectedUserId),
+  })
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -73,6 +80,13 @@ export const AdminUsersPage = () => {
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
   const paginatedUsers = filteredUsers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const selectedFromList = useMemo(
+    () => users.find((u) => u._id === selectedUserId) || null,
+    [users, selectedUserId],
+  )
+
+  const selectedUser = userDetailQuery.data?.user || selectedFromList
+
   const suspendMutation = useMutation({
     mutationFn: ({ id, status }) =>
       adminService.suspendUser(id, { status, reason: status === 'suspended' ? 'إيقاف إداري' : undefined }).then(unwrap),
@@ -84,9 +98,9 @@ export const AdminUsersPage = () => {
   })
 
   const walletQuery = useQuery({
-    queryKey: ['admin', 'wallet', walletTarget?._id],
-    queryFn: () => adminService.getUserWallet(walletTarget._id).then(unwrap),
-    enabled: Boolean(walletTarget?._id),
+    queryKey: ['admin', 'wallet', selectedUserId],
+    queryFn: () => adminService.getUserWallet(selectedUserId).then(unwrap),
+    enabled: Boolean(selectedUserId && showWalletForm),
   })
 
   const creditWalletMutation = useMutation({
@@ -96,7 +110,7 @@ export const AdminUsersPage = () => {
       toast.success('تم شحن الرصيد')
       setWalletForm(emptyWalletForm)
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'wallet', walletTarget?._id] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'wallet', selectedUserId] })
     },
     onError: (err) => toast.error(err, 'فشل شحن الرصيد'),
   })
@@ -125,40 +139,83 @@ export const AdminUsersPage = () => {
 
   const handleCreditWallet = (e) => {
     e.preventDefault()
-    if (!walletTarget) return
+    if (!selectedUserId) return
     creditWalletMutation.mutate({
-      userId: walletTarget._id,
+      userId: selectedUserId,
       amount: walletForm.amount,
       note: walletForm.note,
     })
   }
 
-  const openWalletPanel = (user) => {
-    setWalletTarget(user)
-    setWalletForm({ userId: user._id, userName: user.name, amount: '', note: '' })
+  const toggleUser = (user) => {
+    setSelectedUserId((prev) => {
+      if (prev === user._id) {
+        setShowWalletForm(false)
+        setWalletForm(emptyWalletForm)
+        return null
+      }
+      setShowWalletForm(false)
+      setWalletForm(emptyWalletForm)
+      return user._id
+    })
   }
 
   const columns = [
     {
       key: 'name',
       label: 'الاسم',
-      render: (user) => <span className="font-medium">{user.name}</span>,
+      className: 'max-w-[140px]',
+      render: (user) => (
+        <span className="block truncate font-medium" title={user.name || ''}>
+          {user.name}
+        </span>
+      ),
     },
-    { key: 'email', label: 'البريد' },
-    { key: 'phone', label: 'الهاتف', render: (user) => user.phone || '—' },
+    {
+      key: 'email',
+      label: 'البريد',
+      className: 'max-w-[200px]',
+      render: (user) => (
+        <span className="block truncate" title={user.email || ''}>
+          {user.email}
+        </span>
+      ),
+    },
+    {
+      key: 'phone',
+      label: 'الهاتف',
+      className: 'whitespace-nowrap',
+      render: (user) => user.phone || '—',
+    },
     {
       key: 'walletBalance',
       label: 'الرصيد',
+      className: 'whitespace-nowrap',
       render: (user) => `${user.walletBalance ?? 0} د.أ`,
     },
     {
       key: 'roles',
       label: 'الأدوار',
-      render: (user) => (user.roles || []).map((r) => r.role).join(', ') || '—',
+      className: 'max-w-[180px]',
+      render: (user) => {
+        const parts = (user.roles || []).map((r) => {
+          const roleLabel = ROLE_LABELS[r.role] || r.role
+          const schoolName = r.schoolName
+            || (typeof r.schoolId === 'object' ? r.schoolId?.name : null)
+          return schoolName ? `${roleLabel} (${schoolName})` : roleLabel
+        })
+        const rolesText = parts.join('، ') || '—'
+        return (
+          <span className="block truncate" title={rolesText}>
+            {rolesText}
+          </span>
+        )
+      },
     },
     {
       key: 'status',
       label: 'الحالة',
+      className: 'whitespace-nowrap',
       render: (user) => (
         <StatusBadge
           status={user.status}
@@ -170,42 +227,13 @@ export const AdminUsersPage = () => {
     {
       key: 'createdAt',
       label: 'تاريخ التسجيل',
+      className: 'whitespace-nowrap',
       render: (user) => formatDate(user.createdAt),
-    },
-    {
-      key: 'actions',
-      label: 'إجراءات',
-      render: (user) => (
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => openWalletPanel(user)}>
-            شحن رصيد
-          </Button>
-          {user.status === 'active' ? (
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={() => suspendMutation.mutate({ id: user._id, status: 'suspended' })}
-              disabled={suspendMutation.isPending}
-            >
-              إيقاف
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => suspendMutation.mutate({ id: user._id, status: 'active' })}
-              disabled={suspendMutation.isPending}
-            >
-              تفعيل
-            </Button>
-          )}
-        </div>
-      ),
     },
   ]
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full" dir="rtl">
       <PageHeader
         variant="compact"
         title="المستخدمون"
@@ -222,15 +250,17 @@ export const AdminUsersPage = () => {
           variant="success"
           title="تم إنشاء حساب المرور"
           onDismiss={() => setCreatedCredentials(null)}
-          className="mb-loose"
+          className="mb-loose min-w-0"
         >
           سلّم بيانات الدخول لموظف وزارة النقل:{' '}
-          <span className="font-mono">{createdCredentials.email} / {createdCredentials.password}</span>
+          <span className="break-all font-mono">
+            {createdCredentials.email} / {createdCredentials.password}
+          </span>
         </Alert>
       )}
 
       {showTrafficForm && (
-        <Card title="إنشاء حساب إدارة المرور / وزارة النقل" className="mb-loose">
+        <Card title="إنشاء حساب إدارة المرور / وزارة النقل" className="mb-loose min-w-0 max-w-full">
           <FormSection description="يمنح هذا الحساب صلاحية مراقبة سير العمل، نشر قوائم الناجحين، والوصول لبيانات الطلاب.">
             <form onSubmit={handleCreateTraffic} className="grid gap-4 sm:grid-cols-2">
               <Input label="الاسم" value={trafficForm.name} onChange={(e) => setTrafficForm((f) => ({ ...f, name: e.target.value }))} required />
@@ -245,54 +275,7 @@ export const AdminUsersPage = () => {
         </Card>
       )}
 
-      {walletTarget && (
-        <Card title={`شحن رصيد — ${walletTarget.name}`} className="mb-loose">
-          <FormSection description="أضف رصيداً بعد استلام الدفع النقدي أو التحويل البنكي خارج المنصة.">
-            <p className="mb-4 text-body-md text-on-surface-variant">
-              الرصيد الحالي: <span className="font-bold text-primary">{walletQuery.data?.balance ?? walletTarget.walletBalance ?? 0} د.أ</span>
-            </p>
-            <form onSubmit={handleCreditWallet} className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="المبلغ (د.أ)"
-                type="number"
-                min="1"
-                value={walletForm.amount}
-                onChange={(e) => setWalletForm((f) => ({ ...f, amount: e.target.value }))}
-                required
-              />
-              <Input
-                label="ملاحظة أو مرجع إيصال"
-                value={walletForm.note}
-                onChange={(e) => setWalletForm((f) => ({ ...f, note: e.target.value }))}
-                placeholder="رقم إيصال أو ملاحظة"
-              />
-              <div className="flex flex-wrap gap-2 sm:col-span-2">
-                <Button type="submit" variant="ultra" disabled={creditWalletMutation.isPending}>
-                  إضافة الرصيد
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setWalletTarget(null)}>
-                  إغلاق
-                </Button>
-              </div>
-            </form>
-            {walletQuery.data?.transactions?.length > 0 && (
-              <div className="mt-6 border-t border-outline-variant pt-4">
-                <p className="mb-2 text-label-sm font-medium text-on-surface">آخر المعاملات</p>
-                <ul className="space-y-2 text-label-sm text-on-surface-variant">
-                  {walletQuery.data.transactions.slice(0, 5).map((tx) => (
-                    <li key={tx._id} className="flex justify-between gap-2">
-                      <span>{tx.type === 'admin_credit' ? 'شحن إداري' : tx.type === 'enrollment_payment' ? 'دفع اشتراك' : tx.type}</span>
-                      <span>{tx.amount} د.أ — {formatDate(tx.createdAt)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </FormSection>
-        </Card>
-      )}
-
-      <div className="mb-comfortable">
+      <div className="mb-comfortable min-w-0">
         <SearchInput
           placeholder="بحث بالاسم أو البريد..."
           value={search}
@@ -300,7 +283,7 @@ export const AdminUsersPage = () => {
         />
       </div>
 
-      <Card padding="none">
+      <Card padding="none" className="min-w-0 max-w-full overflow-hidden">
         {usersQuery.isLoading ? (
           <div className="p-comfortable"><SkeletonTable rows={6} cols={7} /></div>
         ) : usersQuery.error ? (
@@ -309,10 +292,53 @@ export const AdminUsersPage = () => {
           </div>
         ) : (
           <>
-            <DataTable columns={columns} rows={paginatedUsers} emptyLabel="لا يوجد مستخدمون" />
+            <DataTable
+              columns={columns}
+              rows={paginatedUsers}
+              emptyLabel="لا يوجد مستخدمون"
+              className="max-w-full"
+              onRowClick={toggleUser}
+              rowClassName={(row) => (
+                selectedUserId === row._id
+                  ? 'bg-primary-container/30 hover:bg-primary-container/40'
+                  : undefined
+              )}
+            />
             <div className="border-t border-outline-variant/50 p-comfortable">
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
+            {selectedUserId && userDetailQuery.isError && !selectedFromList && (
+              <div className="p-comfortable">
+                <Alert variant="error" title="تعذر تحميل التفاصيل">
+                  {getErrorMessage(userDetailQuery.error)}
+                </Alert>
+              </div>
+            )}
+            {selectedUser && (
+              <UserDetailPanel
+                user={selectedUser}
+                onClose={() => {
+                  setSelectedUserId(null)
+                  setShowWalletForm(false)
+                  setWalletForm(emptyWalletForm)
+                }}
+                statusPending={suspendMutation.isPending}
+                onToggleStatus={(user) => {
+                  suspendMutation.mutate({
+                    id: user._id,
+                    status: user.status === 'active' ? 'suspended' : 'active',
+                  })
+                }}
+                showWalletForm={showWalletForm}
+                onToggleWalletForm={() => setShowWalletForm((v) => !v)}
+                walletForm={walletForm}
+                onWalletFormChange={(patch) => setWalletForm((f) => ({ ...f, ...patch }))}
+                onCreditWallet={handleCreditWallet}
+                walletCreditPending={creditWalletMutation.isPending}
+                walletBalance={walletQuery.data?.balance ?? selectedUser.walletBalance}
+                walletTransactions={walletQuery.data?.transactions || []}
+              />
+            )}
           </>
         )}
       </Card>

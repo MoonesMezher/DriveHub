@@ -35,6 +35,7 @@ export const ENROLLMENT_STATUS_VARIANT = {
 export const COURSE_STATUS_LABELS = {
   registration_open: 'التسجيل مفتوح',
   registration_closed: 'التسجيل مغلق',
+  launch_pending: 'بانتظار الإطلاق',
   active: 'نشطة',
   completed: 'منتهية',
 }

@@ -35,27 +35,38 @@ export const Card = ({
   onClick,
 }) => {
   const resolvedVariant = hoverable ? 'interactive' : variant
-  const Tag = onClick ? 'button' : 'div'
+  // Use a div (not <button>) so nested action Buttons never create invalid HTML.
+  const isInteractive = typeof onClick === 'function'
+
+  const handleKeyDown = (event) => {
+    if (!isInteractive) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onClick(event)
+    }
+  }
 
   return (
-    <Tag
-      type={onClick ? 'button' : undefined}
+    <div
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={isInteractive ? handleKeyDown : undefined}
       className={cn(
         sizes[size],
         variants[resolvedVariant],
         paddings[padding],
-        onClick && 'w-full text-start',
+        isInteractive && 'w-full text-start',
         className,
       )}
     >
       {media}
       {(title || headerAction) && (
-        <div className={cn('flex items-start justify-between gap-4', children && 'mb-4 border-b border-outline-variant/50 pb-4')}>
-          <div>
+        <div className={cn('flex min-w-0 items-start justify-between gap-4', children && 'mb-4 border-b border-outline-variant/50 pb-4')}>
+          <div className="min-w-0">
             {title && (
               <h3 className={cn(
-                'text-headline-sm',
+                'min-w-0 text-headline-sm',
                 variant === 'tinted' ? 'text-on-primary-container' : 'text-primary',
               )}>
                 {title}
@@ -67,6 +78,6 @@ export const Card = ({
         </div>
       )}
       {children}
-    </Tag>
+    </div>
   )
 }

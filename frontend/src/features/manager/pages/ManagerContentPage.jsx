@@ -22,6 +22,7 @@ import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 import { mediaService } from '@/lib/services'
+import { ContentDetailPanel } from '../components/ContentDetailPanel'
 
 const PAGE_SIZE = 10
 
@@ -36,6 +37,7 @@ export const ManagerContentPage = () => {
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [selectedContentId, setSelectedContentId] = useState(null)
   const [form, setForm] = useState({
     categoryCode: '',
     subTypeCode: '',
@@ -54,6 +56,12 @@ export const ManagerContentPage = () => {
 
   const items = contentQuery.data?.items ?? []
 
+  const contentDetailQuery = useQuery({
+    queryKey: ['manager', 'theory-content', selectedContentId],
+    queryFn: () => managerService.getTheoryContent(selectedContentId).then(unwrap),
+    enabled: Boolean(selectedContentId),
+  })
+
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return items
@@ -67,6 +75,13 @@ export const ManagerContentPage = () => {
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
   const paginatedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const selectedFromList = useMemo(
+    () => items.find((item) => item._id === selectedContentId) || null,
+    [items, selectedContentId],
+  )
+
+  const selectedItem = contentDetailQuery.data?.item || selectedFromList
 
   const createMutation = useMutation({
     mutationFn: (data) => managerService.createTheoryContent(data).then(unwrap),
@@ -114,6 +129,10 @@ export const ManagerContentPage = () => {
     }
   }
 
+  const toggleContent = (item) => {
+    setSelectedContentId((current) => (current === item._id ? null : item._id))
+  }
+
   const columns = [
     {
       key: 'title',
@@ -147,7 +166,7 @@ export const ManagerContentPage = () => {
       <PageHeader
         variant="compact"
         title="محرر المحتوى النظري"
-        description="إنشاء مقالات نظرية جديدة للطلاب (عنوان، محتوى، فئة، مرحلة)"
+        description="إنشاء مقالات نظرية جديدة للطلاب — اضغط على صف لعرض التفاصيل الكاملة"
       />
 
       <div className="mb-comfortable">
@@ -173,10 +192,30 @@ export const ManagerContentPage = () => {
                 rows={paginatedItems}
                 emptyLabel="لا توجد مقالات نظرية"
                 emptyPreset="no-data"
+                onRowClick={toggleContent}
+                rowClassName={(row) => (
+                  selectedContentId === row._id
+                    ? 'bg-primary-container/30 hover:bg-primary-container/40'
+                    : undefined
+                )}
               />
               <div className="border-t border-outline-variant/50 p-comfortable">
                 <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
               </div>
+              {selectedContentId && contentDetailQuery.isError && !selectedFromList && (
+                <div className="p-comfortable">
+                  <Alert variant="error" title="تعذر تحميل التفاصيل">
+                    {getErrorMessage(contentDetailQuery.error)}
+                  </Alert>
+                </div>
+              )}
+              {selectedItem && (
+                <ContentDetailPanel
+                  item={selectedItem}
+                  loading={contentDetailQuery.isLoading && !selectedFromList}
+                  onClose={() => setSelectedContentId(null)}
+                />
+              )}
             </>
           )}
         </Card>

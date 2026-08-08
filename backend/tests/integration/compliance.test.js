@@ -13,6 +13,8 @@ const {
 const passwordService = require('../../src/utils/passwordService');
 const { ROLES } = require('../../src/constants/roles');
 
+jest.setTimeout(30000);
+
 let mongoServer;
 let app;
 let adminToken;

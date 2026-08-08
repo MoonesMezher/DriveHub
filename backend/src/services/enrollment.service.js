@@ -479,8 +479,11 @@ class EnrollmentService {
             managerVisible: true,
             status: { $in: QUEUE_STATUSES },
         })
-            .populate('userId', 'name email')
-            .sort({ createdAt: 1 });
+            .populate('userId', 'name email phone profileData')
+            .populate('schoolId', 'name address governorate')
+            .populate('courseId', 'categoryCode subTypeCode status launchDate endDate maxStudents paidCount')
+            .sort({ createdAt: 1 })
+            .lean();
 
         return enrollmentHelper.filterRequestsForManager(requests, spots);
     }
@@ -494,7 +497,9 @@ class EnrollmentService {
             schoolId,
             status: ENROLLMENT_STATUS.AWAITING_PAYMENT,
         })
-            .populate('userId', 'name email phone')
+            .populate('userId', 'name email phone profileData')
+            .populate('schoolId', 'name address governorate')
+            .populate('courseId', 'categoryCode subTypeCode status launchDate endDate maxStudents paidCount')
             .sort({ createdAt: 1 })
             .lean();
 

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const {
     TheoryContent,
     TrainingContentShared,
@@ -317,10 +318,55 @@ class ContentService {
         return PracticalVideo.create({ ...payload, categoryCode: payload.categoryCode.toUpperCase() });
     }
 
+    async _buildSystemQuestionBanks(query = {}) {
+        const theoryFilter = { isActive: true };
+        if (query.categoryCode) theoryFilter.categoryCode = query.categoryCode.toUpperCase();
+
+        const theoryItems = await TheoryContent.find(theoryFilter)
+            .select('title categoryCode subTypeCode interactiveQuestions')
+            .sort({ order: 1, createdAt: -1 })
+            .lean();
+
+        const byCategory = new Map();
+        for (const content of theoryItems) {
+            const code = (content.categoryCode || '').toUpperCase();
+            if (!code) continue;
+            if (!byCategory.has(code)) {
+                byCategory.set(code, {
+                    _id: `system-${code}`,
+                    title: `بنك النظام — فئة ${code}`,
+                    categoryCode: code,
+                    subTypeCode: null,
+                    status: 'active',
+                    isSystem: true,
+                    questions: [],
+                });
+            }
+            const bank = byCategory.get(code);
+            for (const q of content.interactiveQuestions || []) {
+                if (q.status === 'archived') continue;
+                bank.questions.push({
+                    ...(q.toObject ? q.toObject() : q),
+                    sourceTitle: content.title,
+                    sourceContentId: content._id,
+                });
+            }
+        }
+
+        return [...byCategory.values()].filter((b) => b.questions.length > 0);
+    }
+
     async listQuestionBanks(schoolId, query = {}) {
-        const filter = { schoolId, status: { $ne: 'archived' } };
+        const filter = { status: { $ne: 'archived' } };
+        if (schoolId) filter.schoolId = schoolId;
         if (query.categoryCode) filter.categoryCode = query.categoryCode.toUpperCase();
-        return QuestionBank.find(filter).sort({ createdAt: -1 }).lean();
+
+        const [schoolBanks, systemBanks] = await Promise.all([
+            QuestionBank.find(filter).sort({ createdAt: -1 }).lean(),
+            this._buildSystemQuestionBanks(query),
+        ]);
+
+        return [...systemBanks, ...schoolBanks.map((b) => ({ ...b, isSystem: false }))];
     }
 
     async createQuestionBank(userId, data) {
@@ -340,6 +386,74 @@ class ContentService {
         bank.questions.push(payload);
         await bank.save();
         return bank.questions[bank.questions.length - 1];
+    }
+
+    async updateQuestion(bankId, questionId, questionData, schoolId = null) {
+        const filter = { _id: bankId };
+        if (schoolId) filter.schoolId = schoolId;
+        const bank = await QuestionBank.findOne(filter);
+        if (!bank) throw new ApiError(404, ERR.QUESTION_BANK_NOT_FOUND);
+
+        const question = bank.questions.id(questionId);
+        if (!question) throw new ApiError(404, ERR.QUESTION_NOT_FOUND);
+
+        const payload = await this._normalizeContentImages(questionData, ['imageUrl']);
+        const fields = ['text', 'type', 'options', 'correctAnswer', 'explanation', 'imageUrl', 'difficulty', 'status'];
+        for (const field of fields) {
+            if (payload[field] !== undefined) question[field] = payload[field];
+        }
+        await bank.save();
+        return question;
+    }
+
+    /** Manager: full theory article including inactive / answers */
+    async getTheoryForManager(id) {
+        const content = await TheoryContent.findById(id).lean();
+        if (!content) throw new ApiError(404, ERR.CONTENT_NOT_FOUND);
+        return content;
+    }
+
+    async getQuestionBankById(bankId, schoolId = null) {
+        if (typeof bankId === 'string' && bankId.startsWith('system-')) {
+            const categoryCode = bankId.slice('system-'.length).toUpperCase();
+            const systemBanks = await this._buildSystemQuestionBanks({ categoryCode });
+            const bank = systemBanks.find((b) => b._id === `system-${categoryCode}` || b.categoryCode === categoryCode);
+            if (!bank) throw new ApiError(404, ERR.QUESTION_BANK_NOT_FOUND);
+            return bank;
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(bankId)) {
+            throw new ApiError(404, ERR.QUESTION_BANK_NOT_FOUND);
+        }
+
+        const filter = { _id: bankId };
+        if (schoolId) filter.schoolId = schoolId;
+        const bank = await QuestionBank.findOne(filter).lean();
+        if (!bank) throw new ApiError(404, ERR.QUESTION_BANK_NOT_FOUND);
+        return { ...bank, isSystem: false };
+    }
+
+    async getQuestionById(bankId, questionId, schoolId = null) {
+        const bank = await this.getQuestionBankById(bankId, schoolId);
+        const questions = bank.questions || [];
+        const question = questions.find((q) => String(q._id) === String(questionId));
+        if (!question) throw new ApiError(404, ERR.QUESTION_NOT_FOUND);
+        return {
+            question: {
+                ...(question.toObject ? question.toObject() : question),
+                categoryCode: question.categoryCode || bank.categoryCode,
+            },
+            bank: {
+                _id: bank._id,
+                title: bank.title,
+                categoryCode: bank.categoryCode,
+                subTypeCode: bank.subTypeCode,
+                status: bank.status,
+                isSystem: Boolean(bank.isSystem),
+                createdAt: bank.createdAt,
+                updatedAt: bank.updatedAt,
+            },
+        };
     }
 
     async _getCoachSchoolId(coachId) {

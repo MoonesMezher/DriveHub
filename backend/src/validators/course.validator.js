@@ -17,7 +17,6 @@ const createCourseRules = [
     optionalLicenseSubCode('subTypeCode'),
     optionalInt('maxStudents', 'الحد الأقصى للطلاب', { min: 1, max: 500 }),
     optionalInt('paymentDeadlineDays', 'مهلة الدفع بالأيام', { min: 1, max: 14 }),
-    optionalInt('launchAfterCloseDays', 'أيام الانطلاق بعد الإغلاق', { min: 1, max: 30 }),
 ];
 
 const launchCourseRules = [
@@ -28,7 +27,6 @@ const launchCourseRules = [
 const updateCourseRules = [
     optionalInt('maxStudents', 'الحد الأقصى للطلاب', { min: 1, max: 500 }),
     optionalInt('paymentDeadlineDays', 'مهلة الدفع بالأيام', { min: 1, max: 14 }),
-    optionalInt('launchAfterCloseDays', 'أيام الانطلاق بعد الإغلاق', { min: 1, max: 30 }),
     body('status')
         .optional()
         .isIn(Object.values(COURSE_STATUS))

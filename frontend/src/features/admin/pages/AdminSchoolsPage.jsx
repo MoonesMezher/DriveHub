@@ -9,17 +9,20 @@ import { unwrap } from '@/lib/helpers/api'
 import { formatDate } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
+import { SchoolDetailPanel } from '../components/SchoolDetailPanel'
 
 const PAGE_SIZE = 10
 
 const schoolStatusLabels = {
   active: 'نشطة',
   suspended: 'موقوفة',
+  deleted: 'محذوفة',
 }
 
 const schoolStatusVariants = {
   active: 'success',
   suspended: 'error',
+  deleted: 'default',
 }
 
 const extractSchools = (payload) => {
@@ -45,6 +48,7 @@ export const AdminSchoolsPage = () => {
   const [showForm, setShowForm] = useState(false)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [selectedSchoolId, setSelectedSchoolId] = useState(null)
   const [form, setForm] = useState(emptySchoolForm)
 
   const schoolsQuery = useQuery({
@@ -53,6 +57,12 @@ export const AdminSchoolsPage = () => {
   })
 
   const schools = extractSchools(schoolsQuery.data)
+
+  const schoolDetailQuery = useQuery({
+    queryKey: ['admin', 'schools', selectedSchoolId],
+    queryFn: () => adminService.getSchool(selectedSchoolId).then(unwrap),
+    enabled: Boolean(selectedSchoolId),
+  })
 
   const filteredSchools = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -68,6 +78,13 @@ export const AdminSchoolsPage = () => {
   const totalPages = Math.max(1, Math.ceil(filteredSchools.length / PAGE_SIZE))
   const paginatedSchools = filteredSchools.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const selectedFromList = useMemo(
+    () => schools.find((s) => s._id === selectedSchoolId) || null,
+    [schools, selectedSchoolId],
+  )
+
+  const selectedSchool = schoolDetailQuery.data?.school || selectedFromList
+
   const createMutation = useMutation({
     mutationFn: (data) => adminService.createSchool(data).then(unwrap),
     onSuccess: () => {
@@ -79,10 +96,21 @@ export const AdminSchoolsPage = () => {
     onError: (err) => toast.error(err, 'فشل إضافة المدرسة'),
   })
 
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }) => adminService.updateSchool(id, { status }).then(unwrap),
+    onSuccess: (data) => {
+      const next = data?.status || data?.school?.status
+      toast.success(next === 'suspended' ? 'تم إيقاف المدرسة' : 'تم إعادة تفعيل المدرسة')
+      queryClient.invalidateQueries({ queryKey: ['admin', 'schools'] })
+    },
+    onError: (err) => toast.error(err, 'فشل تحديث حالة المدرسة'),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: (id) => adminService.deleteSchool(id).then(unwrap),
     onSuccess: () => {
       toast.success('تم حذف المدرسة')
+      setSelectedSchoolId(null)
       queryClient.invalidateQueries({ queryKey: ['admin', 'schools'] })
     },
     onError: (err) => toast.error(err, 'تعذّر حذف المدرسة'),
@@ -101,6 +129,16 @@ export const AdminSchoolsPage = () => {
       lng: Number(form.lng),
       licenses: form.licenses.split(',').map((l) => l.trim().toUpperCase()).filter(Boolean),
     })
+  }
+
+  const toggleSchool = (school) => {
+    setSelectedSchoolId((prev) => (prev === school._id ? null : school._id))
+  }
+
+  const confirmDelete = (school) => {
+    if (window.confirm(`حذف مدرسة «${school.name}»؟ لا يُسمح إن وُجدت دورات أو اشتراكات نشطة.`)) {
+      deleteMutation.mutate(school._id)
+    }
   }
 
   const columns = [
@@ -136,10 +174,9 @@ export const AdminSchoolsPage = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => {
-              if (window.confirm(`حذف مدرسة «${school.name}»؟ لا يُسمح إن وُجدت دورات أو اشتراكات نشطة.`)) {
-                deleteMutation.mutate(school._id)
-              }
+            onClick={(e) => {
+              e.stopPropagation()
+              confirmDelete(school)
             }}
             disabled={deleteMutation.isPending}
           >
@@ -202,10 +239,42 @@ export const AdminSchoolsPage = () => {
           </div>
         ) : (
           <>
-            <DataTable columns={columns} rows={paginatedSchools} emptyLabel="لا توجد مدارس" />
+            <DataTable
+              columns={columns}
+              rows={paginatedSchools}
+              emptyLabel="لا توجد مدارس"
+              onRowClick={toggleSchool}
+              rowClassName={(row) => (
+                selectedSchoolId === row._id
+                  ? 'bg-primary-container/30 hover:bg-primary-container/40'
+                  : undefined
+              )}
+            />
             <div className="border-t border-outline-variant/50 p-comfortable">
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
+            {selectedSchoolId && schoolDetailQuery.isError && !selectedFromList && (
+              <div className="p-comfortable">
+                <Alert variant="error" title="تعذر تحميل التفاصيل">
+                  {getErrorMessage(schoolDetailQuery.error)}
+                </Alert>
+              </div>
+            )}
+            {selectedSchool && (
+              <SchoolDetailPanel
+                school={selectedSchool}
+                onClose={() => setSelectedSchoolId(null)}
+                statusPending={statusMutation.isPending}
+                deletePending={deleteMutation.isPending}
+                onToggleStatus={(school) => {
+                  statusMutation.mutate({
+                    id: school._id,
+                    status: school.status === 'active' ? 'suspended' : 'active',
+                  })
+                }}
+                onDelete={confirmDelete}
+              />
+            )}
           </>
         )}
       </Card>

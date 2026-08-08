@@ -14,6 +14,7 @@ const {
 const {
     createQuestionBankRules,
     createQuestionRules,
+    updateQuestionRules,
     createTheoryContentRules,
     reviewEditRequestRules,
 } = require('../../validators/content.validator');
@@ -34,6 +35,7 @@ router.use(auth, requirePermission(PERMISSIONS.ACCESS_MANAGER_PORTAL), schoolSco
 // Courses
 router.get('/courses', attachPagination, paginationQuery, validate, requirePermission(PERMISSIONS.MANAGE_COURSES), managerController.listCourses);
 router.post('/courses', requirePermission(PERMISSIONS.MANAGE_COURSES), createCourseRules, validate, audit('manager.course.create'), managerController.createCourse);
+router.get('/courses/:id', ...idParam('id', 'الدورة'), requirePermission(PERMISSIONS.MANAGE_COURSES), managerController.getCourse);
 router.patch('/courses/:id/close', ...idParam('id', 'الدورة'), requirePermission(PERMISSIONS.MANAGE_COURSES), managerController.closeCourse);
 router.post('/courses/:id/launch', ...idParam('id', 'الدورة'), requirePermission(PERMISSIONS.MANAGE_COURSES), launchCourseRules, validate, audit('manager.course.launch'), managerController.launchCourse);
 
@@ -47,16 +49,45 @@ router.post('/enrollments/:id/payment/confirm', ...idParam('id', 'طلب الا�
 
 // Instructors
 router.get('/instructors', requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), managerController.listInstructors);
+router.get('/instructors/:id', ...idParam('id', 'المدرب'), requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), managerController.getInstructor);
 router.post('/instructors', requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), assignInstructorRules, validate, managerController.assignInstructor);
 router.patch('/instructors/:id', ...idParam('id', 'المدرب'), requirePermission(PERMISSIONS.MANAGE_INSTRUCTORS), updateInstructorRules, validate, managerController.updateInstructor);
 
 // Question bank
 router.get('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), managerController.listQuestionBanks);
+router.get(
+    '/question-banks/:bankId',
+    requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK),
+    managerController.getQuestionBank,
+);
 router.post('/question-banks', requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionBankRules, validate, managerController.createQuestionBank);
 router.post('/question-banks/:bankId/questions', mongoIdParam('bankId', 'بنك الأسئلة'), validate, requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK), createQuestionRules, validate, managerController.addQuestion);
+router.get(
+    '/question-banks/:bankId/questions/:questionId',
+    mongoIdParam('questionId', 'السؤال'),
+    validate,
+    requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK),
+    managerController.getQuestion,
+);
+router.patch(
+    '/question-banks/:bankId/questions/:questionId',
+    mongoIdParam('bankId', 'بنك الأسئلة'),
+    mongoIdParam('questionId', 'السؤال'),
+    validate,
+    requirePermission(PERMISSIONS.MANAGE_QUESTION_BANK),
+    updateQuestionRules,
+    validate,
+    managerController.updateQuestion,
+);
 
 // Theory content (MVP editor)
 router.get('/content/theory', requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), managerController.listTheoryContent);
+router.get(
+    '/content/theory/:id',
+    ...idParam('id', 'المحتوى النظري'),
+    requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS),
+    managerController.getTheoryContent,
+);
 router.post('/content/theory', requirePermission(PERMISSIONS.APPROVE_CONTENT_EDITS), createTheoryContentRules, validate, audit('manager.content.theory.create'), managerController.createTheoryContent);
 
 // Content edit approvals

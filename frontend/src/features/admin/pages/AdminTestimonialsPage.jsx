@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   PageHeader, Card, Button, Input, DataTable, Pagination, SkeletonTable,
-  Alert, FormSection, Textarea, Badge,
+  Alert, FormSection, Textarea, Badge, ImageUploadField,
 } from '@/components/ui'
-import { adminService } from '@/lib/services'
+import { adminService, mediaService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
@@ -26,6 +26,7 @@ export const AdminTestimonialsPage = () => {
   const [page, setPage] = useState(1)
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   const testimonialsQuery = useQuery({
     queryKey: ['admin', 'testimonials'],
@@ -94,6 +95,17 @@ export const AdminTestimonialsPage = () => {
     })
   }
 
+  const handleAvatarUpload = async (file) => {
+    setUploadingAvatar(true)
+    try {
+      const result = await mediaService.upload(file, { category: 'general' })
+      setForm((f) => ({ ...f, avatar: result.media?.url || result.url || '' }))
+      toast.success('تم رفع الصورة الشخصية')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     const payload = {
@@ -101,7 +113,7 @@ export const AdminTestimonialsPage = () => {
       role: form.role.trim(),
       quote: form.quote.trim(),
       rating: form.rating ? Number(form.rating) : null,
-      avatar: form.avatar.trim(),
+      avatar: form.avatar.trim() || undefined,
       order: Number(form.order) || 0,
       isActive: form.isActive,
     }
@@ -247,11 +259,12 @@ export const AdminTestimonialsPage = () => {
                 value={form.rating}
                 onChange={(e) => setForm((f) => ({ ...f, rating: e.target.value }))}
               />
-              <Input
+              <ImageUploadField
                 label="صورة شخصية (اختياري)"
                 value={form.avatar}
-                onChange={(e) => setForm((f) => ({ ...f, avatar: e.target.value }))}
-                hint="معرّف وسائط أو /api/v1/media/:id"
+                onUpload={handleAvatarUpload}
+                uploading={uploadingAvatar}
+                category="general"
               />
               <Input
                 label="ترتيب العرض"

@@ -11,9 +11,15 @@ export const FaqAccordion = ({
   onSearchChange,
 }) => {
   const filtered = searchable && searchQuery
-    ? items.filter((item) =>
-        item.title.includes(searchQuery) || item.content.includes(searchQuery),
-      )
+    ? items.filter((item) => {
+        const haystack = [
+          item.title,
+          item.content,
+          item.linkLabel,
+          item.linkUrl,
+        ].filter(Boolean).join(' ')
+        return haystack.includes(searchQuery)
+      })
     : items
 
   return (

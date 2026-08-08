@@ -261,8 +261,20 @@ class LessonService {
         return lesson;
     }
 
+    async _assertCoachOwnsStudent(coachId, studentId, schoolId) {
+        await this._assertCoachInSchool(coachId, schoolId);
+        const hasLesson = await PracticalLesson.exists({
+            coachId,
+            studentId,
+            schoolId,
+        });
+        if (!hasLesson) {
+            throw new ApiError(403, ERR.COACH_STUDENT_NOT_ASSIGNED);
+        }
+    }
+
     async addCoachNote(coachId, data) {
-        await this._assertCoachInSchool(coachId, data.schoolId);
+        await this._assertCoachOwnsStudent(coachId, data.studentId, data.schoolId);
         return CoachNote.create({ ...data, coachId });
     }
 
@@ -276,7 +288,7 @@ class LessonService {
             .lean();
     }
 
-    async listCoachStudents(coachId, query = {}) {
+    async listCoachStudents(coachId) {
         const instructor = await Instructor.findOne({ userId: coachId, status: 'active' });
         if (!instructor) return [];
 
@@ -284,16 +296,9 @@ class LessonService {
             coachId,
             schoolId: instructor.schoolId,
         });
+        if (!lessonStudentIds.length) return [];
 
-        const enrollmentStudentIds = await Enrollment.distinct('userId', {
-            schoolId: instructor.schoolId,
-            status: { $in: LESSONABLE_STATUSES },
-        });
-
-        const allIds = [...new Set([...lessonStudentIds.map(String), ...enrollmentStudentIds.map(String)])];
-        if (!allIds.length) return [];
-
-        return User.find({ _id: { $in: allIds } })
+        return User.find({ _id: { $in: lessonStudentIds } })
             .select('name email phone')
             .lean();
     }

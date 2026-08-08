@@ -43,7 +43,8 @@ const ERR = {
 
     // Course
     COURSE_NOT_FOUND: 'الدورة غير موجودة',
-    COURSE_LAUNCH_TOO_EARLY: 'لا يمكن إطلاق الدورة قبل مرور 15 يوماً من الدورة السابقة',
+    COURSE_LAUNCH_TOO_EARLY: 'لا يمكن إطلاق دورة جديدة قبل مرور 15 يوماً على إطلاق آخر دورة',
+    COURSE_CREATE_TOO_EARLY: 'لا يمكن إنشاء دورة جديدة قبل مرور 15 يوماً على إطلاق آخر دورة',
     COURSE_LAUNCH_BEFORE_WINDOW: 'لا يمكن إطلاق الدورة قبل انقضاء فترة الانتظار بعد إغلاق التسجيل',
 
     // Enrollment
@@ -119,6 +120,7 @@ const ERR = {
     LESSON_NOT_FOUND: 'الدرس غير موجود',
     LESSON_CONFLICT: 'يوجد تعارض في الموعد مع درس آخر',
     COACH_NOT_IN_SCHOOL: 'المدرب لا ينتمي لهذه المدرسة',
+    COACH_STUDENT_NOT_ASSIGNED: 'لا يمكنك كتابة ملاحظات أو تقييم لطالب غير مسجّل لديك',
 
     // Roster
     ROSTER_NOT_FOUND: 'قائمة الطلاب غير موجودة',

@@ -3,6 +3,9 @@ const logger = require('../utils/logger');
 
 let mailProvider = null;
 
+/** Kill-switch: only `'true'` enables SMTP/Mailtrap. Missing/false → no outbound email. */
+const isEmailEnabled = () => process.env.EMAIL_ENABLED === 'true';
+
 const parseAddress = () => {
     const name = process.env.MAIL_FROM_NAME || 'DriveHub';
     const raw = process.env.MAIL_FROM || process.env.SMTP_FROM || process.env.SMTP_USER;
@@ -23,8 +26,30 @@ const getMailFrom = () => {
     return `"${name}" <${address}>`;
 };
 
+const logEmailToConsole = ({ from, to, subject, text, html, reason }) => {
+    const body = text || html || '';
+    const preview = body.slice(0, 300);
+    logger.info('notification.email.console', { to, subject, reason, preview });
+    // Always print when outbound mail is off/unconfigured so OTP & notices stay usable locally.
+    // eslint-disable-next-line no-console
+    console.log(`\n[DriveHub EMAIL — ${reason}]\nFrom: ${from}\nTo: ${to}\nSubject: ${subject}\n${body}\n`);
+};
+
 const initMailProvider = () => {
     if (mailProvider) return mailProvider;
+
+    // Avoid real SMTP/Mailtrap during automated tests (credentials in .env must not be hit).
+    if (process.env.NODE_ENV === 'test') {
+        mailProvider = { type: 'none' };
+        return mailProvider;
+    }
+
+    // Kill-switch: do not construct SMTP/Mailtrap clients when email is disabled.
+    if (!isEmailEnabled()) {
+        mailProvider = { type: 'none', disabled: true };
+        logger.info('notification.email.transport', { provider: 'disabled', EMAIL_ENABLED: process.env.EMAIL_ENABLED || '(unset)' });
+        return mailProvider;
+    }
 
     const host = (process.env.SMTP_HOST || '').trim();
     if (host) {
@@ -94,6 +119,20 @@ const sendEmail = async ({ to, subject, text, html }) => {
     }
 
     const from = getMailFrom();
+
+    // Central kill-switch — all callers (auth OTP, enrollment, jobs, notifications) hit this.
+    if (!isEmailEnabled()) {
+        logEmailToConsole({
+            from,
+            to,
+            subject,
+            text,
+            html,
+            reason: 'disabled (set EMAIL_ENABLED=true to send)',
+        });
+        return { sent: false, channel: 'email', disabled: true };
+    }
+
     const { address, name } = parseAddress();
     const provider = initMailProvider();
 
@@ -115,12 +154,14 @@ const sendEmail = async ({ to, subject, text, html }) => {
         return { sent: true, channel: 'email' };
     }
 
-    const preview = (text || html || '').slice(0, 300);
-    logger.info('notification.email.dev', { to, subject, preview });
-    if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.log(`\n[DriveHub EMAIL — no Mailtrap token or SMTP configured]\nFrom: ${from}\nTo: ${to}\nSubject: ${subject}\n${text || html || ''}\n`);
-    }
+    logEmailToConsole({
+        from,
+        to,
+        subject,
+        text,
+        html,
+        reason: 'no Mailtrap token or SMTP configured',
+    });
     return { sent: true, channel: 'email', dev: true };
 };
 
@@ -130,4 +171,11 @@ const dispatch = async (channel, payload) => {
     return { sent: false, channel, reason: 'unsupported_channel' };
 };
 
-module.exports = { sendEmail, dispatch, getMailFrom, getMailTransporter, initMailProvider };
+module.exports = {
+    sendEmail,
+    dispatch,
+    getMailFrom,
+    getMailTransporter,
+    initMailProvider,
+    isEmailEnabled,
+};

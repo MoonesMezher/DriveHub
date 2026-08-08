@@ -74,36 +74,37 @@ export const AdminSettingsPage = () => {
   const registrationQuery = useQuery({
     queryKey: ['admin', 'registration'],
     queryFn: async () => unwrap(await adminService.getRegistrationSettings()),
-    enabled: tab === 'operations',
   })
 
   useEffect(() => {
-    if (registrationQuery.data?.registrationPaused != null) {
+    if (typeof registrationQuery.data?.registrationPaused === 'boolean') {
       setRegistrationPaused(registrationQuery.data.registrationPaused)
     }
   }, [registrationQuery.data?.registrationPaused])
 
   const saveCommission = useMutation({
-    mutationFn: (value) => adminService.updateCommission(Number(value)),
-    onSuccess: () => {
+    mutationFn: async (value) => unwrap(await adminService.updateCommission(Number(value))),
+    onSuccess: (data) => {
+      if (data?.commission != null) setCommission(String(data.commission))
       toast.success('تم تحديث نسبة العمولة')
-      queryClient.invalidateQueries({ queryKey: ['admin'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] })
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const distribute = useMutation({
-    mutationFn: () => adminService.distributeRosters({}),
+    mutationFn: async () => unwrap(await adminService.distributeRosters({})),
     onSuccess: (res) => {
-      const count = res?.data?.distributed ?? res?.distributed ?? 0
+      const count = res?.distributed ?? res?.data?.distributed ?? 0
       toast.success(`تم توزيع ${count} قائمة`)
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const savePrivacy = useMutation({
-    mutationFn: (content) => adminService.updatePrivacy(content),
-    onSuccess: () => {
+    mutationFn: async (content) => unwrap(await adminService.updatePrivacy(content)),
+    onSuccess: (data) => {
+      if (data?.content != null) setPrivacyContent(data.content)
       toast.success('تم حفظ سياسة الخصوصية')
       queryClient.invalidateQueries({ queryKey: ['admin', 'privacy'] })
       queryClient.invalidateQueries({ queryKey: ['settings', 'privacy'] })
@@ -112,12 +113,19 @@ export const AdminSettingsPage = () => {
   })
 
   const saveRegistration = useMutation({
-    mutationFn: (paused) => adminService.updateRegistrationSettings({ registrationPaused: paused }),
-    onSuccess: () => {
+    mutationFn: async (paused) =>
+      unwrap(await adminService.updateRegistrationSettings({ registrationPaused: paused })),
+    onSuccess: (data) => {
+      if (typeof data?.registrationPaused === 'boolean') {
+        setRegistrationPaused(data.registrationPaused)
+      }
       toast.success('تم تحديث إعدادات التسجيل')
       queryClient.invalidateQueries({ queryKey: ['admin', 'registration'] })
     },
-    onError: (err) => toast.error(getErrorMessage(err)),
+    onError: (err, paused) => {
+      setRegistrationPaused(!paused)
+      toast.error(getErrorMessage(err))
+    },
   })
 
   useEffect(() => {
@@ -138,7 +146,7 @@ export const AdminSettingsPage = () => {
         <SettingsTabs tabs={TABS} active={tab} onChange={setTab} variant="ultra" />
 
         <div className="lg:col-span-3">
-          <AsyncContent isLoading={isLoading && tab !== 'legal'}>
+          <AsyncContent isLoading={isLoading && tab !== 'legal' && tab !== 'operations'}>
             {() => (
             <>
             {tab === 'general' && (
@@ -222,22 +230,26 @@ export const AdminSettingsPage = () => {
             {tab === 'operations' && (
               <Card title="عمليات المنصة" padding="lg">
                 <FormSection description="إعدادات التشغيل اليومية وتوزيع القوائم">
-                  <div className="flex items-center justify-between gap-4 rounded-lg border border-outline-variant p-comfortable">
-                    <div>
-                      <p className="text-headline-sm text-on-surface">إيقاف التسجيل على مستوى المنصة</p>
-                      <p className="mt-1 text-body-md text-on-surface-variant">
-                        يمنع تقديم طلبات اشتراك جديدة وطلبات انضمام المدارس مؤقتاً
-                      </p>
-                    </div>
-                    <Switch
-                      checked={registrationPaused}
-                      onChange={(checked) => {
-                        setRegistrationPaused(checked)
-                        saveRegistration.mutate(checked)
-                      }}
-                      disabled={saveRegistration.isPending || registrationQuery.isLoading}
-                    />
-                  </div>
+                  <AsyncContent isLoading={registrationQuery.isLoading} error={registrationQuery.error}>
+                    {() => (
+                      <div className="flex items-center justify-between gap-4 rounded-lg border border-outline-variant p-comfortable">
+                        <div>
+                          <p className="text-headline-sm text-on-surface">إيقاف التسجيل على مستوى المنصة</p>
+                          <p className="mt-1 text-body-md text-on-surface-variant">
+                            يمنع تقديم طلبات اشتراك جديدة وطلبات انضمام المدارس مؤقتاً
+                          </p>
+                        </div>
+                        <Switch
+                          checked={registrationPaused}
+                          onChange={(checked) => {
+                            setRegistrationPaused(checked)
+                            saveRegistration.mutate(checked)
+                          }}
+                          disabled={saveRegistration.isPending}
+                        />
+                      </div>
+                    )}
+                  </AsyncContent>
                   <p className="text-body-md text-on-surface-variant">
                     توزيع قوائم الطلاب المرسلة من المدارس إلى إدارة المرور.
                   </p>

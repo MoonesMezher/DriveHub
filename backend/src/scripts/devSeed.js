@@ -401,9 +401,11 @@ const devSeed = async () => {
     );
 
     // Pending school application for admin review demo
+    const pendingApplicant = await User.findOne({ email: 'student@drivehub.local' }).select('_id');
     await SchoolApplication.findOneAndUpdate(
         { email: 'pending-school@drivehub.local' },
         {
+            applicantUserId: pendingApplicant?._id,
             schoolName: 'مدرسة الأمل للقيادة',
             address: 'حلب — السليمانية',
             governorate: 'حلب',
@@ -412,10 +414,11 @@ const devSeed = async () => {
             phone: '0212345678',
             email: 'pending-school@drivehub.local',
             licenses: ['B'],
+            bankAccount: 'SY00SEEDBANK123456789',
             status: 'pending',
-            submittedAt: new Date(),
+            documents: [],
         },
-        { upsert: true, new: true },
+        { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
     );
 
     await settingsService.seedPrivacy();

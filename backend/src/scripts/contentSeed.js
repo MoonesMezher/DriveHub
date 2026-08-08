@@ -430,13 +430,32 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
     }
 
     const requirementItems = [
-        { title: 'السن القانوني', description: 'يجب بلوغ الحد الأدنى للعمر حسب فئة الرخصة (18 سنة للخصوصي، 21 للعمومي).', icon: 'cake', imageUrl: '/images/driving/license.jpg', order: 1 },
-        { title: 'الهوية الوطنية', description: 'بطاقة هوية سارية أو جواز سفر مع إثبات الإقامة للمقيمين.', icon: 'badge', imageUrl: '/images/driving/exam.jpg', order: 2 },
-        { title: 'الفحص الطبي', description: 'شهادة لياقة طبية من جهة معتمدة تثبت قدرتك على القيادة.', icon: 'health_and_safety', imageUrl: '/images/driving/medical.jpg', order: 3 },
-        { title: 'التسجيل في مدرسة', description: 'اختيار مدرسة معتمدة ودفع رسوم الدورة مباشرةً للمدرسة.', icon: 'school', imageUrl: '/images/driving/school.jpg', order: 4 },
+        // رحلتك من التسجيل إلى الرخصة
+        { section: 'journey', title: 'سجّل', description: '', icon: 'person_add', imageUrl: '/images/driving/register.jpg', order: 1 },
+        { section: 'journey', title: 'تعلّم نظري', description: '', icon: 'menu_book', imageUrl: '/images/driving/theory.jpg', order: 2 },
+        { section: 'journey', title: 'دروس عملية', description: '', icon: 'directions_car', imageUrl: '/images/driving/practice.jpg', order: 3 },
+        { section: 'journey', title: 'رخصة', description: '', icon: 'badge', imageUrl: '/images/driving/license.jpg', order: 4 },
+        // المستندات والشروط
+        { section: 'documents', title: 'السن القانوني', description: 'يجب بلوغ الحد الأدنى للعمر حسب فئة الرخصة (18 سنة للخصوصي، 21 للعمومي).', icon: 'cake', imageUrl: '/images/driving/license.jpg', order: 1 },
+        { section: 'documents', title: 'الهوية الوطنية', description: 'بطاقة هوية سارية أو جواز سفر مع إثبات الإقامة للمقيمين.', icon: 'badge', imageUrl: '/images/driving/exam.jpg', order: 2 },
+        { section: 'documents', title: 'الفحص الطبي', description: 'شهادة لياقة طبية من جهة معتمدة تثبت قدرتك على القيادة.', icon: 'health_and_safety', imageUrl: '/images/driving/medical.jpg', order: 3 },
+        { section: 'documents', title: 'صور شخصية', description: 'عدد 4 صور شخصية بخلفية بيضاء حسب مواصفات إدارة المرور.', icon: 'photo_camera', imageUrl: '/images/driving/register.jpg', order: 4 },
+        { section: 'documents', title: 'التسجيل في مدرسة', description: 'اختيار مدرسة معتمدة ودفع رسوم الدورة مباشرةً للمدرسة ثم تأكيد الاستلام من المنصة.', icon: 'school', imageUrl: '/images/driving/school.jpg', order: 5 },
+        { section: 'documents', title: 'اجتياز الامتحانات', description: 'نجاح في الامتحان النظري ثم العملي وفق جدول المرور.', icon: 'menu_book', imageUrl: '/images/driving/theory.jpg', order: 6 },
+        // خطوات التسجيل
+        { section: 'steps', title: 'إنشاء حساب على DriveHub', description: '', icon: '', order: 1 },
+        { section: 'steps', title: 'استكشاف الرخص واختيار الفئة المناسبة', description: '', icon: '', order: 2 },
+        { section: 'steps', title: 'البحث عن مدرسة قريبة والتقديم', description: '', icon: '', order: 3 },
+        { section: 'steps', title: 'دفع الرسوم للمدرسة وانتظار تأكيد الاستلام', description: '', icon: '', order: 4 },
+        { section: 'steps', title: 'بدء الدروس النظرية والعملية', description: '', icon: '', order: 5 },
+        { section: 'steps', title: 'تقديم امتحان المرور', description: '', icon: '', order: 6 },
     ];
     for (const req of requirementItems) {
-        await RequirementItem.findOneAndUpdate({ title: req.title }, { ...req, isActive: true }, { upsert: true, new: true });
+        await RequirementItem.findOneAndUpdate(
+            { section: req.section, title: req.title },
+            { ...req, isActive: true },
+            { upsert: true, new: true },
+        );
     }
 
     const testimonials = [

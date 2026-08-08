@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 import { useAuth } from '@/hooks/useAuth'
 import { COURSE_STATUS_LABELS } from '@/lib/constants/statusLabels'
+import { CourseDetailPanel } from '../components/CourseDetailPanel'
 
 const courseStatusLabels = COURSE_STATUS_LABELS
 const LAUNCH_GAP_DAYS = 15
@@ -21,18 +22,6 @@ const daysSince = (date) => {
   if (!date) return null
   const diff = Date.now() - new Date(date).getTime()
   return Math.floor(diff / (1000 * 60 * 60 * 24))
-}
-
-const addDays = (date, days) => {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d
-}
-
-const getEarliestLaunch = (course) => {
-  if (!course.registrationClosedAt) return null
-  const days = course.launchAfterCloseDays ?? 7
-  return addDays(course.registrationClosedAt, days)
 }
 
 const getLastLaunchDate = (courses, excludeId) =>
@@ -49,12 +38,12 @@ export const ManagerCoursesPage = () => {
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [selectedCourseId, setSelectedCourseId] = useState(null)
   const [form, setForm] = useState({
     categoryCode: '',
     subTypeCode: '',
     maxStudents: '30',
     paymentDeadlineDays: '3',
-    launchAfterCloseDays: '7',
   })
 
   const coursesQuery = useQuery({
@@ -74,6 +63,12 @@ export const ManagerCoursesPage = () => {
 
   const courses = coursesQuery.data?.courses ?? []
 
+  const courseDetailQuery = useQuery({
+    queryKey: ['manager', 'courses', selectedCourseId],
+    queryFn: () => managerService.getCourse(selectedCourseId).then(unwrap),
+    enabled: Boolean(selectedCourseId),
+  })
+
   const filteredCourses = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return courses
@@ -88,13 +83,22 @@ export const ManagerCoursesPage = () => {
   const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE))
   const paginatedCourses = filteredCourses.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['manager', 'courses'] })
+  const selectedFromList = useMemo(
+    () => courses.find((c) => c._id === selectedCourseId) || null,
+    [courses, selectedCourseId],
+  )
+
+  const selectedCourse = courseDetailQuery.data?.course || selectedFromList
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['manager', 'courses'] })
+  }
 
   const createMutation = useMutation({
     mutationFn: (data) => managerService.createCourse(data).then(unwrap),
     onSuccess: () => {
       toast.success('تم إنشاء الدورة بنجاح')
-      setForm({ categoryCode: '', subTypeCode: '', maxStudents: '30', paymentDeadlineDays: '3', launchAfterCloseDays: '7' })
+      setForm({ categoryCode: '', subTypeCode: '', maxStudents: '30', paymentDeadlineDays: '3' })
       invalidate()
     },
     onError: (err) => toast.error(err, 'فشل إنشاء الدورة'),
@@ -121,20 +125,24 @@ export const ManagerCoursesPage = () => {
 
   const getLaunchInfo = (course) => {
     const lastLaunch = getLastLaunchDate(courses, course._id)
-    const earliestCloseWindow = getEarliestLaunch(course)
     const gapOk = !lastLaunch || daysSince(lastLaunch) >= LAUNCH_GAP_DAYS
-    const windowOk = !earliestCloseWindow || Date.now() >= earliestCloseWindow.getTime()
     const daysRemaining = lastLaunch
       ? Math.max(0, LAUNCH_GAP_DAYS - daysSince(lastLaunch))
       : 0
     return {
-      canLaunch: gapOk && windowOk,
+      canLaunch: gapOk,
       daysRemaining,
       lastLaunch,
-      earliestCloseWindow,
-      windowBlocked: earliestCloseWindow && Date.now() < earliestCloseWindow.getTime(),
     }
   }
+
+  const createBlockedInfo = useMemo(() => {
+    const lastLaunch = getLastLaunchDate(courses, null)
+    if (!lastLaunch) return { blocked: false, daysRemaining: 0 }
+    const elapsed = daysSince(lastLaunch)
+    if (elapsed >= LAUNCH_GAP_DAYS) return { blocked: false, daysRemaining: 0 }
+    return { blocked: true, daysRemaining: Math.max(0, LAUNCH_GAP_DAYS - elapsed) }
+  }, [courses])
 
   const handleLaunch = (course) => {
     const { lastLaunch } = getLaunchInfo(course)
@@ -146,17 +154,29 @@ export const ManagerCoursesPage = () => {
 
   const handleCreate = (e) => {
     e.preventDefault()
+    if (createBlockedInfo.blocked) {
+      toast.error(`لا يمكن إنشاء دورة جديدة قبل مرور ${LAUNCH_GAP_DAYS} يوماً على إطلاق آخر دورة (متبقي ${createBlockedInfo.daysRemaining} يوم)`)
+      return
+    }
     const payload = {
       schoolId,
       categoryCode: form.categoryCode.trim().toUpperCase(),
       subTypeCode: form.subTypeCode.trim() || undefined,
       paymentDeadlineDays: Number(form.paymentDeadlineDays),
-      launchAfterCloseDays: Number(form.launchAfterCloseDays),
     }
     const maxVal = Number(form.maxStudents)
     if (maxVal > 0) payload.maxStudents = maxVal
     createMutation.mutate(payload)
   }
+
+  const toggleCourse = (course) => {
+    setSelectedCourseId((current) => (current === course._id ? null : course._id))
+  }
+
+  const selectedLaunchInfo = selectedCourse ? getLaunchInfo(selectedCourse) : null
+  const selectedLaunchHint = selectedLaunchInfo?.lastLaunch && !selectedLaunchInfo.canLaunch && selectedLaunchInfo.daysRemaining > 0
+    ? `متبقي ${selectedLaunchInfo.daysRemaining} يوم على اكتمال مهلة الـ 15 يوماً من آخر إطلاق`
+    : null
 
   const columns = [
     {
@@ -219,12 +239,7 @@ export const ManagerCoursesPage = () => {
                 </Button>
                 {launchInfo.lastLaunch && !launchInfo.canLaunch && launchInfo.daysRemaining > 0 && (
                   <span className="text-label-sm text-on-surface-variant">
-                    متبقي {launchInfo.daysRemaining} يوم (قاعدة 15 يوم)
-                  </span>
-                )}
-                {launchInfo.windowBlocked && launchInfo.earliestCloseWindow && (
-                  <span className="text-label-sm text-on-surface-variant">
-                    أقرب إطلاق: {formatDate(launchInfo.earliestCloseWindow)}
+                    متبقي {launchInfo.daysRemaining} يوم على اكتمال مهلة الـ 15 يوماً من آخر إطلاق
                   </span>
                 )}
               </div>
@@ -236,11 +251,11 @@ export const ManagerCoursesPage = () => {
   ]
 
   return (
-    <div>
+    <div dir="rtl">
       <PageHeader
         variant="compact"
         title="إدارة الدورات"
-        description="إنشاء دورات جديدة وإغلاق التسجيل أو إطلاق الدورة"
+        description="إنشاء دورات جديدة وإغلاق التسجيل أو الإطلاق — اضغط على صف لعرض التفاصيل الكاملة"
       />
 
       <div className="mb-comfortable">
@@ -266,24 +281,55 @@ export const ManagerCoursesPage = () => {
                 rows={paginatedCourses}
                 emptyLabel="لا توجد دورات"
                 emptyPreset="no-data"
+                onRowClick={toggleCourse}
+                rowClassName={(row) => (
+                  selectedCourseId === row._id
+                    ? 'bg-primary-container/30 hover:bg-primary-container/40'
+                    : undefined
+                )}
               />
               <div className="border-t border-outline-variant/50 p-comfortable">
                 <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
               </div>
+              {selectedCourseId && courseDetailQuery.isError && !selectedFromList && (
+                <div className="p-comfortable">
+                  <Alert variant="error" title="تعذر تحميل التفاصيل">
+                    {getErrorMessage(courseDetailQuery.error)}
+                  </Alert>
+                </div>
+              )}
+              {(selectedCourse || (selectedCourseId && courseDetailQuery.isLoading)) && (
+                <CourseDetailPanel
+                  course={selectedCourse}
+                  loading={courseDetailQuery.isLoading && !selectedFromList}
+                  onClose={() => setSelectedCourseId(null)}
+                  closePending={closeMutation.isPending}
+                  launchPending={launchMutation.isPending}
+                  canLaunch={selectedLaunchInfo?.canLaunch ?? true}
+                  launchHint={selectedLaunchHint}
+                  onCloseRegistration={(course) => closeMutation.mutate(course._id)}
+                  onLaunch={handleLaunch}
+                />
+              )}
             </>
           )}
         </Card>
 
         <Card title="دورة جديدة" className="xl:sticky xl:top-24 xl:self-start">
           <form onSubmit={handleCreate}>
-            <FormSection description="أنشئ دورة جديدة لبدء استقبال طلبات الالتحاق">
+            <FormSection description="أنشئ دورة جديدة لبدء استقبال طلبات الالتحاق — لا يُسمح بإنشاء دورة قبل مرور 15 يوماً على آخر إطلاق">
+              {createBlockedInfo.blocked && (
+                <Alert variant="warning" title="مهلة 15 يوماً">
+                  متبقي {createBlockedInfo.daysRemaining} يوم قبل إمكانية إنشاء دورة جديدة.
+                </Alert>
+              )}
               <LicenseCategorySelect
                 value={form.categoryCode}
                 onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
                 required
               />
               <Input
-                label="النوع الفرعي (اختياري)"
+                label="النوع الفرعي (اختياري — مثل B1 أو B2)"
                 name="subTypeCode"
                 value={form.subTypeCode}
                 onChange={(e) => setForm((f) => ({ ...f, subTypeCode: e.target.value }))}
@@ -312,17 +358,11 @@ export const ManagerCoursesPage = () => {
                 onChange={(e) => setForm((f) => ({ ...f, paymentDeadlineDays: e.target.value }))}
                 hint="يحددها المدير عند قبول الطلب (مثال 2–3 أيام)"
               />
-              <Input
-                label="أيام الانطلاق بعد الإغلاق"
-                name="launchAfterCloseDays"
-                type="number"
-                min={1}
-                max={30}
-                value={form.launchAfterCloseDays}
-                onChange={(e) => setForm((f) => ({ ...f, launchAfterCloseDays: e.target.value }))}
-                hint="افتراضياً 7 أيام من إغلاق التسجيل"
-              />
-              <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createMutation.isPending || createBlockedInfo.blocked}
+              >
                 إنشاء الدورة
               </Button>
             </FormSection>

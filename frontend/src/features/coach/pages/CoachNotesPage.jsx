@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { PageHeader, AsyncContent, Card, Button, Input, Badge, Tabs, Textarea, Select } from '@/components/ui'
+import { PageHeader, AsyncContent, Card, Button, Input, Badge, Tabs, Textarea, Select, Alert } from '@/components/ui'
 import { coachService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { formatDateTime } from '@/lib/helpers/date'
@@ -132,14 +132,17 @@ export const CoachNotesPage = () => {
   const students = studentsQuery.data?.students ?? []
   const questionBanks = questionBanksQuery.data?.banks ?? []
   const contentItems = contentQuery.data?.items ?? []
+  const editableBanks = questionBanks.filter((b) => !b.isSystem)
+  const systemBanks = questionBanks.filter((b) => b.isSystem)
 
   const selectedBank = questionBanks.find((b) => b._id === questionEditForm.questionBankId)
   const bankQuestions = selectedBank?.questions ?? []
 
-  const questionBankOptions = questionBanks.map((bank) => ({
+  const questionBankOptions = editableBanks.map((bank) => ({
     value: bank._id,
-    label: `${bank.title} — ${bank.categoryCode}${bank.subTypeCode ? ` (${bank.subTypeCode})` : ''}`,
+    label: `${bank.title} — ${bank.categoryCode}${bank.subTypeCode ? ` (${bank.subTypeCode})` : ''} (${bank.questions?.length ?? 0})`,
   }))
+  const systemQuestionCount = systemBanks.reduce((sum, b) => sum + (b.questions?.length ?? 0), 0)
 
   const questionOptions = bankQuestions.map((q) => ({
     value: q._id,
@@ -204,7 +207,7 @@ export const CoachNotesPage = () => {
       <PageHeader
         variant="compact"
         title="الملاحظات"
-        description="سجّل ملاحظاتك الشخصية عن الطلاب واطلب تعديلات المحتوى"
+        description="ملاحظات وتقييم لطلابك فقط (ممن لديهم دروس معك) — وبنك الأسئلة الكامل للعرض وطلبات التعديل"
       />
 
       <Tabs tabs={NOTE_TABS} activeId={activeTab} onChange={setActiveTab} className="mb-loose" />
@@ -214,7 +217,7 @@ export const CoachNotesPage = () => {
           <form onSubmit={handleSubmit} className="grid gap-comfortable md:grid-cols-2">
             <div className="space-y-2">
               <label htmlFor="studentId" className="block text-label-md text-on-surface">
-                الطالب
+                الطالب (المسجّلون لديك فقط)
               </label>
               <select
                 id="studentId"
@@ -230,6 +233,11 @@ export const CoachNotesPage = () => {
                   </option>
                 ))}
               </select>
+              {!students.length && (
+                <p className="text-label-sm text-on-surface-variant">
+                  لا يظهر هنا إلا الطلاب الذين لديهم دروس معك
+                </p>
+              )}
             </div>
             <p className="text-body-md text-on-surface-variant">
               المدرسة: {user?.activeContext?.schoolName || 'مدرسة المدرب الحالية'}
@@ -300,7 +308,38 @@ export const CoachNotesPage = () => {
 
       {activeTab === 'edits' && (
         <div className="space-y-loose">
+          {systemBanks.length > 0 && (
+            <Card title="بنك الأسئلة داخل النظام (كامل)">
+              <p className="mb-comfortable text-body-md text-on-surface-variant">
+                إجمالي أسئلة النظام المتاحة للعرض: {systemQuestionCount}
+              </p>
+              <div className="space-y-comfortable">
+                {systemBanks.map((bank) => (
+                  <div key={bank._id} className="rounded-lg border border-outline-variant p-comfortable">
+                    <p className="text-headline-sm text-primary">{bank.title}</p>
+                    <p className="mt-1 text-label-sm text-on-surface-variant">
+                      فئة {bank.categoryCode} — {bank.questions?.length ?? 0} سؤال
+                    </p>
+                    <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto text-body-md">
+                      {(bank.questions || []).slice(0, 20).map((q) => (
+                        <li key={q._id} className="text-on-surface-variant">
+                          • {q.text?.length > 100 ? `${q.text.slice(0, 100)}…` : q.text}
+                        </li>
+                      ))}
+                      {(bank.questions?.length || 0) > 20 && (
+                        <li className="text-label-sm">… و{(bank.questions.length - 20)} سؤالاً إضافياً</li>
+                      )}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
           <Card title="طلب تعديل سؤال">
+            <Alert variant="info" title="ملاحظة" className="mb-comfortable">
+              طلبات التعديل أدناه لبنوك المدرسة. بنك النظام ظاهر أعلاه للعرض الكامل.
+            </Alert>
             <form onSubmit={handleQuestionEditSubmit} className="grid gap-comfortable md:grid-cols-2">
               <Select
                 label="بنك الأسئلة"

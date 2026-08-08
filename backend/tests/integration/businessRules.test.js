@@ -173,6 +173,28 @@ describe('DriveHub business rules', () => {
         expect(open.status).toBe(COURSE_STATUS.REGISTRATION_OPEN);
     });
 
+    it('blocks course create before 15 days from previous launch', async () => {
+        await TrainingCourse.create({
+            schoolId,
+            categoryCode: 'B',
+            subTypeCode: 'B1',
+            maxStudents: 10,
+            status: COURSE_STATUS.ACTIVE,
+            registrationOpen: false,
+            launchDate: addDays(new Date(), -5),
+            endDate: addDays(new Date(), 10),
+        });
+
+        await expect(
+            courseService.create({
+                schoolId,
+                categoryCode: 'B',
+                subTypeCode: 'B2',
+                maxStudents: 10,
+            }),
+        ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
     it('reserves seat only on payment confirm (not on accept)', async () => {
         const enrollment = await Enrollment.create({
             userId,

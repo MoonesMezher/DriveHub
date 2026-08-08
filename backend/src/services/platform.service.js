@@ -1,5 +1,6 @@
 const {
     PlatformPricing,
+    PlatformSetting,
     DrivingSchool,
     User,
     UserRole,
@@ -17,7 +18,88 @@ const passwordService = require('../utils/passwordService');
 const rosterService = require('./roster.service');
 const mediaService = require('./media.service');
 
+const COMMISSION_KEY = 'platform_commission';
+
+const schoolNameFromRef = (schoolRef) => {
+    if (!schoolRef) return null;
+    if (typeof schoolRef === 'object') return schoolRef.name || null;
+    return null;
+};
+
+const schoolIdFromRef = (schoolRef) => {
+    if (!schoolRef) return null;
+    if (typeof schoolRef === 'string') return schoolRef;
+    return schoolRef._id || schoolRef.id || null;
+};
+
+const collectMissingSchoolIds = (users) => {
+    const ids = [];
+    for (const user of users) {
+        for (const role of user.roles || []) {
+            if (role.schoolName || schoolNameFromRef(role.schoolId)) continue;
+            const id = schoolIdFromRef(role.schoolId);
+            if (id) ids.push(String(id));
+        }
+        const ctx = user.activeContext;
+        if (ctx?.schoolId && !ctx.schoolName && !schoolNameFromRef(ctx.schoolId)) {
+            const id = schoolIdFromRef(ctx.schoolId);
+            if (id) ids.push(String(id));
+        }
+    }
+    return [...new Set(ids)];
+};
+
+/** Ensure roles/activeContext expose schoolName (populate + fallback lookup). */
+const withSchoolNames = async (usersInput) => {
+    const list = Array.isArray(usersInput) ? usersInput : [usersInput];
+    const missingIds = collectMissingSchoolIds(list.filter(Boolean));
+    let nameById = {};
+    if (missingIds.length) {
+        const schools = await DrivingSchool.find({ _id: { $in: missingIds } })
+            .select('name')
+            .lean();
+        nameById = Object.fromEntries(schools.map((s) => [String(s._id), s.name]));
+    }
+
+    const resolveName = (schoolRef, existing) => {
+        if (existing) return existing;
+        const fromRef = schoolNameFromRef(schoolRef);
+        if (fromRef) return fromRef;
+        const id = schoolIdFromRef(schoolRef);
+        return id ? nameById[String(id)] || null : null;
+    };
+
+    const mapUser = (user) => {
+        if (!user) return user;
+        const roles = (user.roles || []).map((role) => ({
+            ...role,
+            schoolName: resolveName(role.schoolId, role.schoolName),
+        }));
+        const activeContext = user.activeContext
+            ? {
+                ...user.activeContext,
+                schoolName: resolveName(
+                    user.activeContext.schoolId,
+                    user.activeContext.schoolName,
+                ),
+            }
+            : user.activeContext;
+        return { ...user, roles, activeContext };
+    };
+
+    return Array.isArray(usersInput) ? list.map(mapUser) : mapUser(usersInput);
+};
+
 class PlatformService {
+    async loadCommissionFromStore() {
+        const doc = await PlatformSetting.findOne({ key: COMMISSION_KEY }).lean();
+        if (doc?.value == null) return config.platform.commission;
+        const value = Number(doc.value);
+        if (!Number.isFinite(value)) return config.platform.commission;
+        config.platform.commission = value;
+        return value;
+    }
+
     async listPricing() {
         return PlatformPricing.find({ isActive: true })
             .sort({ categoryCode: 1, effectiveFrom: -1 })
@@ -46,6 +128,11 @@ class PlatformService {
 
     async updateCommission({ commission }) {
         config.platform.commission = commission;
+        await PlatformSetting.findOneAndUpdate(
+            { key: COMMISSION_KEY },
+            { key: COMMISSION_KEY, value: String(commission) },
+            { upsert: true, new: true, runValidators: true },
+        );
         return { commission: config.platform.commission };
     }
 
@@ -66,6 +153,15 @@ class PlatformService {
         ]);
 
         return { schools, total, page, limit };
+    }
+
+    async getSchoolById(id) {
+        const school = await DrivingSchool.findById(id)
+            .select('+bankAccount')
+            .populate('managerId', 'name email phone status')
+            .lean();
+        if (!school) throw new ApiError(404, ERR.SCHOOL_NOT_FOUND);
+        return school;
     }
 
     async createSchool(data) {
@@ -136,24 +232,56 @@ class PlatformService {
         const skip = (page - 1) * limit;
 
         const [users, total] = await Promise.all([
-            User.find(filter).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+            User.find(filter)
+                .select('-password')
+                .populate('activeContext.schoolId', 'name')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
             User.countDocuments(filter),
         ]);
 
         const userIds = users.map((u) => u._id);
-        const roles = await UserRole.find({ userId: { $in: userIds }, status: 'active' }).lean();
+        const roles = await UserRole.find({ userId: { $in: userIds }, status: 'active' })
+            .populate('schoolId', 'name')
+            .lean();
         const rolesByUser = roles.reduce((acc, r) => {
-            acc[r.userId] = acc[r.userId] || [];
-            acc[r.userId].push(r);
+            const key = String(r.userId);
+            acc[key] = acc[key] || [];
+            acc[key].push(r);
             return acc;
         }, {});
 
+        const usersWithRoles = await withSchoolNames(
+            users.map((u) => ({
+                ...u,
+                roles: rolesByUser[String(u._id)] || [],
+            })),
+        );
+
         return {
-            users: users.map((u) => ({ ...u, roles: rolesByUser[u._id] || [] })),
+            users: usersWithRoles,
             total,
             page,
             limit,
         };
+    }
+
+    async getUserById(id) {
+        const user = await User.findById(id)
+            .select('-password')
+            .populate('activeContext.schoolId', 'name governorate status')
+            .lean();
+        if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);
+
+        const roles = await UserRole.find({ userId: id })
+            .populate('schoolId', 'name governorate status')
+            .populate('grantedBy', 'name email')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return withSchoolNames({ ...user, roles });
     }
 
     async assignRole({ userId, role, schoolId = null, licenseCategories = [] }, grantedBy) {
@@ -268,6 +396,7 @@ class PlatformService {
             enrollmentsByStatus,
             paymentsTotal,
             recentEnrollments,
+            commissionRate,
         ] = await Promise.all([
             DrivingSchool.countDocuments(),
             DrivingSchool.countDocuments({ status: 'active' }),
@@ -290,6 +419,7 @@ class PlatformService {
             Enrollment.countDocuments({
                 createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
             }),
+            this.loadCommissionFromStore(),
         ]);
 
         return {
@@ -304,7 +434,7 @@ class PlatformService {
                 last30Days: recentEnrollments,
             },
             payments: paymentsTotal[0] || { totalAmount: 0, platformShare: 0, schoolShare: 0, count: 0 },
-            commissionRate: config.platform.commission,
+            commissionRate,
             completedEnrollments: await Enrollment.countDocuments({
                 status: { $in: [ENROLLMENT_STATUS.COMPLETED, ENROLLMENT_STATUS.FINAL_PASSED] },
             }),

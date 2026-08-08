@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   PageHeader,
@@ -12,12 +13,13 @@ import {
 import { JourneySteps, CtaBanner } from '@/components/sections'
 import { ROUTES } from '@/lib/constants/routes'
 import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
-import { HOME_IMAGES } from '@/lib/constants/homeVisuals'
+import { HOME_IMAGES, JOURNEY_STEPS } from '@/lib/constants/homeVisuals'
+import { REQUIREMENT_SECTIONS } from '@/lib/constants/requirementSections'
 import { requirementService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
-const FALLBACK_REQUIREMENTS = [
+const FALLBACK_DOCUMENTS = [
   {
     icon: 'cake',
     title: 'السن القانوني',
@@ -56,7 +58,21 @@ const FALLBACK_REQUIREMENTS = [
   },
 ]
 
-const mapApiItems = (items = []) =>
+const FALLBACK_STEPS = [
+  'إنشاء حساب على DriveHub',
+  'استكشاف الرخص واختيار الفئة المناسبة',
+  'البحث عن مدرسة قريبة والتقديم',
+  'دفع الرسوم للمدرسة وانتظار تأكيد الاستلام',
+  'بدء الدروس النظرية والعملية',
+  'تقديم امتحان المرور',
+]
+
+const bySection = (items, section) =>
+  items
+    .filter((item) => (item.section || REQUIREMENT_SECTIONS.DOCUMENTS) === section)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+const mapDocuments = (items = []) =>
   items.map((item) => ({
     id: item._id,
     icon: item.icon || 'check_circle',
@@ -65,14 +81,20 @@ const mapApiItems = (items = []) =>
     image: resolveMediaUrl(item.imageUrl) || HOME_IMAGES.license,
   }))
 
-const steps = [
-  'إنشاء حساب على DriveHub',
-  'استكشاف الرخص واختيار الفئة المناسبة',
-  'البحث عن مدرسة قريبة والتقديم',
-  'دفع الرسوم للمدرسة وانتظار تأكيد الاستلام',
-  'بدء الدروس النظرية والعملية',
-  'تقديم امتحان المرور',
-]
+const mapJourney = (items = []) =>
+  items.map((item) => ({
+    id: item._id,
+    icon: item.icon || 'check_circle',
+    label: item.title,
+    image: resolveMediaUrl(item.imageUrl) || HOME_IMAGES.register,
+  }))
+
+const mapSteps = (items = []) =>
+  items.map((item) => ({
+    id: item._id,
+    title: item.title,
+    description: item.description || '',
+  }))
 
 export const RequirementsPage = () => {
   const requirementsQuery = useQuery({
@@ -82,9 +104,30 @@ export const RequirementsPage = () => {
   })
 
   const apiItems = requirementsQuery.data?.items ?? []
-  const requirements = apiItems.length > 0
-    ? mapApiItems(apiItems)
-    : FALLBACK_REQUIREMENTS.map((item, index) => ({ ...item, id: `fallback-${index}`, desc: item.description }))
+
+  const { journeySteps, documents, registrationSteps } = useMemo(() => {
+    const journeyApi = bySection(apiItems, REQUIREMENT_SECTIONS.JOURNEY)
+    const documentsApi = bySection(apiItems, REQUIREMENT_SECTIONS.DOCUMENTS)
+    const stepsApi = bySection(apiItems, REQUIREMENT_SECTIONS.STEPS)
+
+    return {
+      journeySteps: journeyApi.length > 0 ? mapJourney(journeyApi) : JOURNEY_STEPS,
+      documents: documentsApi.length > 0
+        ? mapDocuments(documentsApi)
+        : FALLBACK_DOCUMENTS.map((item, index) => ({
+          ...item,
+          id: `fallback-doc-${index}`,
+          desc: item.description,
+        })),
+      registrationSteps: stepsApi.length > 0
+        ? mapSteps(stepsApi)
+        : FALLBACK_STEPS.map((title, index) => ({
+          id: `fallback-step-${index}`,
+          title,
+          description: '',
+        })),
+    }
+  }, [apiItems])
 
   return (
     <div dir="rtl" className="space-y-loose">
@@ -118,7 +161,8 @@ export const RequirementsPage = () => {
 
       <JourneySteps
         title="رحلتك من التسجيل إلى الرخصة"
-        description="ستة خطوات واضحة — ابدأ اليوم"
+        description="من التسجيل إلى الرخصة — ابدأ اليوم"
+        steps={journeySteps}
       />
 
       <PageSection>
@@ -127,7 +171,7 @@ export const RequirementsPage = () => {
           description="تأكد من استيفاء كل المتطلبات قبل التقديم"
         >
           <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-3">
-            {requirements.map((item) => (
+            {documents.map((item) => (
               <ImageCard
                 key={item.id || item.title}
                 image={item.image}
@@ -145,12 +189,17 @@ export const RequirementsPage = () => {
       <PageSection variant="contained">
         <SectionBlock title="خطوات التسجيل" description="من الحساب إلى الرخصة">
           <ol className="space-y-4">
-            {steps.map((step, index) => (
-              <li key={step} className="flex items-start gap-4">
+            {registrationSteps.map((step, index) => (
+              <li key={step.id || step.title} className="flex items-start gap-4">
                 <Badge variant="primary" className="mt-0.5 shrink-0">
                   {index + 1}
                 </Badge>
-                <span className="text-body-md text-on-surface">{step}</span>
+                <div>
+                  <span className="text-body-md text-on-surface">{step.title}</span>
+                  {step.description ? (
+                    <p className="mt-1 text-body-sm text-on-surface-variant">{step.description}</p>
+                  ) : null}
+                </div>
               </li>
             ))}
           </ol>

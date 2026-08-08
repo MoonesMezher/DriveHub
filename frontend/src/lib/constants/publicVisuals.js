@@ -15,4 +15,5 @@ export const PUBLIC_HERO_IMAGES = {
   requirements: hero('hero-requirements.jpg'),
   sample: hero('hero-sample.jpg'),
   faq: hero('hero-faq.jpg'),
+  help: hero('hero-faq.jpg'),
 }

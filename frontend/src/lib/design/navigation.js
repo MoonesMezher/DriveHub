@@ -6,7 +6,7 @@ export const PUBLIC_NAV = [
   { to: ROUTES.LICENSES, label: 'الرخص', icon: 'badge' },
   { to: ROUTES.SCHOOLS_NEARBY, label: 'المدارس', icon: 'location_on' },
   { to: ROUTES.REQUIREMENTS, label: 'المتطلبات', icon: 'checklist' },
-  { to: ROUTES.FAQ, label: 'الأسئلة الشائعة', icon: 'help' },
+  { to: ROUTES.HELP, label: 'مساعدة', icon: 'support_agent' },
 ]
 
 export const PUBLIC_FOOTER_NAV = [
@@ -14,6 +14,7 @@ export const PUBLIC_FOOTER_NAV = [
   { to: ROUTES.LICENSES, label: 'الرخص' },
   { to: ROUTES.SCHOOLS_NEARBY, label: 'المدارس' },
   { to: ROUTES.REQUIREMENTS, label: 'المتطلبات' },
+  { to: ROUTES.HELP, label: 'مساعدة' },
   { to: ROUTES.FAQ, label: 'الأسئلة الشائعة' },
   { to: ROUTES.SAMPLE, label: 'عينة مجانية' },
   { to: ROUTES.PRIVACY, label: 'سياسة الخصوصية' },

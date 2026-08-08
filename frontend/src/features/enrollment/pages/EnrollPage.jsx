@@ -40,6 +40,34 @@ const ENROLL_STEPS = [
   { id: 'confirm', label: 'التأكيد', icon: 'check_circle' },
 ]
 
+const B_SUBTYPE_FALLBACK = [
+  { code: 'B1', name: 'عادي (يدوي)' },
+  { code: 'B2', name: 'أوتوماتيك' },
+]
+
+const resolveSubTypes = (license) => {
+  if (license?.subTypeDetails?.length) {
+    return license.subTypeDetails.map((s) => ({
+      code: s.subCode || s.code,
+      name: s.name || s.subCode || s.code,
+    }))
+  }
+  const raw = license?.subTypes
+  if (Array.isArray(raw) && raw.length) {
+    return raw.map((s) => {
+      if (typeof s === 'string') {
+        const fb = B_SUBTYPE_FALLBACK.find((f) => f.code === s.toUpperCase())
+        return { code: s.toUpperCase(), name: fb?.name || s }
+      }
+      return {
+        code: (s.code || s.subCode || '').toUpperCase(),
+        name: s.name || s.code || s.subCode,
+      }
+    }).filter((s) => s.code)
+  }
+  return B_SUBTYPE_FALLBACK
+}
+
 const EnrollStepper = ({ form }) => {
   const activeIndex = !form.schoolId ? 0 : !form.categoryCode || !form.courseId ? 1 : 2
 
@@ -592,7 +620,7 @@ export const EnrollPage = () => {
               {isBCategory ? (
                 <div className="space-y-2">
                   <label htmlFor="subTypeCode" className="block text-label-md text-on-surface">
-                    نوع التدريب (B1 / B2)
+                    نوع التدريب — B1 عادي أو B2 أوتوماتيك
                   </label>
                   <select
                     id="subTypeCode"
@@ -603,18 +631,19 @@ export const EnrollPage = () => {
                     className="h-12 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-body-md disabled:opacity-60"
                   >
                     <option value="">— اختر النوع —</option>
-                    {(selectedLicense?.subTypes ?? [
-                      { code: 'B1', name: 'عادي (يدوي)' },
-                      { code: 'B2', name: 'أوتوماتيك' },
-                    ]).map((sub) => (
+                    {resolveSubTypes(selectedLicense).map((sub) => (
                       <option key={sub.code} value={sub.code}>
                         {sub.code} — {sub.name}
                       </option>
                     ))}
                   </select>
-                  {subTypeLocked && (
+                  {subTypeLocked ? (
                     <p className="text-label-sm text-on-surface-variant">
-                      النوع محدد من الدورة ولا يمكن تغييره
+                      النوع محدد من الدورة أو من تسجيل سابق ولا يمكن تغييره
+                    </p>
+                  ) : (
+                    <p className="text-label-sm text-on-surface-variant">
+                      B1 للسيارات العادية (يدوي) — B2 للأوتوماتيك
                     </p>
                   )}
                 </div>

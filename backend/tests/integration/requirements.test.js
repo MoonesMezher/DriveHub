@@ -6,6 +6,8 @@ const { User, UserRole, RequirementItem } = require('../../src/models');
 const passwordService = require('../../src/utils/passwordService');
 const { ROLES } = require('../../src/constants/roles');
 
+jest.setTimeout(30000);
+
 let mongoServer;
 let app;
 let adminToken;
@@ -54,6 +56,7 @@ describe('Requirements API', () => {
             .post('/api/v1/admin/requirements')
             .set('Authorization', `Bearer ${adminToken}`)
             .send({
+                section: 'documents',
                 title: 'الهوية الوطنية',
                 description: 'بطاقة هوية سارية.',
                 icon: 'badge',
@@ -62,6 +65,7 @@ describe('Requirements API', () => {
             });
 
         expect(createRes.status).toBe(201);
+        expect(createRes.body.data.item.section).toBe('documents');
         const id = createRes.body.data.item._id;
 
         const listAdmin = await request(app)
@@ -89,11 +93,56 @@ describe('Requirements API', () => {
         expect(deleteRes.status).toBe(200);
     });
 
+    it('supports journey and steps sections without description', async () => {
+        const journeyRes = await request(app)
+            .post('/api/v1/admin/requirements')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                section: 'journey',
+                title: 'سجّل',
+                icon: 'person_add',
+                order: 1,
+            });
+        expect(journeyRes.status).toBe(201);
+        expect(journeyRes.body.data.item.section).toBe('journey');
+
+        const stepsRes = await request(app)
+            .post('/api/v1/admin/requirements')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                section: 'steps',
+                title: 'إنشاء حساب على DriveHub',
+                order: 1,
+            });
+        expect(stepsRes.status).toBe(201);
+        expect(stepsRes.body.data.item.section).toBe('steps');
+
+        const bySection = await request(app).get('/api/v1/requirements?section=journey');
+        expect(bySection.status).toBe(200);
+        expect(bySection.body.data.items).toHaveLength(1);
+        expect(bySection.body.data.items[0].title).toBe('سجّل');
+
+        const all = await request(app).get('/api/v1/requirements');
+        expect(all.body.data.items).toHaveLength(2);
+    });
+
+    it('rejects invalid section', async () => {
+        const res = await request(app)
+            .post('/api/v1/admin/requirements')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                section: 'invalid',
+                title: 'عنوان',
+                description: 'وصف صالح هنا',
+            });
+        expect(res.status).toBe(400);
+    });
+
     it('public list returns active items sorted by order', async () => {
         await RequirementItem.create([
-            { title: 'ب2', description: 'وصف 2', order: 2, isActive: true },
-            { title: 'ب1', description: 'وصف 1', order: 1, isActive: true },
-            { title: 'ب3', description: 'وصف 3', order: 3, isActive: false },
+            { section: 'documents', title: 'ب2', description: 'وصف 2', order: 2, isActive: true },
+            { section: 'documents', title: 'ب1', description: 'وصف 1', order: 1, isActive: true },
+            { section: 'documents', title: 'ب3', description: 'وصف 3', order: 3, isActive: false },
         ]);
 
         const res = await request(app).get('/api/v1/requirements');

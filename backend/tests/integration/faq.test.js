@@ -104,4 +104,39 @@ describe('FAQ API', () => {
         expect(res.status).toBe(200);
         expect(res.body.data.items.map((i) => i.question)).toEqual(['س1', 'س2']);
     });
+
+    it('accepts optional http(s) linkUrl and linkLabel', async () => {
+        const createRes = await request(app)
+            .post('/api/v1/admin/faq')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                question: 'أين صفحة التسجيل؟',
+                answer: 'يمكنك التسجيل من الرابط أدناه.',
+                linkUrl: 'https://example.com/register',
+                linkLabel: 'صفحة التسجيل',
+                isActive: true,
+            });
+
+        expect(createRes.status).toBe(201);
+        expect(createRes.body.data.item.linkUrl).toBe('https://example.com/register');
+        expect(createRes.body.data.item.linkLabel).toBe('صفحة التسجيل');
+
+        const publicRes = await request(app).get('/api/v1/faq');
+        expect(publicRes.status).toBe(200);
+        expect(publicRes.body.data.items[0].linkUrl).toBe('https://example.com/register');
+        expect(publicRes.body.data.items[0].linkLabel).toBe('صفحة التسجيل');
+    });
+
+    it('rejects non-http linkUrl', async () => {
+        const res = await request(app)
+            .post('/api/v1/admin/faq')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                question: 'سؤال برابط غير صالح',
+                answer: 'إجابة قصيرة للاختبار.',
+                linkUrl: 'javascript:alert(1)',
+            });
+
+        expect(res.status).toBe(400);
+    });
 });

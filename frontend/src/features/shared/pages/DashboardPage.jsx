@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { PageHeader, Card, StatCard, Button, Icon, AsyncContent, StatusBadge } from '@/components/ui'
+import { PageHeader, Card, StatCard, Button, Icon, AsyncContent, StatusBadge, Alert } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { ROLE_LABELS, ROLES } from '@/lib/constants/roles'
 import { ROUTES } from '@/lib/constants/routes'
@@ -20,6 +20,13 @@ const quickLinks = [
   { to: ROUTES.ENROLL, label: 'طلب اشتراك', desc: 'التقديم لمدرسة قريبة', icon: 'how_to_reg' },
   { to: ROUTES.NOTIFICATIONS, label: 'الإشعارات', desc: 'تنبيهاتك وتحديثاتك', icon: 'notifications' },
   { to: ROUTES.SCHOOLS_NEARBY, label: 'أقرب المدارس', desc: 'ابحث جغرافياً', icon: 'location_on' },
+]
+
+const registeredNextSteps = [
+  { to: ROUTES.PROFILE, label: 'أكمل الملف الشخصي', desc: 'حدّث بياناتك وارفع صورتك الشخصية', icon: 'person' },
+  { to: ROUTES.REQUIREMENTS, label: 'ارفع الهوية والتوثيق الطبي', desc: 'تعرّف على المستندات المطلوبة ثم ارفعها من الملف الشخصي', icon: 'badge' },
+  { to: ROUTES.ENROLL, label: 'اختر رخصة ومدرسة وقدّم طلب اشتراك', desc: 'اختر فئة الرخصة والمدرسة المناسبة لك', icon: 'how_to_reg' },
+  { to: ROUTES.HELP, label: 'مركز المساعدة', desc: 'إرشادات وأسئلة شائعة حول الخطوات التالية', icon: 'help' },
 ]
 
 export const DashboardPage = () => {
@@ -57,6 +64,35 @@ export const DashboardPage = () => {
           )
         }
       />
+
+      {activeRole === ROLES.REGISTERED && (
+        <Alert variant="info" title="الخطوات التالية للاشتراك في دورة">
+          <p className="mb-comfortable text-on-surface-variant">
+            بعد إنشاء حسابك، أكمل هذه الخطوات للتقديم على مدرسة القيادة:
+          </p>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {registeredNextSteps.map((step, index) => (
+              <li key={step.to}>
+                <Link
+                  to={step.to}
+                  className="flex gap-3 rounded-xl border border-outline-variant bg-surface p-comfortable transition-colors hover:border-primary/40 hover:bg-primary-container/30"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-container text-label-md font-semibold text-on-primary-container">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-label-md font-semibold text-primary">
+                      <Icon name={step.icon} size={18} />
+                      {step.label}
+                    </span>
+                    <span className="mt-0.5 block text-body-md text-on-surface-variant">{step.desc}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </Alert>
+      )}
 
       <div className="grid gap-comfortable sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="الدور الحالي" value={ROLE_LABELS[activeRole] || '—'} icon="badge" />

@@ -50,11 +50,11 @@ export const DashboardLayout = () => {
     <div className="flex min-h-screen flex-col bg-background" dir="rtl">
       <div className="flex flex-1">
         <Sidebar {...sidebarProps} />
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <DashboardHeaderWithDrawer
             sidebar={<Sidebar {...sidebarProps} mobile />}
           />
-          <main className="dashboard-main flex-1">
+          <main className="dashboard-main min-w-0 max-w-full flex-1">
             <div className="mb-comfortable">
               <RoleSwitcher />
             </div>

@@ -59,6 +59,7 @@ router.delete('/testimonials/:id', ...idParam('id', 'الرأي'), requirePermis
 
 // Schools
 router.get('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), attachPagination, paginationQuery, validate, adminController.listSchools);
+router.get('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), adminController.getSchool);
 router.post('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), createSchoolRules, validate, audit('admin.school.create'), adminController.createSchool);
 router.patch('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), updateSchoolRules, validate, adminController.updateSchool);
 router.delete('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), audit('admin.school.delete'), adminController.deleteSchool);
@@ -77,6 +78,7 @@ router.post('/compliance/:id/reject', ...idParam('id', 'طلب الامتثال'
 router.get('/users', requirePermission(PERMISSIONS.MANAGE_USERS), attachPagination, paginationQuery, validate, adminController.listUsers);
 router.post('/users/roles', requirePermission(PERMISSIONS.MANAGE_USERS), assignRoleRules, validate, audit('admin.user.assignRole'), adminController.assignRole);
 router.post('/users/traffic-accounts', requirePermission(PERMISSIONS.MANAGE_USERS), createTrafficAccountRules, validate, audit('admin.user.createTraffic'), adminController.createTrafficAccount);
+router.get('/users/:id', ...idParam('id', 'المستخدم'), requirePermission(PERMISSIONS.MANAGE_USERS), adminController.getUser);
 router.patch('/users/:id/status', ...idParam('id', 'المستخدم'), requirePermission(PERMISSIONS.MANAGE_USERS), suspendUserRules, validate, adminController.suspendUser);
 router.get('/users/:id/wallet', ...idParam('id', 'المستخدم'), requirePermission(PERMISSIONS.MANAGE_USERS), adminController.getUserWallet);
 router.post('/users/:id/wallet/credit', ...idParam('id', 'المستخدم'), requirePermission(PERMISSIONS.MANAGE_USERS), walletCreditRules, validate, audit('admin.user.wallet.credit'), adminController.creditUserWallet);

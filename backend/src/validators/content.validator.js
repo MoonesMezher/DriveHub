@@ -30,6 +30,17 @@ const createQuestionRules = [
     optionalMediaRef('imageUrl', 'صورة السؤال'),
 ];
 
+const updateQuestionRules = [
+    requiredString('text', 'نص السؤال', { min: 5, max: 2000 }),
+    requiredEnumBody('type', 'نوع السؤال', ['mcq', 'true_false']),
+    ...questionOptionRules,
+    requiredString('correctAnswer', 'الإجابة الصحيحة', { min: 1, max: 500 }),
+    optionalString('explanation', 'التفسير', { max: 2000 }),
+    optionalEnumBody('difficulty', 'الصعوبة', ['easy', 'medium', 'hard']),
+    optionalMediaRef('imageUrl', 'صورة السؤال'),
+    optionalEnumBody('status', 'حالة السؤال', ['active', 'archived']),
+];
+
 const createQuestionBankRules = [
     mongoIdBody('schoolId', 'المدرسة'),
     requiredString('title', 'عنوان بنك الأسئلة', { min: 2, max: 200 }),
@@ -109,6 +120,7 @@ const contentUnlockRules = [
 
 module.exports = {
     createQuestionRules,
+    updateQuestionRules,
     createQuestionBankRules,
     questionEditRequestRules,
     trainingDataEditRules,

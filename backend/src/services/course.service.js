@@ -1,4 +1,11 @@
-const { TrainingCourse, Enrollment, DrivingSchool } = require('../models');
+const {
+    TrainingCourse,
+    Enrollment,
+    DrivingSchool,
+    WaitingList,
+    PlatformPricing,
+    Instructor,
+} = require('../models');
 const { COURSE_STATUS } = require('../constants/courseStatus');
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const ApiError = require('../utils/ApiError');
@@ -9,7 +16,26 @@ const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
 class CourseService {
-    async create({ schoolId, categoryCode, subTypeCode, maxStudents, paymentDeadlineDays, launchAfterCloseDays }) {
+    async _assertFifteenDayGap(schoolId, excludeCourseId = null) {
+        const filter = {
+            schoolId,
+            launchDate: { $ne: null },
+        };
+        if (excludeCourseId) filter._id = { $ne: excludeCourseId };
+
+        const lastLaunched = await TrainingCourse.findOne(filter)
+            .sort({ launchDate: -1 })
+            .select('launchDate')
+            .lean();
+
+        if (lastLaunched?.launchDate && !courseHelper.canLaunchNewCourse(lastLaunched.launchDate)) {
+            throw new ApiError(400, ERR.COURSE_CREATE_TOO_EARLY);
+        }
+    }
+
+    async create({ schoolId, categoryCode, subTypeCode, maxStudents, paymentDeadlineDays }) {
+        await this._assertFifteenDayGap(schoolId);
+
         let resolvedMax = maxStudents;
         if (!resolvedMax) {
             const school = await DrivingSchool.findById(schoolId).select('vehiclesCount').lean();
@@ -25,7 +51,6 @@ class CourseService {
             subTypeCode: subTypeCode?.toUpperCase() || null,
             maxStudents: resolvedMax,
             paymentDeadlineDays,
-            launchAfterCloseDays,
             status: COURSE_STATUS.REGISTRATION_OPEN,
             registrationOpen: true,
         });
@@ -77,16 +102,6 @@ class CourseService {
 
         const courseBefore = await TrainingCourse.findOne(filter);
         if (!courseBefore) throw new ApiError(404, ERR.COURSE_NOT_FOUND);
-
-        if (courseBefore.registrationClosedAt) {
-            const { earliestLaunch } = courseHelper.computeLaunchWindow(
-                courseBefore,
-                courseBefore.registrationClosedAt,
-            );
-            if (new Date() < earliestLaunch) {
-                throw new ApiError(400, ERR.COURSE_LAUNCH_BEFORE_WINDOW, { earliestLaunch });
-            }
-        }
 
         const resolvedPrevious = await this.resolvePreviousLaunchDate(courseId, previousLaunchDate);
         if (!courseHelper.canLaunchNewCourse(resolvedPrevious)) {
@@ -158,6 +173,83 @@ class CourseService {
         const filter = { schoolId };
         if (categoryCode) filter.categoryCode = categoryCode.toUpperCase();
         return TrainingCourse.find(filter).sort({ createdAt: -1 }).lean();
+    }
+
+    async _resolvePricing(categoryCode, subTypeCode = null) {
+        const code = String(categoryCode || '').toUpperCase();
+        const sub = subTypeCode ? String(subTypeCode).toUpperCase() : null;
+
+        let pricing = await PlatformPricing.findOne({
+            categoryCode: code,
+            subTypeCode: sub,
+            isActive: true,
+        })
+            .sort({ effectiveFrom: -1 })
+            .lean();
+
+        if (!pricing && sub) {
+            pricing = await PlatformPricing.findOne({
+                categoryCode: code,
+                subTypeCode: null,
+                isActive: true,
+            })
+                .sort({ effectiveFrom: -1 })
+                .lean();
+        }
+
+        if (!pricing) return null;
+        return {
+            _id: pricing._id,
+            categoryCode: pricing.categoryCode,
+            subTypeCode: pricing.subTypeCode,
+            fixedPrice: pricing.fixedPrice,
+            currency: pricing.currency,
+            effectiveFrom: pricing.effectiveFrom,
+        };
+    }
+
+    async getById(courseId, schoolId = null) {
+        const filter = { _id: courseId };
+        if (schoolId) filter.schoolId = schoolId;
+
+        const course = await TrainingCourse.findOne(filter)
+            .populate('schoolId', 'name address governorate vehiclesCount status')
+            .populate('previousCourseId', 'categoryCode subTypeCode status launchDate endDate paidCount maxStudents')
+            .lean();
+
+        if (!course) throw new ApiError(404, ERR.COURSE_NOT_FOUND);
+
+        const resolvedSchoolId = course.schoolId?._id || course.schoolId;
+
+        const [liveWaitlistCount, pricing, instructors] = await Promise.all([
+            WaitingList.countDocuments({ courseId: course._id, status: 'waiting' }),
+            this._resolvePricing(course.categoryCode, course.subTypeCode),
+            Instructor.find({
+                schoolId: resolvedSchoolId,
+                status: 'active',
+                licenseCategories: course.categoryCode,
+            })
+                .populate('userId', 'name email phone gender')
+                .lean(),
+        ]);
+
+        const maxStudents = course.maxStudents ?? 0;
+        const paidCount = course.paidCount ?? 0;
+
+        return {
+            ...course,
+            waitlistCount: liveWaitlistCount,
+            seatsRemaining: Math.max(0, maxStudents - paidCount),
+            pricing,
+            instructors: instructors.map((row) => ({
+                _id: row._id,
+                status: row.status,
+                gender: row.gender,
+                isFemaleCoach: row.isFemaleCoach,
+                licenseCategories: row.licenseCategories,
+                userId: row.userId,
+            })),
+        };
     }
 }
 

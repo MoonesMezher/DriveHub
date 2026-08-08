@@ -9,7 +9,6 @@ const { ROLES } = require('../constants/roles');
 const { LOGIN_PORTALS, getEffectivePermissions } = require('../constants/rolePermissions');
 const { getDefaultRouteForRole } = require('../constants/portals');
 const logger = require('../utils/logger');
-const config = require('../config');
 const notificationChannels = require('./notificationChannels');
 
 const RESET_CODE_TTL_MINUTES = Number(process.env.PASSWORD_RESET_CODE_TTL_MINUTES || 10);
@@ -62,10 +61,14 @@ class AuthService {
                 email: normalizedEmail,
                 error: err.message,
             });
-            if (config.env !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`[DriveHub] Password reset code for ${normalizedEmail}: ${code}`);
-            }
+            // eslint-disable-next-line no-console
+            console.log(`[DriveHub] Password reset code for ${normalizedEmail}: ${code}`);
+        }
+
+        // Kill-switch / no SMTP: OTP must remain usable via console even when sendEmail does not throw.
+        if (!notificationChannels.isEmailEnabled()) {
+            // eslint-disable-next-line no-console
+            console.log(`[DriveHub] Password reset code for ${normalizedEmail}: ${code}`);
         }
     }
 

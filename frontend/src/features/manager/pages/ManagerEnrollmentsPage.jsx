@@ -14,7 +14,7 @@ import {
   resolveRejectionMessage,
 } from '@/lib/constants/rejectionReasons'
 import { useToast } from '@/hooks/useToast'
-import { EnrollmentDocumentsPanel } from '../components/EnrollmentDocumentsPanel'
+import { EnrollmentReviewPanel } from '../components/EnrollmentReviewPanel'
 
 export const ManagerEnrollmentsPage = () => {
   const toast = useToast()
@@ -24,7 +24,7 @@ export const ManagerEnrollmentsPage = () => {
   const [rejectPreset, setRejectPreset] = useState({})
   const [paymentDays, setPaymentDays] = useState('3')
   const [confirmRefs, setConfirmRefs] = useState({})
-  const [docsEnrollmentId, setDocsEnrollmentId] = useState(null)
+  const [reviewEnrollmentId, setReviewEnrollmentId] = useState(null)
 
   const coursesQuery = useQuery({
     queryKey: ['manager', 'courses'],
@@ -52,6 +52,19 @@ export const ManagerEnrollmentsPage = () => {
 
   const queue = queueQuery.data?.queue ?? []
   const paymentQueue = paymentQueueQuery.data?.queue ?? []
+
+  const reviewEnrollment = useMemo(() => {
+    if (!reviewEnrollmentId) return null
+    return (
+      queue.find((item) => item._id === reviewEnrollmentId)
+      || paymentQueue.find((item) => item._id === reviewEnrollmentId)
+      || null
+    )
+  }, [reviewEnrollmentId, queue, paymentQueue])
+
+  const toggleReview = (id) => {
+    setReviewEnrollmentId((current) => (current === id ? null : id))
+  }
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['manager', 'enrollmentQueue', courseId] })
@@ -90,9 +103,24 @@ export const ManagerEnrollmentsPage = () => {
     {
       key: 'student',
       label: 'الطالب',
-      render: (item) => item.userId?.name || item.userId?.email || '—',
+      render: (item) => (
+        <div className="min-w-0">
+          <p className="text-label-md text-on-surface">{item.userId?.name || '—'}</p>
+          <p className="truncate text-label-sm text-on-surface-variant">
+            {item.userId?.phone || item.userId?.email || '—'}
+          </p>
+        </div>
+      ),
     },
-    { key: 'categoryCode', label: 'الفئة' },
+    {
+      key: 'categoryCode',
+      label: 'الفئة',
+      render: (item) => (
+        item.subTypeCode
+          ? `${item.categoryCode} (${item.subTypeCode})`
+          : (item.categoryCode || '—')
+      ),
+    },
     {
       key: 'status',
       label: 'الحالة',
@@ -111,9 +139,9 @@ export const ManagerEnrollmentsPage = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setDocsEnrollmentId(docsEnrollmentId === item._id ? null : item._id)}
+            onClick={() => toggleReview(item._id)}
           >
-            مستندات
+            {reviewEnrollmentId === item._id ? 'إخفاء التفاصيل' : 'التفاصيل'}
           </Button>
           <Button
             size="sm"
@@ -162,13 +190,20 @@ export const ManagerEnrollmentsPage = () => {
         </div>
       ),
     },
-  ], [acceptMutation.isPending, rejectMutation.isPending, rejectReason, rejectPreset, docsEnrollmentId])
+  ], [acceptMutation.isPending, rejectMutation.isPending, rejectReason, rejectPreset, reviewEnrollmentId])
 
   const paymentColumns = useMemo(() => [
     {
       key: 'student',
       label: 'الطالب',
-      render: (item) => item.userId?.name || item.userId?.email || '—',
+      render: (item) => (
+        <div className="min-w-0">
+          <p className="text-label-md text-on-surface">{item.userId?.name || '—'}</p>
+          <p className="truncate text-label-sm text-on-surface-variant">
+            {item.userId?.phone || item.userId?.email || '—'}
+          </p>
+        </div>
+      ),
     },
     {
       key: 'amount',
@@ -199,40 +234,62 @@ export const ManagerEnrollmentsPage = () => {
       label: 'تأكيد الدفع اليدوي',
       render: (item) => {
         const amount = item.pendingPayment?.amount
-        if (!amount) {
-          return <span className="text-label-sm text-on-surface-variant">بانتظار عرض الطالب للتعليمات</span>
-        }
         return (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Input
-              placeholder="مرجع داخلي (اختياري)"
-              value={confirmRefs[item._id] || ''}
-              onChange={(e) =>
-                setConfirmRefs((r) => ({ ...r, [item._id]: e.target.value }))
-              }
-              wrapperClassName="min-w-[140px]"
-            />
             <Button
               size="sm"
-              onClick={() =>
-                confirmPaymentMutation.mutate({
-                  id: item._id,
-                  amount,
-                  gatewayRef: confirmRefs[item._id]?.trim() || undefined,
-                })
-              }
-              disabled={confirmPaymentMutation.isPending}
+              variant="outline"
+              onClick={() => toggleReview(item._id)}
             >
-              تأكيد استلام الدفع
+              {reviewEnrollmentId === item._id ? 'إخفاء التفاصيل' : 'التفاصيل'}
             </Button>
+            {!amount ? (
+              <span className="text-label-sm text-on-surface-variant">بانتظار عرض الطالب للتعليمات</span>
+            ) : (
+              <>
+                <Input
+                  placeholder="مرجع داخلي (اختياري)"
+                  value={confirmRefs[item._id] || ''}
+                  onChange={(e) =>
+                    setConfirmRefs((r) => ({ ...r, [item._id]: e.target.value }))
+                  }
+                  wrapperClassName="min-w-[140px]"
+                />
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    confirmPaymentMutation.mutate({
+                      id: item._id,
+                      amount,
+                      gatewayRef: confirmRefs[item._id]?.trim() || undefined,
+                    })
+                  }
+                  disabled={confirmPaymentMutation.isPending}
+                >
+                  تأكيد استلام الدفع
+                </Button>
+              </>
+            )}
           </div>
         )
       },
     },
-  ], [confirmPaymentMutation.isPending, confirmRefs])
+  ], [confirmPaymentMutation.isPending, confirmRefs, reviewEnrollmentId])
+
+  const reviewPanel = reviewEnrollment ? (
+    <EnrollmentReviewPanel
+      enrollment={reviewEnrollment}
+      onClose={() => setReviewEnrollmentId(null)}
+    />
+  ) : null
+
+  const reviewInQueue = Boolean(reviewEnrollment && queue.some((item) => item._id === reviewEnrollment._id))
+  const reviewInPaymentQueue = Boolean(
+    reviewEnrollment && paymentQueue.some((item) => item._id === reviewEnrollment._id),
+  )
 
   return (
-    <div>
+    <div dir="rtl">
       <PageHeader
         variant="compact"
         title="طلبات الالتحاق"
@@ -259,14 +316,7 @@ export const ManagerEnrollmentsPage = () => {
                   rows={queue}
                   emptyLabel="لا توجد طلبات بانتظار المراجعة (حسب الأماكن المتاحة)"
                 />
-                {docsEnrollmentId && (
-                  <div className="border-t border-outline-variant p-comfortable">
-                    <EnrollmentDocumentsPanel
-                      enrollmentId={docsEnrollmentId}
-                      onClose={() => setDocsEnrollmentId(null)}
-                    />
-                  </div>
-                )}
+                {reviewInQueue && reviewPanel}
               </>
             )}
           </Card>
@@ -283,11 +333,14 @@ export const ManagerEnrollmentsPage = () => {
                 <Alert variant="error" title="حدث خطأ">{getErrorMessage(paymentQueueQuery.error)}</Alert>
               </div>
             ) : (
-              <DataTable
-                columns={paymentColumns}
-                rows={paymentQueue}
-                emptyLabel="لا توجد طلبات بانتظار تأكيد الدفع"
-              />
+              <>
+                <DataTable
+                  columns={paymentColumns}
+                  rows={paymentQueue}
+                  emptyLabel="لا توجد طلبات بانتظار تأكيد الدفع"
+                />
+                {reviewInPaymentQueue && reviewPanel}
+              </>
             )}
           </Card>
         </div>
@@ -298,7 +351,10 @@ export const ManagerEnrollmentsPage = () => {
               label="الدورة"
               placeholder="— اختر دورة —"
               value={courseId}
-              onChange={(e) => setCourseId(e.target.value)}
+              onChange={(e) => {
+                setCourseId(e.target.value)
+                setReviewEnrollmentId(null)
+              }}
               options={courseOptions}
             />
             <Input
