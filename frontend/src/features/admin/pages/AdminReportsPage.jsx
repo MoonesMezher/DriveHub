@@ -130,6 +130,19 @@ export const AdminReportsPage = () => {
             )}
           </Card>
 
+          <StatCard
+            label="إجمالي الرصيد المشحون"
+            value={formatCurrency(reports.wallet?.totalCredited ?? 0)}
+            icon="account_balance_wallet"
+            trendLabel={
+              reports.wallet?.creditCount != null
+                ? `${formatNumber(reports.wallet.creditCount)} عملية شحن`
+                : undefined
+            }
+            trend="up"
+            className="border border-primary/20 bg-primary/5"
+          />
+
           <div className="grid gap-comfortable sm:grid-cols-2 xl:grid-cols-4">
             <StatCard label="إجمالي المدارس" value={reports.schools?.total ?? 0} icon="domain" />
             <StatCard label="مدارس نشطة" value={reports.schools?.active ?? 0} icon="verified" />
@@ -144,6 +157,10 @@ export const AdminReportsPage = () => {
           <div className="grid gap-loose lg:grid-cols-2">
             <Card title="المدفوعات">
               <dl className="space-y-4 text-body-md">
+                <div className="flex justify-between border-b border-outline-variant/50 pb-3">
+                  <dt className="text-on-surface-variant">إجمالي الرصيد المشحون</dt>
+                  <dd className="font-medium">{formatCurrency(reports.wallet?.totalCredited ?? 0)}</dd>
+                </div>
                 <div className="flex justify-between border-b border-outline-variant/50 pb-3">
                   <dt className="text-on-surface-variant">إجمالي المبالغ</dt>
                   <dd className="font-medium">{formatCurrency(reports.payments?.totalAmount)}</dd>

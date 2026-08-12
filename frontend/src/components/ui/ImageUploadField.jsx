@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { FileUpload, Alert } from '@/components/ui'
+import { FileUpload } from './FileUpload'
+import { Alert } from './Alert'
+import { Button } from './Button'
 import { IMAGE_UPLOAD, validateImageFile } from '@/lib/constants/imageUpload'
 import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 import { getErrorMessage } from '@/lib/helpers/error'
@@ -10,7 +12,9 @@ export const ImageUploadField = ({
   value,
   onChange,
   onUpload,
+  onRemove,
   uploading = false,
+  removing = false,
   category = 'general',
   className = '',
 }) => {
@@ -47,24 +51,59 @@ export const ImageUploadField = ({
     onChange?.(objectUrl)
   }
 
+  const handleRemove = async () => {
+    if (!onRemove) {
+      setPreviewUrl(null)
+      onChange?.('')
+      return
+    }
+    try {
+      await onRemove()
+      setLocalError(null)
+    } catch (removeErr) {
+      setLocalError(getErrorMessage(removeErr))
+    }
+  }
+
   useEffect(() => () => {
     if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
   }, [previewUrl])
+
+  const busy = uploading || removing
+  const hasImage = Boolean(previewUrl)
 
   return (
     <div className={className}>
       <FileUpload
         label={label}
         accept={IMAGE_UPLOAD.accept}
-        hint={hint || `${IMAGE_UPLOAD.acceptLabel} — بحد أقصى ${IMAGE_UPLOAD.maxSizeLabel}`}
+        hint={
+          hint
+          || (hasImage
+            ? 'اختر صورة جديدة لاستبدال الحالية'
+            : `${IMAGE_UPLOAD.acceptLabel} — بحد أقصى ${IMAGE_UPLOAD.maxSizeLabel}`)
+        }
         onChange={handleFile}
       />
       {previewUrl && (
-        <img
-          src={previewUrl}
-          alt="معاينة"
-          className="mt-3 max-h-40 w-full rounded-xl border border-outline-variant object-contain"
-        />
+        <div className="mt-3 space-y-2">
+          <img
+            src={previewUrl}
+            alt="معاينة"
+            className="max-h-40 w-full rounded-xl border border-outline-variant object-contain"
+          />
+          {onRemove && (
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              disabled={busy}
+              onClick={handleRemove}
+            >
+              {removing ? 'جاري الحذف…' : 'حذف الصورة'}
+            </Button>
+          )}
+        </div>
       )}
       {uploading && <p className="mt-2 text-label-sm text-primary">جاري رفع الصورة…</p>}
       {localError && (

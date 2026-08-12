@@ -24,7 +24,6 @@ const {
 const handleValidationErrors = require('../../middlewares/validate');
 const auth = require('../../middlewares/auth');
 const {
-    loginLimiter,
     refreshLimiter,
     forgotPasswordLimiter,
     verifyResetCodeLimiter,
@@ -33,7 +32,7 @@ const {
 const router = Router();
 
 router.post('/register', registerRules, handleValidationErrors, register);
-router.post('/login', loginLimiter, loginRules, handleValidationErrors, login);
+router.post('/login', loginRules, handleValidationErrors, login);
 router.post('/refresh', refreshLimiter, refreshRules, handleValidationErrors, refresh);
 router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordRules, handleValidationErrors, forgotPassword);
 router.post('/verify-reset-code', verifyResetCodeLimiter, verifyResetCodeRules, handleValidationErrors, verifyResetCode);

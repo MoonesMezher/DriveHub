@@ -23,4 +23,7 @@ export const studentService = {
   autoBookLesson: (data) => apiClient.post(ENDPOINTS.student.autoBookLesson, data),
   eligibleCoaches: (enrollmentId) =>
     apiClient.get(`${ENDPOINTS.student.eligibleCoaches}?enrollmentId=${enrollmentId}`),
+  availableCoaches: (params) =>
+    apiClient.get(`${ENDPOINTS.student.availableCoaches}${buildQueryString(params)}`),
+  cancelLesson: (id) => apiClient.patch(ENDPOINTS.student.cancelLesson(id)),
 }

@@ -8,6 +8,7 @@ const {
     Enrollment,
     Payment,
     StudentRoster,
+    WalletTransaction,
 } = require('../models');
 const { ROLES } = require('../constants/roles');
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
@@ -395,6 +396,7 @@ class PlatformService {
             usersCount,
             enrollmentsByStatus,
             paymentsTotal,
+            walletCreditsTotal,
             recentEnrollments,
             commissionRate,
         ] = await Promise.all([
@@ -416,6 +418,16 @@ class PlatformService {
                     },
                 },
             ]),
+            WalletTransaction.aggregate([
+                { $match: { type: 'admin_credit' } },
+                {
+                    $group: {
+                        _id: null,
+                        totalCredited: { $sum: '$amount' },
+                        creditCount: { $sum: 1 },
+                    },
+                },
+            ]),
             Enrollment.countDocuments({
                 createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
             }),
@@ -434,6 +446,7 @@ class PlatformService {
                 last30Days: recentEnrollments,
             },
             payments: paymentsTotal[0] || { totalAmount: 0, platformShare: 0, schoolShare: 0, count: 0 },
+            wallet: walletCreditsTotal[0] || { totalCredited: 0, creditCount: 0 },
             commissionRate,
             completedEnrollments: await Enrollment.countDocuments({
                 status: { $in: [ENROLLMENT_STATUS.COMPLETED, ENROLLMENT_STATUS.FINAL_PASSED] },

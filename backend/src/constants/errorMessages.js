@@ -70,6 +70,13 @@ const ERR = {
     ENROLLMENT_RETAKE_COURSE_UNAVAILABLE: 'لا توجد دورة مفتوحة لإعادة الاشتراك حالياً',
     LESSON_NO_COACHES: 'لا يوجد مدربون مؤهلون لحجز درس',
     LESSON_NO_SLOTS: 'لا توجد مواعيد متاحة للحجز التلقائي',
+    LESSON_ACTIVE_EXISTS: 'لديك موعد نشط بالفعل — ألغِ الموعد الحالي قبل حجز موعد جديد',
+    LESSON_NOT_CANCELLABLE: 'لا يمكن إلغاء هذا الموعد في حالته الحالية',
+    LESSON_NOT_POSTPONABLE: 'لا يمكن تأجيل هذا الموعد في حالته الحالية',
+    LESSON_NOT_CONFIRMABLE: 'لا يمكن تأكيد هذا الموعد في حالته الحالية',
+    LESSON_INVALID_RANGE: 'يجب اختيار يوم أو أسبوع صالح',
+    LESSON_RANGE_IN_PAST: 'الفترة المحددة في الماضي — اختر يوماً أو أسبوعاً قادماً',
+    LESSON_INVALID_SCHEDULE: 'موعد التأجيل غير صالح — اختر وقتاً في المستقبل',
 
     // Payment
     PAYMENT_AMOUNT_MISMATCH: 'مبلغ الدفع لا يطابق المطلوب',
@@ -119,6 +126,7 @@ const ERR = {
     INSTRUCTOR_EXISTS: 'هذا المستخدم مُعيَّن كمدرب في المدرسة مسبقاً',
     LESSON_NOT_FOUND: 'الدرس غير موجود',
     LESSON_CONFLICT: 'يوجد تعارض في الموعد مع درس آخر',
+
     COACH_NOT_IN_SCHOOL: 'المدرب لا ينتمي لهذه المدرسة',
     COACH_STUDENT_NOT_ASSIGNED: 'لا يمكنك كتابة ملاحظات أو تقييم لطالب غير مسجّل لديك',
 

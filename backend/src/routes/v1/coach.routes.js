@@ -3,6 +3,7 @@ const coachController = require('../../controllers/coach.controller');
 const {
     completeLessonRules,
     coachNoteRules,
+    postponeLessonRules,
 } = require('../../validators/lesson.validator');
 const {
     questionEditRequestRules,
@@ -22,6 +23,9 @@ router.use(auth, requirePermission(PERMISSIONS.ACCESS_COACH_PORTAL), schoolScope
 router.get('/schedule', attachPagination, paginationQuery, validate, coachController.schedule);
 router.get('/students', requirePermission(PERMISSIONS.MANAGE_COACH_STUDENTS), coachController.students);
 router.patch('/lessons/:id/complete', ...idParam('id', 'الدرس'), requirePermission(PERMISSIONS.RATE_LESSONS), completeLessonRules, validate, coachController.completeLesson);
+router.patch('/lessons/:id/cancel', ...idParam('id', 'الدرس'), coachController.cancelLesson);
+router.patch('/lessons/:id/postpone', ...idParam('id', 'الدرس'), postponeLessonRules, validate, coachController.postponeLesson);
+router.patch('/lessons/:id/confirm', ...idParam('id', 'الدرس'), coachController.confirmLesson);
 router.post('/notes', requirePermission(PERMISSIONS.RATE_LESSONS), coachNoteRules, validate, coachController.addNote);
 router.get('/notes', coachController.listNotes);
 router.get('/question-banks', requirePermission(PERMISSIONS.EDIT_TRAINING_CONTENT), coachController.listQuestionBanks);

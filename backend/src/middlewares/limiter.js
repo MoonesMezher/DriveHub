@@ -9,15 +9,6 @@ const apiLimiter = rateLimiter({
     standardHeaders: true,
 })
 
-const loginLimiter = rateLimiter({
-    windowMs: 60 * 60 * 1000, // 60 min
-    max: 5,
-    message: {
-        error: "Too many requests from this IP,please try again later"
-    },
-    standardHeaders: true,
-})
-
 const refreshLimiter = rateLimiter({
     windowMs: 15 * 60 * 1000,
     max: 30,
@@ -41,7 +32,6 @@ const verifyResetCodeLimiter = rateLimiter({
 
 module.exports = {
     apiLimiter,
-    loginLimiter,
     refreshLimiter,
     forgotPasswordLimiter,
     verifyResetCodeLimiter,

@@ -4,7 +4,11 @@ const {
     startPracticeExamRules,
     submitPracticeExamRules,
 } = require('../../validators/exam.validator');
-const { bookLessonRules, autoBookLessonRules } = require('../../validators/lesson.validator');
+const {
+    bookLessonRules,
+    autoBookLessonRules,
+    availableCoachesRules,
+} = require('../../validators/lesson.validator');
 const { contentUnlockRules } = require('../../validators/content.validator');
 const { paginationQuery } = require('../../validators/common.validator');
 const {
@@ -38,7 +42,9 @@ router.get('/certificates', requirePermission(PERMISSIONS.VIEW_CERTIFICATES), st
 
 router.post('/lessons', requirePermission(PERMISSIONS.BOOK_LESSONS), bookLessonRules, validate, studentController.bookLesson);
 router.post('/lessons/auto-book', requirePermission(PERMISSIONS.BOOK_LESSONS), autoBookLessonRules, validate, studentController.autoBookLesson);
+router.get('/lessons/available-coaches', requirePermission(PERMISSIONS.BOOK_LESSONS), availableCoachesRules, validate, studentController.listAvailableCoaches);
 router.get('/lessons/eligible-coaches', requirePermission(PERMISSIONS.BOOK_LESSONS), studentController.listEligibleCoaches);
 router.get('/lessons', requirePermission(PERMISSIONS.BOOK_LESSONS), studentController.listLessons);
+router.patch('/lessons/:id/cancel', ...idParam('id', 'الدرس'), requirePermission(PERMISSIONS.BOOK_LESSONS), studentController.cancelLesson);
 
 module.exports = router;

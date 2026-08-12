@@ -45,8 +45,16 @@ module.exports = {
     bookLesson: makeHandler((req) => lessonService.book(req._user.userId, req.body), { status: 201 }),
     autoBookLesson: makeHandler((req) => lessonService.autoBookNextLesson(req._user.userId, req.body), { status: 201, wrap: (d) => ({ lesson: d }) }),
     listEligibleCoaches: makeHandler(
-        (req) => lessonService.listEligibleCoaches(req._user.userId, req.query.enrollmentId),
+        (req) => lessonService.listEligibleCoaches(req._user.userId, req.query.enrollmentId, req.query),
         { wrap: (d) => ({ coaches: d }) },
     ),
+    listAvailableCoaches: makeHandler(
+        (req) => lessonService.listAvailableCoaches(req._user.userId, req.query),
+        { wrap: (d) => d },
+    ),
     listLessons: makeHandler((req) => lessonService.listStudentLessons(req._user.userId, req.query), { wrap: (d) => ({ lessons: d }) }),
+    cancelLesson: makeHandler(
+        (req) => lessonService.cancelByStudent(req._user.userId, req.params.id),
+        { wrap: (d) => ({ lesson: d }) },
+    ),
 };

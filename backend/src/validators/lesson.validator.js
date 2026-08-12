@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body, query } = require('express-validator');
 const msg = require('./messages');
 const {
     mongoIdBody,
@@ -6,6 +6,7 @@ const {
     requiredDate,
     optionalInt,
     optionalString,
+    optionalBooleanQuery,
 } = require('./chains');
 
 const bookLessonRules = [
@@ -36,11 +37,48 @@ const coachNoteRules = [
 const autoBookLessonRules = [
     mongoIdBody('enrollmentId', 'طلب الاشتراك'),
     optionalInt('durationMinutes', 'مدة الدرس', { min: 60, max: 60 }),
+    body('mode')
+        .optional()
+        .isIn(['day', 'week'])
+        .withMessage(msg.mustBeIn('نوع الفترة', ['day', 'week'])),
+    body('date')
+        .optional()
+        .isISO8601()
+        .withMessage('تاريخ الفترة غير صالح'),
+    body('femaleCoachOnly')
+        .optional()
+        .isBoolean()
+        .withMessage(msg.mustBeBoolean('مدربة أنثى')),
+];
+
+const availableCoachesRules = [
+    query('enrollmentId')
+        .notEmpty()
+        .withMessage(msg.required('طلب الاشتراك'))
+        .isMongoId()
+        .withMessage(msg.mustBeMongoId('طلب الاشتراك')),
+    query('mode')
+        .notEmpty()
+        .withMessage(msg.required('نوع الفترة'))
+        .isIn(['day', 'week'])
+        .withMessage(msg.mustBeIn('نوع الفترة', ['day', 'week'])),
+    query('date')
+        .notEmpty()
+        .withMessage(msg.required('التاريخ'))
+        .matches(/^\d{4}-\d{2}-\d{2}/)
+        .withMessage('التاريخ غير صالح'),
+    optionalBooleanQuery('femaleCoachOnly', 'مدربة أنثى'),
+];
+
+const postponeLessonRules = [
+    requiredDate('scheduledAt', 'الموعد الجديد'),
 ];
 
 module.exports = {
     bookLessonRules,
     autoBookLessonRules,
+    availableCoachesRules,
+    postponeLessonRules,
     completeLessonRules,
     coachNoteRules,
 };

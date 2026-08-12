@@ -11,6 +11,7 @@ const practicalLessonSchema = new mongoose.Schema(
         scheduledAt: { type: Date, required: true },
         durationMinutes: { type: Number, default: LESSON_DURATION_MINUTES },
         status: { type: String, enum: ['scheduled', 'completed', 'cancelled', 'no_show'], default: 'scheduled' },
+        confirmed: { type: Boolean, default: false },
         rating: { type: Number, min: 1, max: 5, default: null },
         coachNotes: { type: String, default: null },
     },

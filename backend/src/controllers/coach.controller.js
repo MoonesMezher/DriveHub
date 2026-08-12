@@ -5,6 +5,18 @@ module.exports = {
     schedule: makeHandler((req) => lessonService.listCoachSchedule(req._user.userId, req.query), { wrap: (d) => ({ schedule: d }) }),
     students: makeHandler((req) => lessonService.listCoachStudents(req._user.userId, req.query), { wrap: (d) => ({ students: d }) }),
     completeLesson: makeHandler((req) => lessonService.complete(req.params.id, req._user.userId, req.body)),
+    cancelLesson: makeHandler(
+        (req) => lessonService.cancelByCoach(req._user.userId, req.params.id),
+        { wrap: (d) => ({ lesson: d }) },
+    ),
+    postponeLesson: makeHandler(
+        (req) => lessonService.postponeByCoach(req._user.userId, req.params.id, req.body),
+        { wrap: (d) => ({ lesson: d }) },
+    ),
+    confirmLesson: makeHandler(
+        (req) => lessonService.confirmByCoach(req._user.userId, req.params.id),
+        { wrap: (d) => ({ lesson: d }) },
+    ),
     addNote: makeHandler((req) => lessonService.addCoachNote(req._user.userId, req.body), { status: 201 }),
     listNotes: makeHandler((req) => lessonService.listCoachNotes(req._user.userId, req.query), { wrap: (d) => ({ notes: d }) }),
     listQuestionBanks: makeHandler(

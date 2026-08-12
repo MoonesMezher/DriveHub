@@ -147,6 +147,16 @@ describe('Wallet payment integration', () => {
         expect(txCount).toBe(1);
     });
 
+    it('admin reports include total credited wallet amount', async () => {
+        const res = await request(app)
+            .get('/api/v1/admin/reports')
+            .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.reports.wallet.totalCredited).toBe(600000);
+        expect(res.body.data.reports.wallet.creditCount).toBe(1);
+    });
+
     it('GET admin wallet returns balance and history', async () => {
         const res = await request(app)
             .get(`/api/v1/admin/users/${userId}/wallet`)

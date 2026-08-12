@@ -27,7 +27,9 @@ const ProfileContent = ({
   isSaving,
   showDocuments,
   uploadingAvatar,
+  removingAvatar,
   onAvatarUpload,
+  onAvatarRemove,
 }) => (
   <div className="bento-grid">
     <Card className="col-span-12 md:col-span-4" padding="lg">
@@ -76,9 +78,11 @@ const ProfileContent = ({
               label="الصورة الشخصية"
               value={form.avatar}
               onUpload={onAvatarUpload}
+              onRemove={onAvatarRemove}
               uploading={uploadingAvatar}
+              removing={removingAvatar}
               category="general"
-              hint="ارفع صورة من جهازك — لا يُقبل إدخال رابط"
+              hint="يمكنك رفع صورة جديدة أو حذف الصورة الحالية"
             />
           </div>
           <Input
@@ -145,6 +149,7 @@ export const ProfilePage = () => {
   const activeRole = user?.activeContext?.role
   const showDocuments = !activeRole || activeRole === 'registered' || activeRole === 'student'
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [removingAvatar, setRemovingAvatar] = useState(false)
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -182,15 +187,39 @@ export const ProfilePage = () => {
     onError: (err) => toast.error(getErrorMessage(err)),
   })
 
+  const persistAvatar = async (avatarUrl) => {
+    await unwrap(await profileService.update({
+      profileData: { avatar: avatarUrl || null },
+    }))
+    setForm((f) => ({ ...f, avatar: avatarUrl || '' }))
+    queryClient.invalidateQueries({ queryKey: ['profile'] })
+  }
+
   const handleAvatarUpload = async (file) => {
     setUploadingAvatar(true)
     try {
       const result = await mediaService.upload(file, { category: 'general' })
       const url = result.media?.url || result.url
-      setForm((f) => ({ ...f, avatar: url }))
-      toast.success('تم رفع الصورة الشخصية')
+      await persistAvatar(url)
+      toast.success('تم تحديث الصورة الشخصية')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+      throw err
     } finally {
       setUploadingAvatar(false)
+    }
+  }
+
+  const handleAvatarRemove = async () => {
+    setRemovingAvatar(true)
+    try {
+      await persistAvatar(null)
+      toast.success('تم حذف الصورة الشخصية')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+      throw err
+    } finally {
+      setRemovingAvatar(false)
     }
   }
 
@@ -203,7 +232,7 @@ export const ProfilePage = () => {
         nationalId: form.nationalId || undefined,
         address: form.address || undefined,
         dateOfBirth: form.dateOfBirth || undefined,
-        avatar: form.avatar || undefined,
+        avatar: form.avatar || null,
       },
     })
   }
@@ -212,7 +241,7 @@ export const ProfilePage = () => {
     <div dir="rtl">
       <PageHeader
         title="الملف الشخصي"
-        description="بيانات محفوظة — ارفع صورتك الشخصية وملفاتك من جهازك مباشرة"
+        description="بيانات محفوظة — يمكنك رفع صورة شخصية جديدة أو حذفها في أي وقت"
       />
 
       <AsyncContent
@@ -234,7 +263,9 @@ export const ProfilePage = () => {
               isSaving={updateMutation.isPending}
               showDocuments={showDocuments}
               uploadingAvatar={uploadingAvatar}
+              removingAvatar={removingAvatar}
               onAvatarUpload={handleAvatarUpload}
+              onAvatarRemove={handleAvatarRemove}
             />
           ) : null
         }

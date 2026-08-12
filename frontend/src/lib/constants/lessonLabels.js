@@ -3,6 +3,7 @@ export const LESSON_STATUS_LABELS = {
   completed: 'مكتمل',
   cancelled: 'ملغى',
   no_show: 'لم يحضر',
+  confirmed: 'مؤكد',
 }
 
 export const LESSON_STATUS_VARIANT = {
