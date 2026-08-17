@@ -1,17 +1,24 @@
+const youtubeHost = (hostname) =>
+  hostname.replace(/^(www|m)\./, '')
+
+const isYoutubeHost = (host) =>
+  host === 'youtu.be' || host === 'youtube.com' || host === 'youtube-nocookie.com'
+
 const extractYoutubeId = (url) => {
   if (!url) return null
 
   try {
     const parsed = new URL(url)
-    const host = parsed.hostname.replace(/^www\./, '')
+    const host = youtubeHost(parsed.hostname)
 
     if (host === 'youtu.be') {
       return parsed.pathname.slice(1).split('/')[0] || null
     }
 
-    if (host.includes('youtube.com')) {
+    if (isYoutubeHost(host)) {
       if (parsed.pathname.startsWith('/embed/')) {
-        return parsed.pathname.split('/embed/')[1]?.split('/')[0] || null
+        const id = parsed.pathname.split('/embed/')[1]?.split('/')[0] || null
+        return id && id !== 'videoseries' ? id : null
       }
       if (parsed.pathname.startsWith('/shorts/')) {
         return parsed.pathname.split('/shorts/')[1]?.split('/')[0] || null
@@ -26,9 +33,30 @@ const extractYoutubeId = (url) => {
 }
 
 const toYoutubeEmbedUrl = (url) => {
-  const videoId = extractYoutubeId(url)
-  if (!videoId) return null
-  return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`
+  if (!url) return null
+
+  try {
+    const parsed = new URL(url)
+    const host = youtubeHost(parsed.hostname)
+    if (!isYoutubeHost(host)) return null
+
+    const listId = parsed.searchParams.get('list')
+    const videoId = extractYoutubeId(url)
+
+    if (videoId) {
+      const params = new URLSearchParams({ rel: '0', modestbranding: '1' })
+      if (listId) params.set('list', listId)
+      return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`
+    }
+
+    if (listId) {
+      return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(listId)}&rel=0&modestbranding=1`
+    }
+  } catch {
+    return null
+  }
+
+  return null
 }
 
 /** Renders YouTube embed or external video link */

@@ -466,6 +466,10 @@ class LessonService {
         const lesson = await PracticalLesson.findOne({ _id: lessonId, coachId });
         if (!lesson) throw new ApiError(404, ERR.LESSON_NOT_FOUND);
 
+        if (lesson.scheduledAt && new Date(lesson.scheduledAt).getTime() > Date.now()) {
+            throw new ApiError(400, ERR.LESSON_FUTURE_COMPLETE);
+        }
+
         lesson.status = status;
         if (rating) lesson.rating = rating;
         if (coachNotes) lesson.coachNotes = coachNotes;

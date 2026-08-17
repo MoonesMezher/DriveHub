@@ -23,4 +23,14 @@ export const storage = {
       .filter((k) => k.startsWith(PREFIX))
       .forEach((k) => localStorage.removeItem(k))
   },
+
+  /** Wipe app local/session storage (tokens + drivehub_* keys). */
+  clearAll() {
+    this.clear()
+    try {
+      sessionStorage.clear()
+    } catch {
+      // ignore
+    }
+  },
 }

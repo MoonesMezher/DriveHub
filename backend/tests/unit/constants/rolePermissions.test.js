@@ -31,4 +31,9 @@ describe('rolePermissions', () => {
         expect(LOGIN_PORTALS.school).toContain(ROLES.MANAGER);
         expect(LOGIN_PORTALS.admin).toContain(ROLES.ADMIN);
     });
+
+    it('student portal prefers STUDENT over REGISTERED after payment', () => {
+        expect(LOGIN_PORTALS.student[0]).toBe(ROLES.STUDENT);
+        expect(LOGIN_PORTALS.student).toContain(ROLES.REGISTERED);
+    });
 });

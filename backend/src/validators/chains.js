@@ -12,6 +12,15 @@ const PASSWORD_REGEX = {
 const LICENSE_CODE_REGEX = /^[A-Z](?:\d)?(?:\d)?$|^[A-Z]\d$/;
 const LICENSE_SUB_CODE_REGEX = /^[A-Z]\d$/;
 const PHONE_REGEX = /^\+?[0-9]{8,15}$/;
+const DIGITS_IN_NAME_REGEX = /[\d\u0660-\u0669]/;
+const DIGITS_ONLY_REGEX = /^\d+$/;
+
+const assertNoDigitsInName = (label) => (value) => {
+    if (value && DIGITS_IN_NAME_REGEX.test(String(value))) {
+        throw new Error(msg.nameNoDigits(label));
+    }
+    return true;
+};
 
 const requiredString = (field, label, { min = 1, max = 500 } = {}) =>
     body(field)
@@ -27,6 +36,19 @@ const optionalString = (field, label, { max = 500 } = {}) =>
         .trim()
         .isLength({ max })
         .withMessage(msg.tooLong(label, max));
+
+const requiredPersonName = (field, label, { min = 2, max = 120 } = {}) =>
+    requiredString(field, label, { min, max }).custom(assertNoDigitsInName(label));
+
+const optionalPersonName = (field, label, { max = 120 } = {}) =>
+    optionalString(field, label, { max }).custom(assertNoDigitsInName(label));
+
+const optionalNationalIdInProfile = (field = 'profileData.nationalId') =>
+    body(field)
+        .optional({ values: 'falsy' })
+        .trim()
+        .matches(DIGITS_ONLY_REGEX)
+        .withMessage(msg.digitsOnly('الرقم الوطني'));
 
 const requiredEmail = (field = 'email') =>
     body(field)
@@ -272,6 +294,9 @@ module.exports = {
     optionalGovernorate,
     requiredString,
     optionalString,
+    requiredPersonName,
+    optionalPersonName,
+    optionalNationalIdInProfile,
     requiredEmail,
     optionalEmail,
     requiredPassword,

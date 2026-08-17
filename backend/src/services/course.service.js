@@ -16,26 +16,7 @@ const { NOTIFICATION_TYPES } = require('../constants/notificationTypes');
 const { sendInstant } = require('../helpers/notificationDelivery.helper');
 
 class CourseService {
-    async _assertFifteenDayGap(schoolId, excludeCourseId = null) {
-        const filter = {
-            schoolId,
-            launchDate: { $ne: null },
-        };
-        if (excludeCourseId) filter._id = { $ne: excludeCourseId };
-
-        const lastLaunched = await TrainingCourse.findOne(filter)
-            .sort({ launchDate: -1 })
-            .select('launchDate')
-            .lean();
-
-        if (lastLaunched?.launchDate && !courseHelper.canLaunchNewCourse(lastLaunched.launchDate)) {
-            throw new ApiError(400, ERR.COURSE_CREATE_TOO_EARLY);
-        }
-    }
-
     async create({ schoolId, categoryCode, subTypeCode, maxStudents, paymentDeadlineDays }) {
-        await this._assertFifteenDayGap(schoolId);
-
         let resolvedMax = maxStudents;
         if (!resolvedMax) {
             const school = await DrivingSchool.findById(schoolId).select('vehiclesCount').lean();

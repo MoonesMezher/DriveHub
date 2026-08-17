@@ -83,7 +83,6 @@ export const TrafficResultsPage = () => {
     examType: 'theory',
     passed: 'true',
     score: '',
-    scheduleId: '',
     notes: '',
   })
 
@@ -98,18 +97,12 @@ export const TrafficResultsPage = () => {
     queryFn: () => trafficService.listEnrollments().then(unwrap),
   })
 
-  const schedulesQuery = useQuery({
-    queryKey: ['traffic', 'schedules'],
-    queryFn: () => trafficService.listSchedules().then(unwrap),
-  })
-
   const resultsQuery = useQuery({
     queryKey: ['traffic', 'results'],
     queryFn: () => trafficService.listResults().then(unwrap),
   })
 
   const enrollments = enrollmentsQuery.data?.enrollments ?? []
-  const schedules = schedulesQuery.data?.schedules ?? []
   const results = resultsQuery.data?.results ?? []
 
   const enrollmentOptions = enrollments.map((entry) => ({
@@ -130,22 +123,6 @@ export const TrafficResultsPage = () => {
     [enrollments, licenseForm.enrollmentId],
   )
 
-  const filteredSchedules = useMemo(() => {
-    if (!selectedResultEnrollment) return schedules
-    const studentId = selectedResultEnrollment.userId?._id || selectedResultEnrollment.userId
-    return schedules.filter(
-      (s) => String(s.studentId?._id || s.studentId) === String(studentId),
-    )
-  }, [schedules, selectedResultEnrollment])
-
-  const scheduleOptions = [
-    { value: '', label: '— بدون موعد —' },
-    ...filteredSchedules.map((schedule) => ({
-      value: schedule._id,
-      label: `${EXAM_TYPE_LABELS[schedule.examType] || schedule.examType} — ${formatDate(schedule.examDate, 'YYYY/MM/DD HH:mm')}`,
-    })),
-  ]
-
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['traffic', 'results'] })
 
   const enterMutation = useMutation({
@@ -157,7 +134,6 @@ export const TrafficResultsPage = () => {
         examType: 'theory',
         passed: 'true',
         score: '',
-        scheduleId: '',
         notes: '',
       })
       invalidate()
@@ -213,7 +189,6 @@ export const TrafficResultsPage = () => {
       examType: resultForm.examType,
       passed: resultForm.passed === 'true',
       ...(resultForm.score ? { score: Number(resultForm.score) } : {}),
-      ...(resultForm.scheduleId ? { scheduleId: resultForm.scheduleId } : {}),
       ...(resultForm.notes ? { notes: resultForm.notes.trim() } : {}),
     })
   }
@@ -339,7 +314,7 @@ export const TrafficResultsPage = () => {
                       placeholder="— اختر اشتراكاً —"
                       value={resultForm.enrollmentId}
                       onChange={(e) =>
-                        setResultForm((f) => ({ ...f, enrollmentId: e.target.value, scheduleId: '' }))
+                        setResultForm((f) => ({ ...f, enrollmentId: e.target.value }))
                       }
                       options={enrollmentOptions}
                       required
@@ -363,12 +338,6 @@ export const TrafficResultsPage = () => {
                       max={100}
                       value={resultForm.score}
                       onChange={(e) => setResultForm((f) => ({ ...f, score: e.target.value }))}
-                    />
-                    <Select
-                      label="الموعد (اختياري)"
-                      value={resultForm.scheduleId}
-                      onChange={(e) => setResultForm((f) => ({ ...f, scheduleId: e.target.value }))}
-                      options={scheduleOptions}
                     />
                     <Textarea
                       label="ملاحظات (اختياري)"

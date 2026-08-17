@@ -1,34 +1,10 @@
-const rateLimiter = require("express-rate-limit")
+const passThrough = (req, res, next) => next()
 
-const apiLimiter = rateLimiter({
-    windowMs: 15 * 60 * 1000, // 15 min
-    max: 100,
-    message: {
-        error: "Too many requests from this IP,please try again later"
-    },
-    standardHeaders: true,
-})
-
-const refreshLimiter = rateLimiter({
-    windowMs: 15 * 60 * 1000,
-    max: 30,
-    message: { error: 'Too many refresh attempts, please try again later' },
-    standardHeaders: true,
-})
-
-const forgotPasswordLimiter = rateLimiter({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    message: { error: 'محاولات كثيرة لطلب إعادة تعيين كلمة المرور، حاول لاحقاً' },
-    standardHeaders: true,
-})
-
-const verifyResetCodeLimiter = rateLimiter({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: { error: 'محاولات كثيرة للتحقق من الرمز، حاول لاحقاً' },
-    standardHeaders: true,
-})
+// Rate limiting is disabled — all limiters are no-ops.
+const apiLimiter = passThrough
+const refreshLimiter = passThrough
+const forgotPasswordLimiter = passThrough
+const verifyResetCodeLimiter = passThrough
 
 module.exports = {
     apiLimiter,

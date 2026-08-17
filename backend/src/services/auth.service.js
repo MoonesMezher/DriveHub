@@ -203,6 +203,7 @@ class AuthService {
             if (!canAccessPortal) {
                 throw new ApiError(403, ERR.PORTAL_DENIED);
             }
+            // Prefer the most specific portal role the user holds (STUDENT before REGISTERED).
             const preferredRole = allowed.find((r) => roleNames.includes(r)) || user.activeContext?.role;
             if (preferredRole && user.activeContext?.role !== preferredRole) {
                 user.activeContext = {
@@ -362,11 +363,30 @@ class AuthService {
 
     async buildUserPayload(user) {
         const roles = await this.getActiveRoles(user._id);
-        const activeContext = {
+        const roleNames = roles.map((r) => r.role);
+
+        let activeContext = {
             role: user.activeContext?.role || ROLES.REGISTERED,
             schoolId: user.activeContext?.schoolId || null,
         };
-        const roleNames = roles.map((r) => r.role);
+
+        // After payment the STUDENT role exists; keep session on STUDENT so
+        // LEARN_CONTENT / student portal are not blocked by a stale REGISTERED context.
+        if (activeContext.role === ROLES.REGISTERED && roleNames.includes(ROLES.STUDENT)) {
+            const studentRole = roles.find((r) => r.role === ROLES.STUDENT);
+            activeContext = {
+                role: ROLES.STUDENT,
+                schoolId: studentRole?.schoolId || null,
+            };
+            if (
+                user.activeContext?.role !== ROLES.STUDENT
+                || String(user.activeContext?.schoolId || '') !== String(activeContext.schoolId || '')
+            ) {
+                user.activeContext = activeContext;
+                await user.save();
+            }
+        }
+
         const permissions = getEffectivePermissions(roleNames);
 
         return {

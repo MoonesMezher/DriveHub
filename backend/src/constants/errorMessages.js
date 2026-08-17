@@ -44,7 +44,6 @@ const ERR = {
     // Course
     COURSE_NOT_FOUND: 'الدورة غير موجودة',
     COURSE_LAUNCH_TOO_EARLY: 'لا يمكن إطلاق دورة جديدة قبل مرور 15 يوماً على إطلاق آخر دورة',
-    COURSE_CREATE_TOO_EARLY: 'لا يمكن إنشاء دورة جديدة قبل مرور 15 يوماً على إطلاق آخر دورة',
     COURSE_LAUNCH_BEFORE_WINDOW: 'لا يمكن إطلاق الدورة قبل انقضاء فترة الانتظار بعد إغلاق التسجيل',
 
     // Enrollment
@@ -77,6 +76,7 @@ const ERR = {
     LESSON_INVALID_RANGE: 'يجب اختيار يوم أو أسبوع صالح',
     LESSON_RANGE_IN_PAST: 'الفترة المحددة في الماضي — اختر يوماً أو أسبوعاً قادماً',
     LESSON_INVALID_SCHEDULE: 'موعد التأجيل غير صالح — اختر وقتاً في المستقبل',
+    LESSON_FUTURE_COMPLETE: 'لا يمكن تقييم أو إكمال درس موعده في المستقبل',
 
     // Payment
     PAYMENT_AMOUNT_MISMATCH: 'مبلغ الدفع لا يطابق المطلوب',
@@ -109,7 +109,8 @@ const ERR = {
     ACTIVE_ENROLLMENT_REQUIRED: 'لا يوجد اشتراك نشط — أكمل التسجيل والدفع أولاً',
     CONTENT_NOT_FOUND: 'المحتوى التعليمي غير موجود',
     CONTENT_LOCKED: 'هذا المحتوى مقفل — أكمل المرحلة السابقة أولاً',
-    CONTENT_UNLOCK_STAFF_ONLY: 'فتح المحتوى الكامل تلقائي — لا يمكن تفعيل الوضع المتدرج',
+    CONTENT_UNLOCK_STAFF_ONLY: 'لا يمكن تغيير وضع فتح المحتوى بدون اشتراك نشط',
+    CONTENT_UNLOCK_CATEGORY_MISMATCH: 'فئة الرخصة لا تطابق اشتراكك النشط',
     QUESTION_BANK_NOT_FOUND: 'بنك الأسئلة غير موجود',
     QUESTION_NOT_FOUND: 'السؤال غير موجود',
     NO_QUESTIONS_AVAILABLE: 'لا توجد أسئلة متاحة لهذه الفئة',

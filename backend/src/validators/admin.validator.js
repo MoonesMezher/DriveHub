@@ -6,6 +6,7 @@ const {
     optionalLicenseSubCode,
     requiredInt,
     requiredString,
+    requiredPersonName,
     optionalString,
     requiredEmail,
     requiredPhone,
@@ -77,7 +78,7 @@ const updateRegistrationRules = [
 ];
 
 const createTrafficAccountRules = [
-    requiredString('name', 'الاسم', { min: 2, max: 100 }),
+    requiredPersonName('name', 'الاسم', { min: 2, max: 100 }),
     requiredEmail('email'),
     requiredPhone('phone'),
     body('password')

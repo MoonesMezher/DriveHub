@@ -27,6 +27,11 @@ describe('rolePermissions', () => {
     expect(hasPermission({}, PERMISSIONS.VIEW_COMPLIANCE)).toBe(false)
   })
 
+  it('login portals prefer STUDENT over REGISTERED', () => {
+    expect(LOGIN_PORTALS.student[0]).toBe(ROLES.STUDENT)
+    expect(LOGIN_PORTALS.student).toContain(ROLES.REGISTERED)
+  })
+
   it('login portals map roles', () => {
     expect(LOGIN_PORTALS.school).toContain(ROLES.MANAGER)
   })

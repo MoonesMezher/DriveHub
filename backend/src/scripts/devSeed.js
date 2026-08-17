@@ -1,3 +1,4 @@
+const config = require('../config');
 const { connectDatabase, disconnectDatabase } = require('../config/database');
 const {
     DrivingSchool,
@@ -12,14 +13,23 @@ const {
     LicenseSubType,
     SchoolApplication,
     AuditLog,
+    WalletTransaction,
+    ContentUnlockMode,
+    Ad,
 } = require('../models');
 const { COURSE_STATUS } = require('../constants/courseStatus');
 const { ENROLLMENT_STATUS } = require('../constants/enrollmentStatus');
 const { ROLES } = require('../constants/roles');
 const passwordService = require('../utils/passwordService');
 const { contentSeed } = require('./contentSeed');
+const { ensureAdmin } = require('./adminSeed');
 const settingsService = require('../services/settings.service');
 const { CATEGORIES: LICENSE_CATEGORIES } = require('./licenseSeed');
+
+const DEMO_PASSWORD = 'StudentPass1!';
+const B_PRICE = 500000;
+const C_PRICE = 750000;
+const COMMISSION = Number(config.platform?.commission) || 0.02;
 
 const LICENSE_SUB_TYPES = [
     { parentCode: 'B', subCode: 'B1', name: 'عادي (يدوي)', transmissionType: 'manual' },
@@ -208,9 +218,31 @@ const ensureUser = async ({
     return user;
 };
 
-const devSeed = async () => {
-    await connectDatabase();
+const creditWallet = async ({ userId, amount, adminId, note }) => {
+    const creditAmount = Number(amount);
+    if (!Number.isFinite(creditAmount) || creditAmount <= 0) return null;
 
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: { walletBalance: creditAmount } },
+        { new: true, runValidators: true },
+    );
+    if (!user) return null;
+
+    await WalletTransaction.deleteMany({ userId, type: 'admin_credit', note: { $regex: /^SEED/ } });
+    const transaction = await WalletTransaction.create({
+        userId,
+        type: 'admin_credit',
+        amount: creditAmount,
+        balanceAfter: user.walletBalance,
+        adminId: adminId || null,
+        note: note || 'SEED wallet credit',
+    });
+
+    return { balance: user.walletBalance, transaction };
+};
+
+const runDevSeed = async () => {
     // License catalog
     for (const cat of LICENSE_CATEGORIES) {
         await LicenseCategory.findOneAndUpdate({ code: cat.code }, cat, { upsert: true, new: true });
@@ -221,6 +253,13 @@ const devSeed = async () => {
             sub,
             { upsert: true, new: true },
         );
+    }
+
+    let adminUser = null;
+    try {
+        adminUser = await ensureAdmin();
+    } catch (err) {
+        console.warn(`⚠ Admin seed skipped (${err.message}). Run npm run seed:admin after setting ADMIN_* in .env`);
     }
 
     const schoolDocs = [];
@@ -235,17 +274,22 @@ const devSeed = async () => {
 
     await PlatformPricing.findOneAndUpdate(
         { categoryCode: 'B', subTypeCode: null },
-        { categoryCode: 'B', fixedPrice: 500000, currency: 'SYP', isActive: true },
+        { categoryCode: 'B', fixedPrice: B_PRICE, currency: 'SYP', isActive: true },
         { upsert: true, new: true },
     );
     await PlatformPricing.findOneAndUpdate(
         { categoryCode: 'B', subTypeCode: 'B1' },
-        { categoryCode: 'B', subTypeCode: 'B1', fixedPrice: 500000, currency: 'SYP', isActive: true },
+        { categoryCode: 'B', subTypeCode: 'B1', fixedPrice: B_PRICE, currency: 'SYP', isActive: true },
+        { upsert: true, new: true },
+    );
+    await PlatformPricing.findOneAndUpdate(
+        { categoryCode: 'B', subTypeCode: 'B2' },
+        { categoryCode: 'B', subTypeCode: 'B2', fixedPrice: B_PRICE, currency: 'SYP', isActive: true },
         { upsert: true, new: true },
     );
     await PlatformPricing.findOneAndUpdate(
         { categoryCode: 'C', subTypeCode: null },
-        { categoryCode: 'C', fixedPrice: 750000, currency: 'SYP', isActive: true },
+        { categoryCode: 'C', fixedPrice: C_PRICE, currency: 'SYP', isActive: true },
         { upsert: true, new: true },
     );
 
@@ -281,9 +325,9 @@ const devSeed = async () => {
         { upsert: true, new: true },
     );
 
-    const demoPassword = 'StudentPass1!';
+    const demoPassword = DEMO_PASSWORD;
 
-    await ensureUser({
+    const registeredUser = await ensureUser({
         email: 'student@drivehub.local',
         name: 'مستخدم مسجّل',
         password: demoPassword,
@@ -323,7 +367,7 @@ const devSeed = async () => {
         activeContext: { role: ROLES.COACH, schoolId: primarySchool._id },
     });
 
-    await ensureUser({
+    const femaleCoachUser = await ensureUser({
         email: 'coach2@drivehub.local',
         name: 'مدربة سارة',
         password: demoPassword,
@@ -342,6 +386,19 @@ const devSeed = async () => {
             licenseCategories: ['B'],
             gender: 'male',
             isFemaleCoach: false,
+            status: 'active',
+        },
+        { upsert: true, new: true },
+    );
+
+    await Instructor.findOneAndUpdate(
+        { userId: femaleCoachUser._id, schoolId: primarySchool._id },
+        {
+            userId: femaleCoachUser._id,
+            schoolId: primarySchool._id,
+            licenseCategories: ['B'],
+            gender: 'female',
+            isFemaleCoach: true,
             status: 'active',
         },
         { upsert: true, new: true },
@@ -367,6 +424,9 @@ const devSeed = async () => {
         activeContext: { role: ROLES.STUDENT, schoolId: primarySchool._id },
     });
 
+    const platformShare = Math.round(B_PRICE * COMMISSION);
+    const schoolShare = B_PRICE - platformShare;
+
     const enrollment = await Enrollment.findOneAndUpdate(
         { userId: activeStudent._id, schoolId: primarySchool._id, categoryCode: 'B' },
         {
@@ -377,6 +437,7 @@ const devSeed = async () => {
             subTypeCode: 'B1',
             status: ENROLLMENT_STATUS.ACTIVE,
             paidAt: new Date(),
+            prefersFemaleCoach: true,
             managerVisible: false,
         },
         { upsert: true, new: true },
@@ -388,10 +449,10 @@ const devSeed = async () => {
             enrollmentId: enrollment._id,
             userId: activeStudent._id,
             schoolId: primarySchool._id,
-            amount: 500000,
-            schoolShare: 450000,
-            platformShare: 50000,
-            commissionRate: 0.1,
+            amount: B_PRICE,
+            schoolShare,
+            platformShare,
+            commissionRate: COMMISSION,
             type: 'initial',
             status: 'completed',
             paidAt: new Date(),
@@ -400,12 +461,39 @@ const devSeed = async () => {
         { upsert: true, new: true },
     );
 
-    // Pending school application for admin review demo
-    const pendingApplicant = await User.findOne({ email: 'student@drivehub.local' }).select('_id');
+    await ContentUnlockMode.findOneAndUpdate(
+        { userId: activeStudent._id, categoryCode: 'B' },
+        {
+            userId: activeStudent._id,
+            categoryCode: 'B',
+            enrollmentId: enrollment._id,
+            mode: 'full',
+            maxUnlockedPhase: 1,
+            viewedContentIds: [],
+            unlockedAt: new Date(),
+        },
+        { upsert: true, new: true },
+    );
+
+    // Wallet demo: registered user has credit to pay; active student keeps residual credit
+    await creditWallet({
+        userId: registeredUser._id,
+        amount: B_PRICE + 100000,
+        adminId: adminUser?._id,
+        note: 'SEED credit — ready to enroll (B price + buffer)',
+    });
+    await creditWallet({
+        userId: activeStudent._id,
+        amount: 150000,
+        adminId: adminUser?._id,
+        note: 'SEED credit — residual after enrollment demo',
+    });
+
+    // Pending school application for admin compliance / CMS review demo
     await SchoolApplication.findOneAndUpdate(
         { email: 'pending-school@drivehub.local' },
         {
-            applicantUserId: pendingApplicant?._id,
+            applicantUserId: registeredUser._id,
             schoolName: 'مدرسة الأمل للقيادة',
             address: 'حلب — السليمانية',
             governorate: 'حلب',
@@ -421,10 +509,27 @@ const devSeed = async () => {
         { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
     );
 
+    if (adminUser?._id) {
+        await Ad.findOneAndUpdate(
+            { title: 'انضم إلى DriveHub — عرض تجريبي', createdBy: adminUser._id },
+            {
+                title: 'انضم إلى DriveHub — عرض تجريبي',
+                imageUrl: '/images/driving/driving-lesson.jpg',
+                link: '/schools',
+                placement: 'home',
+                status: 'active',
+                startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+                createdBy: adminUser._id,
+                order: 1,
+            },
+            { upsert: true, new: true },
+        );
+    }
+
     await settingsService.seedPrivacy();
     await contentSeed({ schoolId: primarySchool._id, managerId: manager._id });
 
-    const adminUser = await User.findOne({ email: process.env.ADMIN_EMAIL || 'admin@drivehub.local' });
     const seedActorId = adminUser?._id || manager._id;
 
     await AuditLog.deleteMany({ action: { $regex: /^seed\./ } });
@@ -433,26 +538,53 @@ const devSeed = async () => {
         { action: 'admin.school.create', userId: seedActorId, entityType: 'DrivingSchool', entityId: primarySchool._id, method: 'POST', path: '/api/v1/admin/schools', ip: '127.0.0.1', metadata: { schoolName: primarySchool.name } },
         { action: 'manager.course.create', userId: manager._id, entityType: 'TrainingCourse', entityId: course._id, method: 'POST', path: '/api/v1/manager/courses', ip: '127.0.0.1' },
         { action: 'manager.enrollment.accept', userId: manager._id, entityType: 'Enrollment', entityId: enrollment._id, method: 'POST', path: `/api/v1/manager/enrollments/${enrollment._id}/accept`, ip: '127.0.0.1' },
+        { action: 'admin.wallet.credit', userId: seedActorId, entityType: 'User', entityId: registeredUser._id, method: 'POST', path: `/api/v1/admin/users/${registeredUser._id}/wallet/credit`, ip: '127.0.0.1', metadata: { note: 'SEED' } },
         { action: 'admin.traffic.distribute', userId: seedActorId, method: 'POST', path: '/api/v1/admin/traffic/distribute', ip: '127.0.0.1', metadata: { note: 'Sample audit entry from seed' } },
     ];
     for (const [index, entry] of seedAuditEntries.entries()) {
         await AuditLog.create({ ...entry, at: new Date(Date.now() - index * 3600000) });
     }
 
-    await disconnectDatabase();
+    return {
+        schoolCount: schoolDocs.length,
+        courseId: course._id,
+        primarySchoolName: primarySchool.name,
+        adminEmail: adminUser?.email || null,
+    };
+};
 
+const printSeedSummary = (result) => {
     console.log('✓ devSeed complete');
-    console.log(`  Schools: ${schoolDocs.length}`);
+    console.log(`  Schools: ${result.schoolCount}`);
     console.log(`  Licenses: ${LICENSE_CATEGORIES.length} categories`);
-    console.log(`  Pricing: B = 500,000 SYP, C = 750,000 SYP`);
-    console.log(`  Course: ${course._id} @ ${primarySchool.name}`);
-    console.log('  Demo accounts (password: StudentPass1!):');
-    console.log('    student@drivehub.local        — registered');
-    console.log('    activestudent@drivehub.local  — active student');
-    console.log('    manager@drivehub.local        — school manager');
-    console.log('    coach@drivehub.local          — coach (assign via email in manager portal)');
-    console.log('    traffic@drivehub.local        — traffic/ministry officer');
-    console.log('  Admin: run npm run seed:admin separately with ADMIN_EMAIL/ADMIN_PASSWORD');
+    console.log(`  Pricing: B = ${B_PRICE.toLocaleString('en-US')} SYP, C = ${C_PRICE.toLocaleString('en-US')} SYP (commission ${COMMISSION * 100}%)`);
+    console.log(`  Course: ${result.courseId} @ ${result.primarySchoolName}`);
+    console.log('  Wallets: student@… credited for enrollment; activestudent@… residual credit');
+    console.log('  Coaches: coach@… (male) + coach2@… (female) Instructor records');
+    console.log('  Content: theory, videos, FAQ, requirements, testimonials, question bank');
+    console.log('  Compliance sample: pending school application (مدرسة الأمل)');
+    console.log('  Demo accounts (see LOGIN.md):');
+    console.log(`    student@drivehub.local        — registered  (${DEMO_PASSWORD})`);
+    console.log(`    activestudent@drivehub.local  — active student`);
+    console.log(`    manager@drivehub.local        — school manager`);
+    console.log(`    coach@drivehub.local          — male coach`);
+    console.log(`    coach2@drivehub.local         — female coach`);
+    console.log(`    traffic@drivehub.local        — traffic/ministry`);
+    if (result.adminEmail) {
+        console.log(`    ${result.adminEmail}        — admin (from ADMIN_* env)`);
+    } else {
+        console.log('  Admin: run npm run seed:admin with ADMIN_EMAIL / ADMIN_PASSWORD');
+    }
+};
+
+const devSeed = async () => {
+    await connectDatabase();
+    try {
+        const result = await runDevSeed();
+        printSeedSummary(result);
+    } finally {
+        await disconnectDatabase();
+    }
 };
 
 if (require.main === module) {
@@ -462,4 +594,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { devSeed };
+module.exports = { devSeed, runDevSeed, printSeedSummary, DEMO_PASSWORD };

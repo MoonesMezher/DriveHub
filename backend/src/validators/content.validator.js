@@ -107,7 +107,7 @@ const createPracticalVideoRules = [
     requiredInt('phase', 'المرحلة', { min: 1, max: 50 }),
     requiredString('title', 'العنوان', { min: 2, max: 300 }),
     requiredString('url', 'رابط الفيديو', { min: 5, max: 500 }),
-    requiredInt('durationSeconds', 'مدة الفيديو بالثواني', { min: 1, max: 7200 }),
+    optionalInt('durationSeconds', 'مدة الفيديو بالثواني', { min: 1, max: 7200 }),
     optionalInt('order', 'الترتيب', { min: 0, max: 1000 }),
     optionalMediaRef('thumbnailUrl', 'صورة مصغّرة للفيديو'),
 ];

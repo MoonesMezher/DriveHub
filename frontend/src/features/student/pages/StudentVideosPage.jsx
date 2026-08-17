@@ -5,13 +5,6 @@ import { studentService } from '@/lib/services'
 import { unwrap } from '@/lib/helpers/api'
 import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
-const formatDuration = (seconds) => {
-  if (!seconds) return '—'
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return secs ? `${mins}:${String(secs).padStart(2, '0')}` : `${mins} د`
-}
-
 export const StudentVideosPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['student', 'videos'],
@@ -85,12 +78,11 @@ export const StudentVideosPage = () => {
                     {video.phase != null && (
                       <Badge variant="secondary">المرحلة {video.phase}</Badge>
                     )}
-                    <Badge variant="default">{formatDuration(video.durationSeconds)}</Badge>
                     {video.categoryCode && (
                       <Badge variant="primary">فئة {video.categoryCode}</Badge>
                     )}
                   </div>
-                  {video.url && !video.url.includes('youtube') && (
+                  {video.url && !/youtu\.?be/i.test(video.url) && (
                     <a
                       href={video.url}
                       target="_blank"

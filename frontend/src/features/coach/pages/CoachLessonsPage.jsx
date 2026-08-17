@@ -26,6 +26,9 @@ export const CoachLessonsPage = () => {
   const lessons = (data?.schedule ?? []).filter((l) => l.status === 'scheduled')
 
   const selected = lessons.find((l) => l._id === selectedId) || lessons[0]
+  const isFutureLesson = selected?.scheduledAt
+    ? new Date(selected.scheduledAt).getTime() > Date.now()
+    : false
 
   const complete = useMutation({
     mutationFn: (payload) => coachService.completeLesson(payload.id, payload.body),
@@ -36,6 +39,18 @@ export const CoachLessonsPage = () => {
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })
+
+  const handleSave = () => {
+    if (!selected) return
+    if (isFutureLesson) {
+      toast.error('لا يمكن تقييم أو إكمال درس موعده في المستقبل')
+      return
+    }
+    complete.mutate({
+      id: selected._id,
+      body: { status, rating: status === 'completed' ? rating : undefined, coachNotes: notes },
+    })
+  }
 
   return (
     <div dir="rtl">
@@ -145,15 +160,16 @@ export const CoachLessonsPage = () => {
                 className="mt-comfortable"
               />
 
+              {isFutureLesson && (
+                <p className="mt-comfortable text-label-sm text-error">
+                  لا يمكن تقييم أو إكمال درس موعده في المستقبل
+                </p>
+              )}
+
               <div className="mt-loose flex flex-wrap gap-3 border-t border-outline-variant pt-comfortable">
                 <Button
-                  onClick={() =>
-                    complete.mutate({
-                      id: selected._id,
-                      body: { status, rating: status === 'completed' ? rating : undefined, coachNotes: notes },
-                    })
-                  }
-                  disabled={complete.isPending}
+                  onClick={handleSave}
+                  disabled={complete.isPending || isFutureLesson}
                 >
                   {complete.isPending ? 'جاري الحفظ…' : 'حفظ التقييم'}
                 </Button>

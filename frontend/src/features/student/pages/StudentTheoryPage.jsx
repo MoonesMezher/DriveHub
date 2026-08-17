@@ -39,12 +39,29 @@ export const StudentTheoryPage = () => {
   const totalPhases = unlockQuery.data?.totalPhases ?? maxUnlockedPhase
 
   const setUnlockMutation = useMutation({
-    mutationFn: (mode) => studentService.setUnlock({ mode, categoryCode }),
-    onSuccess: () => {
-      toast.success('تم تحديث وضع فتح المحتوى')
+    mutationFn: async (mode) => {
+      if (!categoryCode) {
+        throw new Error('لا يوجد اشتراك نشط لتحديد فئة الرخصة')
+      }
+      return unwrap(await studentService.setUnlock({ mode, categoryCode }))
+    },
+    onSuccess: (data, mode) => {
+      toast.success(
+        mode === 'progressive'
+          ? 'تم تفعيل العرض المتدرج — سيُفتح كل فصل بعد إكمال السابق'
+          : 'تم فتح كل المحتوى فوراً',
+      )
+      queryClient.setQueryData(['student', 'unlock'], (prev) => ({
+        ...(prev || {}),
+        mode: data?.mode || mode,
+        maxUnlockedPhase: data?.maxUnlockedPhase ?? (mode === 'progressive' ? 1 : prev?.maxUnlockedPhase),
+        categoryCode: data?.categoryCode || categoryCode,
+        totalPhases: data?.totalPhases ?? prev?.totalPhases,
+      }))
       queryClient.invalidateQueries({ queryKey: ['student', 'unlock'] })
       queryClient.invalidateQueries({ queryKey: ['student', 'theory'] })
       queryClient.invalidateQueries({ queryKey: ['student', 'videos'] })
+      setExpandedPhase(null)
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })

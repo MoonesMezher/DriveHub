@@ -5,6 +5,7 @@ import { Button, Input, PageHeader, Alert, FormSection, ProgressRing, Icon } fro
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/cn'
+import { DIGITS_IN_NAME_REGEX, hasDigitsInName } from '@/lib/validators/common'
 
 const PASSWORD_RULES = [
   { key: 'length', label: '8 أحرف على الأقل', test: (p) => p.length >= 8 },
@@ -33,6 +34,10 @@ export const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (hasDigitsInName(form.name)) {
+      setError('الاسم لا يجوز أن يحتوي على أرقام')
+      return
+    }
     try {
       const session = await register(form)
       const from = location.state?.from?.pathname
@@ -72,7 +77,7 @@ export const RegisterPage = () => {
             name="name"
             icon="person"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(e) => setForm({ ...form, name: e.target.value.replace(DIGITS_IN_NAME_REGEX, '') })}
             required
           />
           <Input

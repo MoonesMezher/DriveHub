@@ -18,10 +18,10 @@ const MEDIA = {
     parking: '/images/driving/parking.jpg',
     safety: '/images/driving/safety.jpg',
     videoThumb: '/images/driving/video-thumb.jpg',
-  // Public driving-education videos that allow embedding (verified via YouTube oEmbed)
-    videoIntro: 'https://www.youtube-nocookie.com/embed/KxrfkcDAgsY',
-    videoSigns: 'https://www.youtube-nocookie.com/embed/G3_1Yh0Lb_E',
-    videoParking: 'https://www.youtube-nocookie.com/embed/l4LcfZeS4qw',
+    videoIntro: 'https://www.youtube.com/shorts/kmK0-6WuLZE',
+    videoSigns: 'https://www.youtube.com/playlist?list=PL6tgCB5OB7IaPJ2Gxa7XpOqqUrO6kDECa',
+    videoStartStop: 'https://youtu.be/NFxe5aG1fMM',
+    videoParking: 'https://youtu.be/XPgRjJOdKkk',
 };
 
 const makeMcq = (text, options, correctKey, explanation = '', imageUrl = null) => ({
@@ -340,30 +340,33 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
     }
 
     // ── Videos (sample + core) ──
+    await PracticalVideo.deleteMany({
+        categoryCode: 'B',
+        title: { $in: ['مقدمة — العينة المجانية', 'الإشارات المرورية — عينة'] },
+    });
+
     const videos = [
         {
-            filter: { categoryCode: 'B', title: 'مقدمة — العينة المجانية', isSample: true },
+            filter: { categoryCode: 'B', title: 'فيديو المقدمة', isSample: true },
             data: {
                 categoryCode: 'B',
                 phase: 0,
-                title: 'مقدمة — العينة المجانية',
+                title: 'فيديو المقدمة',
                 url: MEDIA.videoIntro,
                 thumbnailUrl: MEDIA.videoThumb,
-                durationSeconds: 180,
                 order: 0,
                 isSample: true,
                 isActive: true,
             },
         },
         {
-            filter: { categoryCode: 'B', title: 'الإشارات المرورية — عينة', isSample: true },
+            filter: { categoryCode: 'B', title: 'إشارات المرور', isSample: true },
             data: {
                 categoryCode: 'B',
                 phase: 0,
-                title: 'الإشارات المرورية — عينة',
+                title: 'إشارات المرور',
                 url: MEDIA.videoSigns,
                 thumbnailUrl: MEDIA.roadSigns,
-                durationSeconds: 240,
                 order: 1,
                 isSample: true,
                 isActive: true,
@@ -376,9 +379,8 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
                 subTypeCode: 'B1',
                 phase: 1,
                 title: 'الانطلاق والتوقف',
-                url: MEDIA.videoIntro,
+                url: MEDIA.videoStartStop,
                 thumbnailUrl: MEDIA.videoThumb,
-                durationSeconds: 300,
                 order: 1,
                 isActive: true,
             },
@@ -392,7 +394,6 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
                 title: 'الركن الموازي',
                 url: MEDIA.videoParking,
                 thumbnailUrl: MEDIA.parking,
-                durationSeconds: 420,
                 order: 1,
                 isActive: true,
             },
@@ -400,7 +401,11 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
     ];
 
     for (const video of videos) {
-        await PracticalVideo.findOneAndUpdate(video.filter, video.data, { upsert: true, new: true });
+        await PracticalVideo.findOneAndUpdate(
+            video.filter,
+            { $set: video.data, $unset: { durationSeconds: 1 } },
+            { upsert: true, new: true },
+        );
     }
 
     if (schoolId && managerId) {
@@ -422,7 +427,7 @@ const contentSeed = async ({ schoolId, managerId } = {}) => {
     // ── Public content: FAQ, requirements, testimonials ──
     const faqItems = [
         { question: 'كيف أنشئ حساباً على DriveHub؟', answer: 'اضغط «تسجيل جديد» من الصفحة الرئيسية وأدخل بياناتك الأساسية.', category: 'التسجيل', order: 1 },
-        { question: 'متى أدفع رسوم الدورة؟', answer: 'بعد قبول المدرسة لطلبك — ادفع مباشرةً للمدرسة ثم أعلِمنا من صفحة الاشتراك.', category: 'الدفع', order: 2 },
+        { question: 'متى أدفع رسوم الدورة؟', answer: 'بعد قبول المدرسة لطلبك — يشحن المدير رصيد محفظتك على المنصة، ثم تدفع من الرصيد من صفحة الاشتراك (أو تؤكد الدفع يدوياً عبر المدرسة/الإدارة).', category: 'الدفع', order: 2 },
         { question: 'هل المحتوى النظري مجاني؟', answer: 'نوفر عينة مجانية للزائر؛ المحتوى الكامل متاح بعد الاشتراك في دورة.', category: 'التعلم', order: 3 },
     ];
     for (const faq of faqItems) {

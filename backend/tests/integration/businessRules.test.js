@@ -12,6 +12,7 @@ const {
     LicenseCategory,
     Payment,
     ContentUnlockMode,
+    TheoryContent,
     PreRegistration,
     Notification,
     DocumentUpload,
@@ -173,7 +174,7 @@ describe('DriveHub business rules', () => {
         expect(open.status).toBe(COURSE_STATUS.REGISTRATION_OPEN);
     });
 
-    it('blocks course create before 15 days from previous launch', async () => {
+    it('allows course create anytime even within 15 days of previous launch', async () => {
         await TrainingCourse.create({
             schoolId,
             categoryCode: 'B',
@@ -185,14 +186,13 @@ describe('DriveHub business rules', () => {
             endDate: addDays(new Date(), 10),
         });
 
-        await expect(
-            courseService.create({
-                schoolId,
-                categoryCode: 'B',
-                subTypeCode: 'B2',
-                maxStudents: 10,
-            }),
-        ).rejects.toMatchObject({ statusCode: 400 });
+        const created = await courseService.create({
+            schoolId,
+            categoryCode: 'B',
+            subTypeCode: 'B2',
+            maxStudents: 10,
+        });
+        expect(created.status).toBe(COURSE_STATUS.REGISTRATION_OPEN);
     });
 
     it('reserves seat only on payment confirm (not on accept)', async () => {
@@ -338,7 +338,7 @@ describe('DriveHub business rules', () => {
         expect(unlock?.mode).toBe('full');
     });
 
-    it('blocks student from setting progressive unlock mode', async () => {
+    it('allows student to switch to progressive unlock mode', async () => {
         await UserRole.findOneAndUpdate(
             { userId, role: ROLES.STUDENT, schoolId },
             { userId, role: ROLES.STUDENT, schoolId, status: 'active' },
@@ -356,13 +356,30 @@ describe('DriveHub business rules', () => {
             status: ENROLLMENT_STATUS.ACTIVE,
         });
 
+        await TheoryContent.create([
+            { categoryCode: 'B', phase: 1, title: 'قواعد — فصل 1', body: 'محتوى', order: 1 },
+            { categoryCode: 'B', phase: 2, title: 'سلامة — فصل 2', body: 'محتوى', order: 1 },
+        ]);
+
         const res = await auth(
             request(app).post('/api/v1/student/content/unlock').send({
                 categoryCode: 'B',
                 mode: 'progressive',
             }),
         );
-        expect(res.status).toBe(403);
+        expect(res.status).toBe(201);
+        expect(res.body.data.mode).toBe('progressive');
+        expect(res.body.data.maxUnlockedPhase).toBe(1);
+        expect(res.body.data.totalPhases).toBeGreaterThanOrEqual(2);
+
+        const unlock = await ContentUnlockMode.findOne({ userId, categoryCode: 'B' });
+        expect(unlock?.mode).toBe('progressive');
+        expect(unlock?.maxUnlockedPhase).toBe(1);
+
+        const theoryRes = await auth(request(app).get('/api/v1/student/content/theory'));
+        expect(theoryRes.status).toBe(200);
+        const phases = [...new Set((theoryRes.body.data.items || []).map((i) => i.phase))].sort();
+        expect(phases).toEqual([1]);
     });
 
     it('blocks roster upload before 15-day training period ends', async () => {

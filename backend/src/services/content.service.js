@@ -57,7 +57,7 @@ class ContentService {
                 userId,
                 categoryCode: code,
                 mode: enrollment ? 'full' : 'progressive',
-                maxUnlockedPhase: enrollment ? null : 1,
+                maxUnlockedPhase: 1,
                 enrollmentId: enrollment?._id || enrollmentId || null,
                 unlockedAt: enrollment ? new Date() : undefined,
             });
@@ -67,7 +67,14 @@ class ContentService {
 
     async _getMaxPhase(categoryCode, subTypeCode = null) {
         const filter = { isActive: true, categoryCode: categoryCode.toUpperCase() };
-        if (subTypeCode) filter.subTypeCode = subTypeCode.toUpperCase();
+        if (subTypeCode) {
+            const code = subTypeCode.toUpperCase();
+            filter.$or = [
+                { subTypeCode: code },
+                { subTypeCode: null },
+                { subTypeCode: { $exists: false } },
+            ];
+        }
         const [theoryMax, videoMax] = await Promise.all([
             TheoryContent.findOne(filter).sort({ phase: -1 }).select('phase').lean(),
             PracticalVideo.findOne(filter).sort({ phase: -1 }).select('phase').lean(),
@@ -262,26 +269,45 @@ class ContentService {
     }
 
     async setUnlockMode(userId, { categoryCode, mode, enrollmentId = null }, { staff = false } = {}) {
-        if (!staff && mode === 'progressive') {
-            throw new ApiError(403, ERR.CONTENT_UNLOCK_STAFF_ONLY);
-        }
         const code = categoryCode.toUpperCase();
+        let resolvedEnrollmentId = enrollmentId;
+        let subTypeCode = null;
+
+        if (!staff) {
+            const enrollment = await getActiveEnrollment(userId, { required: true });
+            if (enrollment.categoryCode.toUpperCase() !== code) {
+                throw new ApiError(403, ERR.CONTENT_UNLOCK_CATEGORY_MISMATCH);
+            }
+            resolvedEnrollmentId = enrollment._id;
+            subTypeCode = enrollment.subTypeCode || null;
+        }
+
         const update = {
             userId,
             categoryCode: code,
             mode,
-            enrollmentId,
+            enrollmentId: resolvedEnrollmentId,
             unlockedAt: new Date(),
         };
         if (mode === 'progressive') {
             update.maxUnlockedPhase = 1;
             update.viewedContentIds = [];
         }
-        return ContentUnlockMode.findOneAndUpdate(
+
+        const record = await ContentUnlockMode.findOneAndUpdate(
             { userId, categoryCode: code },
-            update,
+            { $set: update },
             { upsert: true, new: true, runValidators: true },
         );
+
+        const totalPhases = await this._getMaxPhase(code, subTypeCode);
+        return {
+            mode: record.mode,
+            categoryCode: code,
+            maxUnlockedPhase: record.maxUnlockedPhase ?? 1,
+            totalPhases,
+            enrollmentId: record.enrollmentId,
+        };
     }
 
     async _normalizeContentImages(data, fields = []) {
@@ -607,16 +633,29 @@ class ContentService {
         return request;
     }
 
+    _sampleTierAllowed(itemTier, tier) {
+        // Legacy sample rows may omit sampleTier — treat as free/partial.
+        if (!itemTier) return true;
+        if (tier === 'full') return itemTier === 'partial' || itemTier === 'full';
+        return itemTier === 'partial';
+    }
+
     async getSample({ tier = 'partial', categoryCode = 'B' } = {}) {
         const code = categoryCode.toUpperCase();
-        const items = await TheoryContent.find({
+
+        // Do not filter sampleTier in Mongo — exact match hid free sessions when
+        // sampleTier was null/missing, and full-tier users missed partial sessions.
+        const allSampleItems = await TheoryContent.find({
             isSample: true,
             isActive: true,
-            sampleTier: tier,
             categoryCode: code,
         })
             .sort({ order: 1 })
             .lean();
+
+        const items = allSampleItems.filter((item) =>
+            this._sampleTierAllowed(item.sampleTier, tier),
+        );
 
         const articles = items.map((item) => ({
             _id: item._id,
@@ -632,7 +671,7 @@ class ContentService {
             categoryCode: code,
         })
             .sort({ order: 1 })
-            .select('title url thumbnailUrl durationSeconds')
+            .select('title url thumbnailUrl')
             .lean();
 
         const videos = tier === 'full'

@@ -1,6 +1,7 @@
-const { User } = require('../models');
+const { User, UserRole } = require('../models');
 const jwtService = require('../utils/jwtService');
 const { ROLES } = require('../constants/roles');
+const { getEffectivePermissions } = require('../constants/rolePermissions');
 
 /**
  * Attaches user if valid token present; continues as guest otherwise.
@@ -22,7 +23,23 @@ const optionalAuth = async (req, res, next) => {
             return next();
         }
 
-        req._user = { ...decoded, name: user.name, status: user.status };
+        const dbRoles = await UserRole.find({ userId: user._id, status: 'active' })
+            .select('role')
+            .lean();
+        const roleNames = dbRoles.map((r) => r.role);
+        let role = user.activeContext?.role || decoded.role || ROLES.GUEST;
+        if (role === ROLES.REGISTERED && roleNames.includes(ROLES.STUDENT)) {
+            role = ROLES.STUDENT;
+        }
+
+        req._user = {
+            ...decoded,
+            userId: decoded.userId || user._id.toString(),
+            role,
+            name: user.name,
+            status: user.status,
+            permissions: getEffectivePermissions([...new Set([role, ...roleNames].filter(Boolean))]),
+        };
         return next();
     } catch {
         req._user = { role: ROLES.GUEST, permissions: [] };

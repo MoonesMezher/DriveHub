@@ -22,6 +22,8 @@ module.exports = {
     arrayMin: (label, min) => `${label} يجب أن يحتوي على ${min} عنصر على الأقل`,
     arrayMax: (label, max) => `${label} يجب ألا يتجاوز ${max} عنصراً`,
     passwordWeak: 'كلمة المرور ضعيفة: 8 أحرف على الأقل، حرف كبير وصغير، رقم، ورمز خاص',
+    nameNoDigits: (label) => `${label} لا يجوز أن يحتوي على أرقام`,
+    digitsOnly: (label) => `${label} يجب أن يكون أرقاماً فقط`,
     latInvalid: 'خط العرض يجب أن يكون بين -90 و 90',
     lngInvalid: 'خط الطول يجب أن يكون بين -180 و 180',
     licenseCodeInvalid: 'رمز الرخصة غير صالح (مثال: B, B1, C, A)',

@@ -72,6 +72,43 @@ describe('Auth API', () => {
         expect(res.body.data.token).toBeDefined();
     });
 
+    it('student portal login prefers STUDENT when user also has REGISTERED (post-payment)', async () => {
+        const hash = await passwordService.hashPassword(strongPassword);
+        const schoolId = new mongoose.Types.ObjectId();
+        const user = await User.create({
+            name: 'Paid Student',
+            email: 'paid-student@drivehub.local',
+            password: hash,
+            // Stale context left as REGISTERED even though STUDENT was granted after wallet pay.
+            activeContext: { role: ROLES.REGISTERED },
+        });
+        await UserRole.create({ userId: user._id, role: ROLES.REGISTERED });
+        await UserRole.create({
+            userId: user._id,
+            role: ROLES.STUDENT,
+            schoolId,
+            status: 'active',
+        });
+
+        const res = await request(app).post('/api/v1/auth/login').send({
+            email: 'paid-student@drivehub.local',
+            password: strongPassword,
+            portal: 'student',
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.user.activeContext.role).toBe(ROLES.STUDENT);
+        expect(String(res.body.data.user.activeContext.schoolId)).toBe(String(schoolId));
+        expect(res.body.data.user.permissions).toContain('student:learn');
+        expect(res.body.data.user.permissions).toContain('student:portal');
+
+        const me = await request(app)
+            .get('/api/v1/auth/me')
+            .set('Authorization', `Bearer ${res.body.data.accessToken}`);
+        expect(me.status).toBe(200);
+        expect(me.body.data.user.activeContext.role).toBe(ROLES.STUDENT);
+    });
+
     it('rejects login for wrong portal', async () => {
         const hash = await passwordService.hashPassword(strongPassword);
         const user = await User.create({

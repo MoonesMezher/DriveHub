@@ -202,6 +202,18 @@ describe('Wallet payment integration', () => {
 
         const studentRole = await UserRole.findOne({ userId, role: ROLES.STUDENT, schoolId });
         expect(studentRole).toBeTruthy();
+
+        // Simulate stale REGISTERED JWT/session after payment — DB roles must still grant LEARN_CONTENT.
+        await User.findByIdAndUpdate(userId, {
+            activeContext: { role: ROLES.REGISTERED, schoolId: null },
+        });
+        const meRes = await auth(request(app).get('/api/v1/auth/me'));
+        expect(meRes.status).toBe(200);
+        expect(meRes.body.data.user.activeContext.role).toBe(ROLES.STUDENT);
+        expect(meRes.body.data.user.permissions).toContain('student:learn');
+
+        const theoryRes = await auth(request(app).get('/api/v1/student/content/theory'));
+        expect(theoryRes.status).toBe(200);
     });
 
     it('rejects pay from wallet when balance insufficient', async () => {

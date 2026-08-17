@@ -10,7 +10,6 @@ const {
     xssSanitize,
     mongoSanitize,
     requestId,
-    apiLimiter,
     notFound,
     errorHandler,
     upload,
@@ -33,7 +32,6 @@ const createApp = () => {
     app.use(express.urlencoded({ extended: true }));
     app.use(mongoSanitize);
     app.use(xssSanitize);
-    app.use(apiLimiter);
 
     // Multer error handler available via upload.handleUploadError in routes
     app.use(upload.handleUploadError);

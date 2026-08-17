@@ -10,6 +10,7 @@ import { formatDate } from '@/lib/helpers/date'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { useToast } from '@/hooks/useToast'
 import { ROLE_LABELS } from '@/lib/constants/roles'
+import { DIGITS_IN_NAME_REGEX } from '@/lib/validators/common'
 import { UserDetailPanel } from '../components/UserDetailPanel'
 
 const PAGE_SIZE = 10
@@ -263,7 +264,7 @@ export const AdminUsersPage = () => {
         <Card title="إنشاء حساب إدارة المرور / وزارة النقل" className="mb-loose min-w-0 max-w-full">
           <FormSection description="يمنح هذا الحساب صلاحية مراقبة سير العمل، نشر قوائم الناجحين، والوصول لبيانات الطلاب.">
             <form onSubmit={handleCreateTraffic} className="grid gap-4 sm:grid-cols-2">
-              <Input label="الاسم" value={trafficForm.name} onChange={(e) => setTrafficForm((f) => ({ ...f, name: e.target.value }))} required />
+              <Input label="الاسم" value={trafficForm.name} onChange={(e) => setTrafficForm((f) => ({ ...f, name: e.target.value.replace(DIGITS_IN_NAME_REGEX, '') }))} required />
               <Input label="البريد" type="email" value={trafficForm.email} onChange={(e) => setTrafficForm((f) => ({ ...f, email: e.target.value }))} required />
               <Input label="الهاتف" value={trafficForm.phone} onChange={(e) => setTrafficForm((f) => ({ ...f, phone: e.target.value }))} required />
               <Input label="كلمة المرور" type="password" value={trafficForm.password} onChange={(e) => setTrafficForm((f) => ({ ...f, password: e.target.value }))} required hint="8 أحرف على الأقل" />

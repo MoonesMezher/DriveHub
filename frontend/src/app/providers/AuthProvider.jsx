@@ -1,8 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { apiClient, ENDPOINTS } from '@/lib/api'
-import { ROLES } from '@/lib/constants/roles'
-import { userHasRole, userHasActiveRole, canAccessRoute, resolvePostLoginRoute } from '@/lib/auth/authUtils'
+import {
+  userHasRole,
+  userHasActiveRole,
+  canAccessRoute,
+  resolvePostLoginRoute,
+  healPaidStudentSession,
+  resolveEffectiveActiveRole,
+} from '@/lib/auth/authUtils'
 import { hasPermission, hasAnyPermission } from '@/lib/auth/rolePermissions'
+import { storage } from '@/lib/helpers/storage'
+import { queryClient } from '@/app/providers/QueryProvider'
 
 const AuthContext = createContext(null)
 
@@ -18,12 +26,15 @@ export const AuthProvider = ({ children }) => {
       refreshToken: data.refreshToken,
     })
     setTokenState(apiClient.getToken())
-    setUser(data.user)
-    return data
+    const healed = healPaidStudentSession(data.user)
+    setUser(healed)
+    return { ...data, user: healed }
   }, [])
 
   const clearSession = useCallback(() => {
     apiClient.clearTokens()
+    storage.clearAll()
+    queryClient.clear()
     setTokenState(null)
     setUser(null)
   }, [])
@@ -35,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     }
     try {
       const res = await apiClient.get(ENDPOINTS.auth.me)
-      setUser(res.data.user)
+      setUser(healPaidStudentSession(res.data.user))
       setTokenState(apiClient.getToken())
     } catch {
       clearSession()
@@ -87,11 +98,21 @@ export const AuthProvider = ({ children }) => {
     const res = await apiClient.post(ENDPOINTS.auth.switchContext, { role, schoolId })
     apiClient.setTokens({ accessToken: res.data.accessToken || res.data.token })
     setTokenState(apiClient.getToken())
-    setUser(res.data.user)
-    return res.data
+    const healed = healPaidStudentSession(res.data.user)
+    setUser(healed)
+    return { ...res.data, user: healed }
   }, [])
 
-  const activeRole = user?.activeContext?.role || ROLES.GUEST
+  const refreshUser = useCallback(async () => {
+    if (!apiClient.getToken()) return null
+    const res = await apiClient.get(ENDPOINTS.auth.me)
+    const healed = healPaidStudentSession(res.data.user)
+    setUser(healed)
+    setTokenState(apiClient.getToken())
+    return healed
+  }, [])
+
+  const activeRole = resolveEffectiveActiveRole(user)
   const permissions = user?.permissions || []
 
   const value = useMemo(
@@ -107,6 +128,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       switchContext,
+      refreshUser,
       setUser,
       hasRole: (...roles) => userHasRole(user, ...roles),
       hasActiveRole: (...roles) => userHasActiveRole(user, ...roles),
@@ -115,7 +137,7 @@ export const AuthProvider = ({ children }) => {
       canAccess: (rule) => canAccessRoute(user, rule),
       getHomeRoute: () => resolvePostLoginRoute(user),
     }),
-    [user, token, loading, bootstrapping, activeRole, permissions, login, register, logout, switchContext],
+    [user, token, loading, bootstrapping, activeRole, permissions, login, register, logout, switchContext, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

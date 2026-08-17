@@ -2,8 +2,9 @@ const { body } = require('express-validator');
 const { ROLE_LIST } = require('../constants/roles');
 const msg = require('./messages');
 const {
-    requiredString,
-    optionalString,
+    requiredPersonName,
+    optionalPersonName,
+    optionalNationalIdInProfile,
     requiredEmail,
     requiredPassword,
     optionalPhone,
@@ -11,7 +12,7 @@ const {
 } = require('./chains');
 
 const registerRules = [
-    requiredString('name', 'الاسم', { min: 2, max: 120 }),
+    requiredPersonName('name', 'الاسم', { min: 2, max: 120 }),
     requiredEmail('email'),
     optionalPhone('phone'),
     requiredPassword('password'),
@@ -84,9 +85,10 @@ const resetPasswordRules = [
 ];
 
 const updateProfileRules = [
-    optionalString('name', 'الاسم', { max: 120 }),
+    optionalPersonName('name', 'الاسم', { max: 120 }),
     optionalPhone('phone'),
     body('profileData').optional().isObject().withMessage('بيانات الملف الشخصي غير صالحة'),
+    optionalNationalIdInProfile(),
 ];
 
 module.exports = {

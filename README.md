@@ -29,14 +29,20 @@ DriveHub digitizes the end-to-end journey for driving education in Syria:
 
 **Key business rules implemented in code:**
 
-- **15-day** training course duration with automatic completion (`completeCourses` cron job).
-- **Platform wallet** payments — no external payment gateway; Admin credits balances; students pay from wallet.
+- **15-day training window** after course launch; cron auto-completes enrollments (`completeCourses`).
+- **15-day gap before next launch** (and before creating another course while a recent launch exists) — `canLaunchCourse` / `_assertFifteenDayGap`.
+- **Platform wallet** — Admin credits balances; students pay enrollments from wallet; reports expose `wallet.totalCredited`.
 - **2%** platform commission on payments (`PLATFORM_COMMISSION`).
 - **One pending enrollment** per user; smart waitlist when courses are full.
 - **Seat reserved only after payment** confirmation.
+- **Practical booking:** day or week availability (`mode=day|week`); optional female coach; **one active scheduled booking** at a time.
+- **No login lockout** — `/auth/login` is excluded from API rate limiting; no failed-attempt lock.
+- **Profile photo** — upload and delete (avatar cleared via profile update).
+- **Admin CMS** — FAQ, requirements, testimonials, ads, licenses, schools, compliance (pending school applications).
 - **7 license categories:** B, C, D1, D2, A, H, W (with B1/B2 sub-types).
 - **Document encryption** (AES) for identity/medical uploads.
 - **QR verification** for statistics, certificates, and rosters (`/verify/*`).
+- **Logout** clears tokens, local storage, and React Query cache.
 
 **Not in scope (not implemented):** 3D driving simulator, real payment gateway (PayTabs/Telr), SMS notifications.
 
@@ -126,15 +132,36 @@ Default `VITE_API_URL=/api/v1` works with the Vite dev proxy (no change needed l
 
 ### 4.4 Seed database
 
-From `backend/`:
+From `backend/` (MongoDB running; set `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env`):
 
 ```powershell
-npm run seed:licenses
-npm run seed:dev
-npm run seed:admin
+npm run seed:all
 ```
 
-> `seed:dev` creates demo schools, users, content, and pricing. `seed:licenses` is optional because `seed:dev` also seeds licenses.
+This is the **recommended one-shot** seed. It creates/refreshes:
+
+| Area | What you get |
+|------|----------------|
+| Admin | From `ADMIN_*` (idempotent) |
+| Licenses | B, C, D1, D2, A, H, W + B1/B2 |
+| Schools | 10 demo schools across governorates |
+| Users/roles | registered, student, coaches, managers, traffic (+ admin) |
+| Courses / enrollment | Open B course + active paid student (female-coach preference) |
+| Wallets | Credited balances + `WalletTransaction` rows (`totalCredited` in reports) |
+| Instructors | Male `coach@` + female `coach2@` |
+| Content | Theory, videos, question bank, FAQ, requirements, testimonials |
+| CMS / compliance | Sample ad + pending school application |
+
+Stepwise equivalents:
+
+```powershell
+npm run seed:admin      # admin only
+npm run seed:dev        # full demo (also ensures admin if ADMIN_* set)
+npm run seed:content    # content/FAQ only
+npm run seed:licenses   # license catalog only
+```
+
+> Credentials: [`LOGIN.md`](LOGIN.md). `seed:licenses` is optional because `seed:dev` / `seed:all` already seed licenses.
 
 ### 4.5 Run (full stack)
 
@@ -335,8 +362,10 @@ Requires `student:portal` + sub-permissions.
 | GET | `/student/certificates` | `student:certificates` | Certificates |
 | POST | `/student/lessons` | `student:lessons` | Book practical lesson |
 | POST | `/student/lessons/auto-book` | `student:lessons` | Auto-book first slot |
+| GET | `/student/lessons/available-coaches` | `student:lessons` | Day/week slots (`mode`, `date`, `femaleCoachOnly`) |
 | GET | `/student/lessons/eligible-coaches` | `student:lessons` | Coaches for booking |
 | GET | `/student/lessons` | `student:lessons` | My lessons |
+| PATCH | `/student/lessons/:id/cancel` | `student:lessons` | Cancel scheduled lesson |
 
 ### 6.5 Coach portal (`/coach/*`)
 
@@ -526,13 +555,14 @@ Ensure **only one** backend instance runs crons, or extract jobs to a separate w
 
 ## Demo Accounts | حسابات تجريبية
 
-Run seeds first: `npm run seed:dev` then `npm run seed:admin` in `backend/`.
+Recommended: `npm run seed:all` in `backend/` (or `seed:dev` then `seed:admin`). See [`LOGIN.md`](LOGIN.md).
 
 | Role | Portal | Email | Password |
 |------|--------|-------|----------|
 | Registered | دخول الطلاب | `student@drivehub.local` | `StudentPass1!` |
 | Student | دخول الطلاب | `activestudent@drivehub.local` | `StudentPass1!` |
-| Coach | المدارس/المدربين | `coach@drivehub.local` | `StudentPass1!` |
+| Coach (male) | المدارس/المدربين | `coach@drivehub.local` | `StudentPass1!` |
+| Coach (female) | المدارس/المدربين | `coach2@drivehub.local` | `StudentPass1!` |
 | Manager | المدارس/المدربين | `manager@drivehub.local` | `StudentPass1!` |
 | Admin | الإدارة | `admin@drivehub.local` | `AdminPass1!` |
 | Traffic | الإدارة | `traffic@drivehub.local` | `StudentPass1!` |

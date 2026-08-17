@@ -2,10 +2,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthContext } from '@/app/providers/AuthProvider'
 import { ROUTES } from '@/lib/constants/routes'
 import { matchRouteAccess } from '@/lib/auth/routeAccess'
-import { canAccessRoute } from '@/lib/auth/authUtils'
+import { canAccessRoute, resolveEffectiveActiveRole } from '@/lib/auth/authUtils'
 
 export const ProtectedRoute = ({ allowedRoles, requiredPermissions, accessRule }) => {
-  const { isAuthenticated, bootstrapping, user, activeRole } = useAuthContext()
+  const { isAuthenticated, bootstrapping, user } = useAuthContext()
   const location = useLocation()
 
   if (bootstrapping) {
@@ -28,7 +28,8 @@ export const ProtectedRoute = ({ allowedRoles, requiredPermissions, accessRule }
     permissions: requiredPermissions || rule.permissions,
   }
 
-  if (mergedRule.roles?.length && !mergedRule.roles.includes(activeRole)) {
+  const effectiveRole = resolveEffectiveActiveRole(user)
+  if (mergedRule.roles?.length && !mergedRule.roles.includes(effectiveRole)) {
     return <Navigate to={ROUTES.UNAUTHORIZED} replace />
   }
 

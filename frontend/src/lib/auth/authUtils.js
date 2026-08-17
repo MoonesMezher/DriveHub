@@ -8,13 +8,37 @@ export const getUserRoles = (user) => {
   return [...new Set([active, ...assigned].filter(Boolean))]
 }
 
+/** After wallet payment STUDENT exists but activeContext may still be REGISTERED. */
+export const resolveEffectiveActiveRole = (user) => {
+  const active = user?.activeContext?.role || ROLES.GUEST
+  const assigned = user?.roles?.map((r) => r.role) || []
+  if (active === ROLES.REGISTERED && assigned.includes(ROLES.STUDENT)) {
+    return ROLES.STUDENT
+  }
+  return active
+}
+
+export const healPaidStudentSession = (user) => {
+  if (!user) return user
+  const effective = resolveEffectiveActiveRole(user)
+  if (effective === user.activeContext?.role) return user
+  const studentRole = user.roles?.find((r) => r.role === ROLES.STUDENT)
+  return {
+    ...user,
+    activeContext: {
+      role: effective,
+      schoolId: studentRole?.schoolId || user.activeContext?.schoolId || null,
+    },
+  }
+}
+
 export const userHasRole = (user, ...roles) => {
   const all = getUserRoles(user)
   return roles.some((r) => all.includes(r))
 }
 
 export const userHasActiveRole = (user, ...roles) =>
-  roles.includes(user?.activeContext?.role)
+  roles.includes(resolveEffectiveActiveRole(user))
 
 export const canAccessRoute = (user, accessRule) => {
   if (!accessRule) return true
@@ -22,7 +46,7 @@ export const canAccessRoute = (user, accessRule) => {
   if (!user) return false
 
   const permissions = user.permissions || []
-  const activeRole = user.activeContext?.role
+  const activeRole = resolveEffectiveActiveRole(user)
 
   if (accessRule.roles?.length && !accessRule.roles.includes(activeRole)) {
     return false
@@ -46,7 +70,7 @@ const hasAll = (user, required, permissions) => {
 
 export const resolvePostLoginRoute = (user, fallback = '/') => {
   if (!user) return fallback
-  return getHomeRouteForRole(user.activeContext?.role) || fallback
+  return getHomeRouteForRole(resolveEffectiveActiveRole(user)) || fallback
 }
 
 export const buildContextOptions = (user) => {

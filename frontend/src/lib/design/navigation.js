@@ -5,6 +5,7 @@ export const PUBLIC_NAV = [
   { to: ROUTES.HOME, label: 'الرئيسية', icon: 'home', end: true },
   { to: ROUTES.LICENSES, label: 'الرخص', icon: 'badge' },
   { to: ROUTES.SCHOOLS_NEARBY, label: 'المدارس', icon: 'location_on' },
+  { to: ROUTES.SAMPLE, label: 'جلسات مجانية', icon: 'quiz' },
   { to: ROUTES.REQUIREMENTS, label: 'المتطلبات', icon: 'checklist' },
   { to: ROUTES.HELP, label: 'مساعدة', icon: 'support_agent' },
 ]

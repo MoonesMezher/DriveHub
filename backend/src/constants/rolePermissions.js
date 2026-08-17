@@ -70,9 +70,9 @@ const ROLE_PERMISSIONS = {
     ],
 };
 
-/** بوابات تسجيل الدخول — الأدوار المسموحة لكل بوابة */
+/** بوابات تسجيل الدخول — الأدوار المسموحة لكل بوابة (الأولوية للأدوار الأخص أولاً) */
 const LOGIN_PORTALS = {
-    student: [ROLES.REGISTERED, ROLES.STUDENT],
+    student: [ROLES.STUDENT, ROLES.REGISTERED],
     school: [ROLES.COACH, ROLES.MANAGER],
     admin: [ROLES.ADMIN, ROLES.TRAFFIC],
 };

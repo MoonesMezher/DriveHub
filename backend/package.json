@@ -10,6 +10,7 @@
     "seed:licenses": "node src/scripts/licenseSeed.js",
     "seed:dev": "node src/scripts/devSeed.js",
     "seed:content": "node src/scripts/contentSeed.js",
+    "seed:all": "node src/scripts/seedAll.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --runInBand",

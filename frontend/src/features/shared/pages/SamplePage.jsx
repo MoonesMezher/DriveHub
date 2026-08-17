@@ -22,13 +22,14 @@ import { PUBLIC_HERO_IMAGES } from '@/lib/constants/publicVisuals'
 import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 
 export const SamplePage = () => {
-  const { isAuthenticated } = useAuthContext()
+  const { isAuthenticated, bootstrapping } = useAuthContext()
   const [answers, setAnswers] = useState({})
   const [revealed, setRevealed] = useState({})
 
   const sampleQuery = useQuery({
     queryKey: ['content', 'sample', isAuthenticated],
-    queryFn: async () => unwrap(await contentService.getSample({ category: 'B' })),
+    queryFn: async () => unwrap(await contentService.getSample({ categoryCode: 'B' })),
+    enabled: !bootstrapping,
   })
 
   const articles = sampleQuery.data?.articles ?? []
@@ -58,14 +59,14 @@ export const SamplePage = () => {
         <div className="absolute inset-0 bg-gradient-to-l from-primary/90 via-primary/50 to-transparent" />
         <div className="relative px-6 py-12 md:px-10 md:py-16">
           <Badge variant="secondary" className="mb-4 bg-white/20 text-white backdrop-blur">
-            {sampleQuery.data?.tier === 'full' ? 'عينة كاملة' : 'معاينة مجانية'}
+            {sampleQuery.data?.tier === 'full' ? 'جلسات كاملة للمسجّلين' : 'جلسات مجانية'}
           </Badge>
           <PageHeader
-            title="عينة مجانية — نظري"
+            title="الجلسات المجانية"
             description={
               isAuthenticated
-                ? 'مقالات نظرية، فيديوهات، صور، وأسئلة تفاعلية — عينة كاملة للمسجّلين'
-                : 'مقالات وشرح نظري مع فيديو وصور — جرّب 3 أسئلة قبل التسجيل الكامل'
+                ? 'مقالات نظرية، فيديوهات، صور، وأسئلة تفاعلية — جلسة عينة كاملة للمسجّلين'
+                : 'جلسات نظرية مجانية مع فيديو وصور — جرّب 3 أسئلة قبل التسجيل الكامل'
             }
             actions={
               !isAuthenticated && (
@@ -87,12 +88,12 @@ export const SamplePage = () => {
       </section>
 
       <AsyncContent
-        isLoading={sampleQuery.isLoading}
+        isLoading={bootstrapping || sampleQuery.isLoading}
         error={sampleQuery.error}
-        isEmpty={!articles.length && !questions.length}
+        isEmpty={!articles.length && !videos.length && !questions.length}
         emptyIcon="quiz"
-        emptyTitle="لا توجد عينة متاحة"
-        emptyDescription="شغّل seed:dev في الخادم لتحميل المحتوى التجريبي."
+        emptyTitle="لا توجد جلسات مجانية متاحة"
+        emptyDescription="شغّل npm run seed:all في مجلد backend لتحميل المحتوى التجريبي."
       >
         {() => (
           <div className="space-y-loose">
@@ -138,11 +139,6 @@ export const SamplePage = () => {
                           />
                         )}
                         <VideoEmbed url={video.url} title={video.title} />
-                        {video.durationSeconds && (
-                          <p className="mt-2 text-label-sm text-on-surface-variant">
-                            المدة: {Math.floor(video.durationSeconds / 60)} دقيقة
-                          </p>
-                        )}
                       </Card>
                     ))}
                   </div>
@@ -207,12 +203,14 @@ export const SamplePage = () => {
         )}
       </AsyncContent>
 
-      <CtaBanner
-        title="هل أعجبتك العينة؟"
-        description="سجّل حساباً مجانياً للوصول إلى المحتوى الكامل ومتابعة تقدمك"
-        primaryAction={{ label: 'إنشاء حساب', to: ROUTES.REGISTER }}
-        secondaryAction={{ label: 'تسجيل الدخول', to: ROUTES.LOGIN }}
-      />
+      {!isAuthenticated && (
+        <CtaBanner
+          title="هل أعجبتك العينة؟"
+          description="سجّل حساباً مجانياً للوصول إلى المحتوى الكامل ومتابعة تقدمك"
+          primaryAction={{ label: 'إنشاء حساب', to: ROUTES.REGISTER }}
+          secondaryAction={{ label: 'تسجيل الدخول', to: ROUTES.LOGIN }}
+        />
+      )}
     </div>
   )
 }

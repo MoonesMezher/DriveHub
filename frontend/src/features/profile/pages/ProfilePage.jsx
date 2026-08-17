@@ -11,6 +11,7 @@ import { getErrorMessage } from '@/lib/helpers/error'
 import { resolveMediaUrl } from '@/lib/helpers/mediaUrl'
 import { ROLE_LABELS } from '@/lib/constants/roles'
 import { useAuth } from '@/hooks/useAuth'
+import { DIGITS_IN_NAME_REGEX, hasDigitsInName, stripNonDigits } from '@/lib/validators/common'
 
 const resolveProfile = (data) => {
   if (!data || typeof data !== 'object') return null
@@ -90,7 +91,7 @@ const ProfileContent = ({
             name="name"
             icon="person"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(e) => setForm({ ...form, name: e.target.value.replace(DIGITS_IN_NAME_REGEX, '') })}
             required
           />
           <Input
@@ -104,8 +105,10 @@ const ProfileContent = ({
             label="رقم الهوية"
             name="nationalId"
             icon="badge"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={form.nationalId}
-            onChange={(e) => setForm({ ...form, nationalId: e.target.value })}
+            onChange={(e) => setForm({ ...form, nationalId: stripNonDigits(e.target.value) })}
           />
           <Input
             label="تاريخ الميلاد"
@@ -225,6 +228,14 @@ export const ProfilePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (hasDigitsInName(form.name)) {
+      toast.error('الاسم لا يجوز أن يحتوي على أرقام')
+      return
+    }
+    if (form.nationalId && !/^\d+$/.test(form.nationalId)) {
+      toast.error('الرقم الوطني يجب أن يكون أرقاماً فقط')
+      return
+    }
     updateMutation.mutate({
       name: form.name,
       phone: form.phone,

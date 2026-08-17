@@ -26,8 +26,10 @@ import { unwrap, unwrapList } from '@/lib/helpers/api'
 import { getErrorMessage } from '@/lib/helpers/error'
 import { formatDate, formatDateTime } from '@/lib/helpers/date'
 import { ROUTES } from '@/lib/constants/routes'
-import { Link } from 'react-router-dom'
+import { ROLES } from '@/lib/constants/roles'
+import { Link, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/cn'
+import { useAuthContext } from '@/app/providers/AuthProvider'
 
 const ENROLL_TABS = [
   { id: 'list', label: 'طلباتي' },
@@ -115,6 +117,8 @@ const EnrollStepper = ({ form }) => {
 
 export const EnrollPage = () => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { refreshUser, switchContext } = useAuthContext()
   const [searchParams] = useSearchParams()
   const [tab, setTab] = useState('list')
   const [form, setForm] = useState({
@@ -222,12 +226,26 @@ export const EnrollPage = () => {
       isRetake
         ? enrollmentService.payRetakeFromWallet(id)
         : enrollmentService.payFromWallet(id),
-    onSuccess: () => {
+    onSuccess: async (res) => {
       toast.success('تم الدفع من الرصيد وحجز المقعد')
       setPaymentTarget(null)
       setPaymentInfo(null)
       queryClient.invalidateQueries({ queryKey: ['enrollments'] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
+
+      const enrollment = unwrap(res)?.enrollment
+      const schoolId = enrollment?.schoolId?._id || enrollment?.schoolId || null
+      try {
+        await switchContext({ role: ROLES.STUDENT, schoolId })
+        toast.success('تم تفعيل بوابة الطالب — يمكنك الوصول للمحتوى الآن')
+        navigate(ROUTES.STUDENT)
+      } catch {
+        try {
+          await refreshUser()
+        } catch {
+          // session refresh is best-effort; payment already succeeded
+        }
+      }
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   })

@@ -136,14 +136,6 @@ export const ManagerCoursesPage = () => {
     }
   }
 
-  const createBlockedInfo = useMemo(() => {
-    const lastLaunch = getLastLaunchDate(courses, null)
-    if (!lastLaunch) return { blocked: false, daysRemaining: 0 }
-    const elapsed = daysSince(lastLaunch)
-    if (elapsed >= LAUNCH_GAP_DAYS) return { blocked: false, daysRemaining: 0 }
-    return { blocked: true, daysRemaining: Math.max(0, LAUNCH_GAP_DAYS - elapsed) }
-  }, [courses])
-
   const handleLaunch = (course) => {
     const { lastLaunch } = getLaunchInfo(course)
     launchMutation.mutate({
@@ -154,10 +146,6 @@ export const ManagerCoursesPage = () => {
 
   const handleCreate = (e) => {
     e.preventDefault()
-    if (createBlockedInfo.blocked) {
-      toast.error(`لا يمكن إنشاء دورة جديدة قبل مرور ${LAUNCH_GAP_DAYS} يوماً على إطلاق آخر دورة (متبقي ${createBlockedInfo.daysRemaining} يوم)`)
-      return
-    }
     const payload = {
       schoolId,
       categoryCode: form.categoryCode.trim().toUpperCase(),
@@ -317,12 +305,7 @@ export const ManagerCoursesPage = () => {
 
         <Card title="دورة جديدة" className="xl:sticky xl:top-24 xl:self-start">
           <form onSubmit={handleCreate}>
-            <FormSection description="أنشئ دورة جديدة لبدء استقبال طلبات الالتحاق — لا يُسمح بإنشاء دورة قبل مرور 15 يوماً على آخر إطلاق">
-              {createBlockedInfo.blocked && (
-                <Alert variant="warning" title="مهلة 15 يوماً">
-                  متبقي {createBlockedInfo.daysRemaining} يوم قبل إمكانية إنشاء دورة جديدة.
-                </Alert>
-              )}
+            <FormSection description="أنشئ دورة جديدة لبدء استقبال طلبات الالتحاق في أي وقت — مهلة 15 يوماً تُطبَّق عند الإطلاق فقط">
               <LicenseCategorySelect
                 value={form.categoryCode}
                 onChange={(e) => setForm((f) => ({ ...f, categoryCode: e.target.value }))}
@@ -361,7 +344,7 @@ export const ManagerCoursesPage = () => {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={createMutation.isPending || createBlockedInfo.blocked}
+                disabled={createMutation.isPending}
               >
                 إنشاء الدورة
               </Button>
