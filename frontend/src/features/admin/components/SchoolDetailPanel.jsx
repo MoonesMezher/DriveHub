@@ -1,5 +1,6 @@
 import { Button, StatusBadge } from '@/components/ui'
 import { formatDateTime } from '@/lib/helpers/date'
+import { SchoolManagerSection } from './SchoolManagerSection'
 
 const schoolStatusLabels = {
   active: 'نشطة',
@@ -47,6 +48,7 @@ export const SchoolDetailPanel = ({
   onClose,
   onToggleStatus,
   onDelete,
+  onManagerAssigned,
   statusPending = false,
   deletePending = false,
 }) => {
@@ -179,6 +181,11 @@ export const SchoolDetailPanel = ({
         ) : (
           <p className="text-body-md text-on-surface-variant">لا يوجد مدير مرتبط بهذه المدرسة.</p>
         )}
+        <SchoolManagerSection
+          schoolId={school._id}
+          hasManager={Boolean(manager)}
+          onSuccess={onManagerAssigned}
+        />
       </div>
     </div>
   )

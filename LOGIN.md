@@ -81,6 +81,7 @@ Passwords below match the seed scripts. Admin password comes from `ADMIN_PASSWOR
 | **Portal**   | المدارس/المدربين         |
 | **Email**    | `manager@drivehub.local` |
 | **Password** | `StudentPass1!`          |
+| **Notes**    | Manager @ مدرسة النور (`managerId` linked); `manager2@…` @ أكاديمية الأمان |
 
 
 ---

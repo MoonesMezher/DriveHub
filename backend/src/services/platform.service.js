@@ -329,6 +329,75 @@ class PlatformService {
         };
     }
 
+    async assignSchoolManager(schoolId, data, grantedBy) {
+        const { userId, name, email, phone, password, replace = false } = data;
+
+        const school = await DrivingSchool.findById(schoolId);
+        if (!school || school.status === 'deleted') {
+            throw new ApiError(404, ERR.SCHOOL_NOT_FOUND);
+        }
+
+        if (school.managerId && !replace) {
+            throw new ApiError(409, ERR.SCHOOL_HAS_MANAGER);
+        }
+
+        let managerUser;
+        let created = false;
+
+        if (userId) {
+            managerUser = await User.findById(userId);
+            if (!managerUser) throw new ApiError(404, ERR.USER_NOT_FOUND);
+        } else {
+            const normalizedEmail = email.trim().toLowerCase();
+            const existing = await User.findOne({ email: normalizedEmail });
+            if (existing) throw new ApiError(409, ERR.EMAIL_EXISTS);
+
+            managerUser = await User.create({
+                name,
+                email: normalizedEmail,
+                phone,
+                password: await passwordService.hashPassword(password),
+                activeContext: { role: ROLES.MANAGER, schoolId },
+            });
+            created = true;
+        }
+
+        const previousManagerId = school.managerId
+            ? String(school.managerId)
+            : null;
+
+        if (previousManagerId && previousManagerId !== String(managerUser._id)) {
+            await UserRole.updateOne(
+                { userId: school.managerId, role: ROLES.MANAGER, schoolId },
+                { status: 'suspended' },
+            );
+        }
+
+        await this.assignRole(
+            { userId: managerUser._id, role: ROLES.MANAGER, schoolId },
+            grantedBy,
+        );
+
+        school.managerId = managerUser._id;
+        await school.save();
+
+        managerUser.activeContext = { role: ROLES.MANAGER, schoolId };
+        await managerUser.save();
+
+        const schoolDetail = await this.getSchoolById(schoolId);
+
+        return {
+            school: schoolDetail,
+            manager: {
+                _id: managerUser._id,
+                name: managerUser.name,
+                email: managerUser.email,
+                phone: managerUser.phone,
+            },
+            created,
+        };
+    }
+
     async suspendUser(userId, { status, reason = null }) {
         const user = await User.findByIdAndUpdate(userId, { status }, { new: true });
         if (!user) throw new ApiError(404, ERR.USER_NOT_FOUND);

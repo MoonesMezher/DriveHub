@@ -34,6 +34,7 @@ const ERR = {
 
     // School
     SCHOOL_NOT_FOUND: 'المدرسة غير موجودة أو غير نشطة',
+    SCHOOL_HAS_MANAGER: 'المدرسة لديها مدير بالفعل — أكّد الاستبدال للمتابعة',
     SCHOOL_DELETE_BLOCKED: 'لا يمكن حذف المدرسة — توجد دورات أو اشتراكات نشطة',
     SCHOOL_APPLICATION_NOT_FOUND: 'طلب المدرسة غير موجود',
 

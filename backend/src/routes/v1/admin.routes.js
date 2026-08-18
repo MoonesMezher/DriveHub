@@ -12,6 +12,7 @@ const {
     updateRegistrationRules,
     createTrafficAccountRules,
     rejectComplianceRules,
+    assignSchoolManagerRules,
 } = require('../../validators/admin.validator');
 const { upsertCategoryRules, upsertSubTypeRules } = require('../../validators/license.validator');
 const { createFaqRules, updateFaqRules } = require('../../validators/faq.validator');
@@ -62,6 +63,7 @@ router.get('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), attachPagi
 router.get('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), adminController.getSchool);
 router.post('/schools', requirePermission(PERMISSIONS.MANAGE_SCHOOLS), createSchoolRules, validate, audit('admin.school.create'), adminController.createSchool);
 router.patch('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), updateSchoolRules, validate, adminController.updateSchool);
+router.post('/schools/:id/manager', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), assignSchoolManagerRules, validate, audit('admin.school.assignManager'), adminController.assignSchoolManager);
 router.delete('/schools/:id', ...idParam('id', 'المدرسة'), requirePermission(PERMISSIONS.MANAGE_SCHOOLS), audit('admin.school.delete'), adminController.deleteSchool);
 
 // School applications

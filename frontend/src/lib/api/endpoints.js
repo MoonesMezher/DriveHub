@@ -129,6 +129,7 @@ export const ENDPOINTS = {
     licenses: '/admin/licenses',
     schools: '/admin/schools',
     schoolDetail: (id) => `/admin/schools/${id}`,
+    assignSchoolManager: (id) => `/admin/schools/${id}/manager`,
     deleteSchool: (id) => `/admin/schools/${id}`,
     applications: '/admin/school-applications',
     reviewApplication: (id) => `/admin/school-applications/${id}/review`,

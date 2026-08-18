@@ -2,8 +2,9 @@
  * One-shot demo seed for DriveHub.
  *
  * Runs admin (ADMIN_* env) + full demo dataset via runDevSeed:
- * licenses, schools, users/roles, courses, enrollments, wallets,
- * instructors (male + female coach), content/FAQ/requirements,
+ * licenses, schools (each with managerId + MANAGER role), users/roles,
+ * courses, enrollments, wallets, instructors (male + female coach),
+ * content/FAQ/requirements,
  * ads, compliance sample (pending school application).
  *
  * From backend/:

@@ -87,11 +87,13 @@ export const AdminSchoolsPage = () => {
 
   const createMutation = useMutation({
     mutationFn: (data) => adminService.createSchool(data).then(unwrap),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('تمت إضافة المدرسة')
       setForm(emptySchoolForm)
       setShowForm(false)
       queryClient.invalidateQueries({ queryKey: ['admin', 'schools'] })
+      const schoolId = data?._id || data?.school?._id
+      if (schoolId) setSelectedSchoolId(schoolId)
     },
     onError: (err) => toast.error(err, 'فشل إضافة المدرسة'),
   })
@@ -266,6 +268,14 @@ export const AdminSchoolsPage = () => {
                 onClose={() => setSelectedSchoolId(null)}
                 statusPending={statusMutation.isPending}
                 deletePending={deleteMutation.isPending}
+                onManagerAssigned={(data) => {
+                  if (data?.school && selectedSchoolId) {
+                    queryClient.setQueryData(['admin', 'schools', selectedSchoolId], { school: data.school })
+                  }
+                  queryClient.invalidateQueries({ queryKey: ['admin', 'schools'] })
+                  queryClient.invalidateQueries({ queryKey: ['admin', 'schools', selectedSchoolId] })
+                  queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+                }}
                 onToggleStatus={(school) => {
                   statusMutation.mutate({
                     id: school._id,

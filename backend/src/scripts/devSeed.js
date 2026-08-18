@@ -179,6 +179,24 @@ const SCHOOLS = [
     },
 ];
 
+/** Demo manager logins (LOGIN.md) + auto-generated managers for other seeded schools */
+const DEMO_MANAGER_ACCOUNTS = {
+    0: { email: 'manager@drivehub.local', name: 'مدير مدرسة النور', phone: '0944222333' },
+    1: { email: 'manager2@drivehub.local', name: 'مدير أكاديمية الأمان', phone: '0944222444' },
+};
+
+const managerEmailForSchool = (school, index) => {
+    if (DEMO_MANAGER_ACCOUNTS[index]) return DEMO_MANAGER_ACCOUNTS[index].email;
+    const prefix = String(school.email).split('@')[0];
+    return `manager.${prefix}@drivehub.local`;
+};
+
+const managerNameForSchool = (school, index) =>
+    DEMO_MANAGER_ACCOUNTS[index]?.name || `مدير ${school.name}`;
+
+const managerPhoneForSchool = (school, index) =>
+    DEMO_MANAGER_ACCOUNTS[index]?.phone || `0944${String(300000 + index).slice(-6)}`;
+
 const ensureUser = async ({
     email,
     name,
@@ -336,25 +354,24 @@ const runDevSeed = async () => {
         activeContext: { role: ROLES.REGISTERED },
     });
 
-    const manager = await ensureUser({
-        email: 'manager@drivehub.local',
-        name: 'مدير مدرسة النور',
-        password: demoPassword,
-        phone: '0944222333',
-        role: ROLES.MANAGER,
-        schoolId: primarySchool._id,
-        activeContext: { role: ROLES.MANAGER, schoolId: primarySchool._id },
-    });
-
-    await ensureUser({
-        email: 'manager2@drivehub.local',
-        name: 'مدير أكاديمية الأمان',
-        password: demoPassword,
-        phone: '0944222444',
-        role: ROLES.MANAGER,
-        schoolId: secondarySchool._id,
-        activeContext: { role: ROLES.MANAGER, schoolId: secondarySchool._id },
-    });
+    const schoolManagers = [];
+    for (let i = 0; i < schoolDocs.length; i++) {
+        const schoolMeta = SCHOOLS[i];
+        const schoolDoc = schoolDocs[i];
+        const managerUser = await ensureUser({
+            email: managerEmailForSchool(schoolMeta, i),
+            name: managerNameForSchool(schoolMeta, i),
+            password: demoPassword,
+            phone: managerPhoneForSchool(schoolMeta, i),
+            role: ROLES.MANAGER,
+            schoolId: schoolDoc._id,
+            activeContext: { role: ROLES.MANAGER, schoolId: schoolDoc._id },
+        });
+        await DrivingSchool.findByIdAndUpdate(schoolDoc._id, { managerId: managerUser._id });
+        schoolDoc.managerId = managerUser._id;
+        schoolManagers.push(managerUser);
+    }
+    const manager = schoolManagers[0];
 
     const coachUser = await ensureUser({
         email: 'coach@drivehub.local',
@@ -438,7 +455,7 @@ const runDevSeed = async () => {
             status: ENROLLMENT_STATUS.ACTIVE,
             paidAt: new Date(),
             prefersFemaleCoach: true,
-            managerVisible: false,
+            managerVisible: true,
         },
         { upsert: true, new: true },
     );
@@ -559,6 +576,7 @@ const printSeedSummary = (result) => {
     console.log(`  Licenses: ${LICENSE_CATEGORIES.length} categories`);
     console.log(`  Pricing: B = ${B_PRICE.toLocaleString('en-US')} SYP, C = ${C_PRICE.toLocaleString('en-US')} SYP (commission ${COMMISSION * 100}%)`);
     console.log(`  Course: ${result.courseId} @ ${result.primarySchoolName}`);
+    console.log(`  Managers: ${result.schoolCount} schools linked via managerId`);
     console.log('  Wallets: student@… credited for enrollment; activestudent@… residual credit');
     console.log('  Coaches: coach@… (male) + coach2@… (female) Instructor records');
     console.log('  Content: theory, videos, FAQ, requirements, testimonials, question bank');

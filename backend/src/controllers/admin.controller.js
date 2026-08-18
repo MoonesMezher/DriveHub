@@ -78,6 +78,10 @@ module.exports = {
     listPendingReviews: makeHandler(() => reviewService.listPending(), { wrap: (d) => ({ reviews: d }) }),
     moderateReview: makeHandler((req) => reviewService.moderate(req.params.id, req._user.userId, req.body), { wrap: (d) => ({ review: d }) }),
     createTrafficAccount: makeHandler((req) => platformService.createTrafficAccount(req.body, req._user.userId), { status: 201 }),
+    assignSchoolManager: makeHandler(
+        (req) => platformService.assignSchoolManager(req.params.id, req.body, req._user.userId),
+        { wrap: (d) => ({ school: d.school, manager: d.manager, created: d.created }) },
+    ),
     getPrivacy: makeHandler(() => settingsService.getPrivacy()),
     updatePrivacy: makeHandler((req) => settingsService.updatePrivacy(req.body.content, req._user.userId)),
     getRegistrationSettings: makeHandler(() => settingsService.getRegistrationSettings()),

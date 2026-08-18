@@ -96,6 +96,32 @@ const rejectComplianceRules = [
         .withMessage('سبب الرفض يجب أن يكون بين 3 و 500 حرف'),
 ];
 
+const assignSchoolManagerRules = [
+    body('replace').optional().isBoolean().withMessage(msg.mustBeBoolean('استبدال المدير')),
+    optionalMongoIdBody('userId', 'المستخدم'),
+    body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('الاسم غير صالح'),
+    body('email').optional().trim().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+    body('phone').optional().trim().isLength({ min: 7, max: 20 }).withMessage('رقم الهاتف غير صالح'),
+    body('password').optional().isLength({ min: 8, max: 128 }).withMessage('كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
+    body().custom((_, { req }) => {
+        const { userId, name, email, phone, password } = req.body;
+        if (userId) {
+            if (name || email || phone || password) {
+                throw new Error('اختر إما تعيين مستخدم موجود أو إنشاء حساب جديد');
+            }
+            return true;
+        }
+        if (!name?.trim()) throw new Error(msg.required('الاسم'));
+        if (!email?.trim()) throw new Error(msg.required('البريد الإلكتروني'));
+        if (!phone?.trim()) throw new Error(msg.required('رقم الهاتف'));
+        if (!password) throw new Error(msg.required('كلمة المرور'));
+        if (/[\d\u0660-\u0669]/.test(name)) {
+            throw new Error('الاسم لا يجب أن يحتوي على أرقام');
+        }
+        return true;
+    }),
+];
+
 module.exports = {
     upsertPricingRules,
     updateCommissionRules,
@@ -106,4 +132,5 @@ module.exports = {
     updateRegistrationRules,
     createTrafficAccountRules,
     rejectComplianceRules,
+    assignSchoolManagerRules,
 };

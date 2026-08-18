@@ -12,6 +12,7 @@ export const adminService = {
   getSchool: (id) => apiClient.get(ENDPOINTS.admin.schoolDetail(id)),
   createSchool: (data) => apiClient.post(ENDPOINTS.admin.schools, data),
   updateSchool: (id, data) => apiClient.patch(ENDPOINTS.admin.schoolDetail(id), data),
+  assignSchoolManager: (id, data) => apiClient.post(ENDPOINTS.admin.assignSchoolManager(id), data),
   deleteSchool: (id) => apiClient.delete(ENDPOINTS.admin.deleteSchool(id)),
   listApplications: () => apiClient.get(ENDPOINTS.admin.applications),
   reviewApplication: (id, data) => apiClient.post(ENDPOINTS.admin.reviewApplication(id), data),
